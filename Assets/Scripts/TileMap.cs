@@ -200,6 +200,7 @@ public class TileMap : MonoBehaviour {
 			for(int y=0; y < mapSizeX; y++) {
 				TileType tt = tileTypes[ tiles[x,y] ];
 				GameObject go = (GameObject)Instantiate( tt.tileVisualPrefab, new Vector3(x, y, 0), Quaternion.identity );
+				go.transform.eulerAngles = new Vector3(270, 0, 0); // Make the planes face the camera
 
 				ClickableTile ct = go.GetComponent<ClickableTile>();
 				ct.tileX = x;

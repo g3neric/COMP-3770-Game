@@ -270,21 +270,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mapSizeX: 25
   mapSizeY: 25
+  tileOutlinePrefab: {fileID: 2760457026279230676, guid: 32cb9ae5fcfb837419d4fd66843cdaac, type: 3}
   selectedUnit: {fileID: 1001566837}
   tileTypes:
   - name: TileGrass
-    tileVisualPrefab: {fileID: 1561500678141819050, guid: 5bfcc5ff93c6bae40871ffb50a85224b, type: 3}
+    tileMaterial: {fileID: 2100000, guid: 5b5213a88b306a34c819de586055efb8, type: 2}
     isWalkable: 1
     movementCost: 1
   - name: TileSwamp
-    tileVisualPrefab: {fileID: 8355463987959172031, guid: 0a639581f48086a46a2278013194b931, type: 3}
+    tileMaterial: {fileID: 2100000, guid: e172110744277e743a1089a5ddf2a75b, type: 2}
     isWalkable: 1
     movementCost: 2
   - name: TileMountain
-    tileVisualPrefab: {fileID: 8182913531825452799, guid: 6530b8adb173ccb44b70016623337fe1, type: 3}
+    tileMaterial: {fileID: 2100000, guid: 51df02193c27d174fb46143210cf65cd, type: 2}
     isWalkable: 0
     movementCost: 0
   units: []
+  tilePrefab: {fileID: 1561500678141819050, guid: 5bfcc5ff93c6bae40871ffb50a85224b, type: 3}
 --- !u!1 &574976828
 GameObject:
   m_ObjectHideFlags: 0

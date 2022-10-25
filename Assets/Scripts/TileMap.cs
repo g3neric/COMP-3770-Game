@@ -8,6 +8,7 @@ public class TileMap : MonoBehaviour {
 	public int mapSizeX;
 	public int mapSizeY;
 
+	public GameObject tileOutlinePrefab;
 	public GameObject selectedUnit;
 	public TileType[] tileTypes;
 	public Unit[] units;
@@ -16,12 +17,15 @@ public class TileMap : MonoBehaviour {
 	// Private variables
 	private int[,] tiles;
 	private Node[,] graph;
+	private GameObject tileOutline;
 
 	void Start() {
 		// Setup the selectedUnit's variable
 		selectedUnit.GetComponent<Unit>().tileX = (int)selectedUnit.transform.position.x;
 		selectedUnit.GetComponent<Unit>().tileY = (int)selectedUnit.transform.position.z;
 		selectedUnit.GetComponent<Unit>().map = this;
+
+		tileOutline = (GameObject)Instantiate(tileOutlinePrefab, new Vector3(-10f, 0.001f, -10f), Quaternion.identity);
 
 		GenerateMapData();
 		GeneratePathfindingGraph();
@@ -49,7 +53,7 @@ public class TileMap : MonoBehaviour {
 		
 		for(x=0; x < mapSizeX; x++) {
 			for(y=0; y < mapSizeX; y++) {
-				tiles[x,y] = Random.Range(0,3);
+				tiles[x, y] = Random.Range(0, 3);
 			}
 		}
 	}
@@ -68,9 +72,7 @@ public class TileMap : MonoBehaviour {
 			// Purely a cosmetic thing!
 			cost += 0.001f;
 		}
-
 		return cost;
-
 	}
 
 	void GeneratePathfindingGraph() {
@@ -125,13 +127,13 @@ public class TileMap : MonoBehaviour {
 		for(int x=0; x < mapSizeX; x++) {
 			for(int y=0; y < mapSizeX; y++) {
 				TileType tt = tileTypes[ tiles[x,y] ];
-				GameObject currentTile = (GameObject)Instantiate( tilePrefab, new Vector3(x, 0, y), Quaternion.identity );
+				GameObject currentTile = (GameObject)Instantiate(tilePrefab, new Vector3(x, 0f, y), Quaternion.identity);
 
 				currentTile.transform.GetComponent<Renderer>().material = tt.tileMaterial;
 
 				ClickableTile ct = currentTile.GetComponent<ClickableTile>();
-				ct.tileX = x;
-				ct.tileY = y;
+				ct.x = x;
+				ct.y = y;
 				ct.map = this;
 			}
 		}
@@ -140,7 +142,7 @@ public class TileMap : MonoBehaviour {
 	// Convert 2D tile (x, y) grid to 3D (x, 0, z) world coords
 	public Vector3 TileCoordToWorldCoord(int x, int y) {
 		// 0.5 unit offset so that the unit pathfinds to the middle of the square
-		return new Vector3(x, 0, y + 0.5f);
+		return new Vector3(x, 0f, y + 0.5f);
 	}
 
 	public bool UnitCanEnterTile(int x, int y) {
@@ -154,6 +156,7 @@ public class TileMap : MonoBehaviour {
 	public void GeneratePathTo(int x, int y) {
 		// Clear out our unit's old path.
 		selectedUnit.GetComponent<Unit>().currentPath = null;
+		tileOutline.transform.position = TileCoordToWorldCoord(x, y) - new Vector3(0, 0, 0.5f);
 
 		if( UnitCanEnterTile(x,y) == false ) {
 			// We probably clicked on a mountain or something, so just quit out.

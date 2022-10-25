@@ -3,19 +3,18 @@ using System.Collections;
 using UnityEngine.EventSystems;
 
 public class ClickableTile : MonoBehaviour {
+	// These variables are used by TileMap.cs when instantiating each tile
+	[HideInInspector] public int x;
+	[HideInInspector] public int y;
+	[HideInInspector] public int type;
+	[HideInInspector] public TileMap map;
 
-	public int tileX;
-	public int tileY;
-	public TileMap map;
+	private Color startcolor;
 
 	void OnMouseUp() {
-		Debug.Log ("Click!");
-
-		if(EventSystem.current.IsPointerOverGameObject()) {
-			return;
+		if (!EventSystem.current.IsPointerOverGameObject()) {
+			map.GeneratePathTo(x, y);
 		}
-			
-		map.GeneratePathTo(tileX, tileY);
 	}
-
 }
+

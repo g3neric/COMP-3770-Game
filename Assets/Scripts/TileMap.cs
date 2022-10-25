@@ -20,7 +20,7 @@ public class TileMap : MonoBehaviour {
 	void Start() {
 		// Setup the selectedUnit's variable
 		selectedUnit.GetComponent<Unit>().tileX = (int)selectedUnit.transform.position.x;
-		selectedUnit.GetComponent<Unit>().tileY = (int)selectedUnit.transform.position.y;
+		selectedUnit.GetComponent<Unit>().tileY = (int)selectedUnit.transform.position.z;
 		selectedUnit.GetComponent<Unit>().map = this;
 
 		GenerateMapData();
@@ -112,10 +112,6 @@ public class TileMap : MonoBehaviour {
 				}
 				break;
 		}
-		
-		
-		
-
 	}
 
 	public float CostToEnterTile(int sourceX, int sourceY, int targetX, int targetY) {
@@ -153,18 +149,6 @@ public class TileMap : MonoBehaviour {
 		// Now that all the nodes exist, calculate their neighbours
 		for(int x=0; x < mapSizeX; x++) {
 			for(int y=0; y < mapSizeX; y++) {
-
-				// This is the 4-way connection version:
-/*				if(x > 0)
-					graph[x,y].neighbours.Add( graph[x-1, y] );
-				if(x < mapSizeX-1)
-					graph[x,y].neighbours.Add( graph[x+1, y] );
-				if(y > 0)
-					graph[x,y].neighbours.Add( graph[x, y-1] );
-				if(y < mapSizeY-1)
-					graph[x,y].neighbours.Add( graph[x, y+1] );
-*/
-
 				// This is the 8-way connection version (allows diagonal movement)
 				// Try left
 				if(x > 0) {
@@ -199,8 +183,7 @@ public class TileMap : MonoBehaviour {
 		for(int x=0; x < mapSizeX; x++) {
 			for(int y=0; y < mapSizeX; y++) {
 				TileType tt = tileTypes[ tiles[x,y] ];
-				GameObject go = (GameObject)Instantiate( tt.tileVisualPrefab, new Vector3(x, y, 0), Quaternion.identity );
-				go.transform.eulerAngles = new Vector3(270, 0, 0); // Make the planes face the camera
+				GameObject go = (GameObject)Instantiate( tt.tileVisualPrefab, new Vector3(x + 0.5f, 0, y + 0.5f), Quaternion.identity );
 
 				ClickableTile ct = go.GetComponent<ClickableTile>();
 				ct.tileX = x;
@@ -211,7 +194,7 @@ public class TileMap : MonoBehaviour {
 	}
 
 	public Vector3 TileCoordToWorldCoord(int x, int y) {
-		return new Vector3(x, y, 0);
+		return new Vector3(x, 0, y);
 	}
 
 	public bool UnitCanEnterTile(int x, int y) {

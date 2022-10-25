@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 
 public class TileMap : MonoBehaviour {
+	// Public variables
+	// Change these in the editor
+	public int mapSizeX;
+	public int mapSizeY;
 
 	public GameObject selectedUnit;
-
 	public TileType[] tileTypes;
-
 	public Unit[] units;
 
-	int[,] tiles;
-	Node[,] graph;
 
-
-	int mapSizeX = 10;
-	int mapSizeY = 10;
+	// Private variables
+	private int[,] tiles;
+	private Node[,] graph;
 
 	void Start() {
 		// Setup the selectedUnit's variable
@@ -33,84 +33,24 @@ public class TileMap : MonoBehaviour {
 		tiles = new int[mapSizeX,mapSizeY];
 		
 		int x,y;
-		int map = Random.Range(0,3);
 
-		switch(map)
-		{
-			case 0:
-				// Initialize our map tiles to be grass
-				for(x=0; x < mapSizeX; x++) {
-					for(y=0; y < mapSizeX; y++) {
-						tiles[x,y] = 0;
-					}
-				}
+		// Initialize our map tiles randomly
+		/*
+		please mind that this cannot work this way as it will possible softlock the player with mountains
+		a potential work around will be making a set-map, (see above commented out code) or having it check 
+		if (lasttile) was mountain then dont place another mountain, but thats kinda lame, 
+		in my opinion (Cheesey/Andrew) We should set certain areas that could be /mountain/swamp/grass/whateverelse
 
-				// Make a big swamp area
-				for(x=3; x <= 5; x++) {
-					for(y=0; y < 4; y++) {
-						tiles[x,y] = 1;
-					}
-				}
-				
-				// Let's make a u-shaped mountain range
-				tiles[4, 4] = 2;
-				tiles[5, 4] = 2;
-				tiles[6, 4] = 2;
-				tiles[7, 4] = 2;
-				tiles[8, 4] = 2;
+		or maybe even create a list of pre-made "chunks" and have it grab them from an array or smth, that way it'll always be playable Thanks 
+		*/
 
-				tiles[4, 5] = 2;
-				tiles[4, 6] = 2;
-				tiles[8, 5] = 2;
-				tiles[8, 6] = 2;
-				break;
-			case 1:
-			// Initialize our map tiles to be grass
-				for(x=0; x < mapSizeX; x++) {
-					for(y=0; y < mapSizeX; y++) {
-						tiles[x,y] = 0;
-					}
-				}
-
-				// Make a big swamp area
-				for(x=3; x <= 8; x++) {
-					for(y=5; y < 8; y++) {
-						tiles[x,y] = 1;
-					}
-				}
-				tiles[7,3] = 1;
-				tiles[7,4] = 1;
-				tiles[8,3] = 1;
-				tiles[8,4] = 1;
-				// Let's make a L-shaped mountain range
-				tiles[1, 7] = 2;
-				tiles[1, 6] = 2;
-				tiles[1, 5] = 2;
-				tiles[1, 4] = 2;
-				tiles[1, 3] = 2;
-
-				tiles[2, 3] = 2;
-				tiles[3, 3] = 2;
-				tiles[4, 3] = 2;
-				tiles[5, 3] = 2;
-				break;
-			case 2:
-				// Initialize our map tiles randomly
-				/*
-				please mind that this cannot work this way as it will possible softlock the player with mountains
-				a potential work around will be making a set-map, (see above commented out code) or having it check 
-				if (lasttile) was mountain then dont place another mountain, but thats kinda lame, 
-				in my opinion (Cheesey/Andrew) We should set certain areas that could be /mountain/swamp/grass/whateverelse
-
-				or maybe even create a list of pre-made "chunks" and have it grab them from an array or smth, that way it'll always be playable Thanks 
-				*/
-
-				for(x=0; x < mapSizeX; x++) {
-					for(y=0; y < mapSizeX; y++) {
-						tiles[x,y] = Random.Range(0,3);
-					}
-				}
-				break;
+		// i will create an algorithm for map generation after i overhaul this entire script
+		// but for now generating tiles completely randomly will do -tyler
+		
+		for(x=0; x < mapSizeX; x++) {
+			for(y=0; y < mapSizeX; y++) {
+				tiles[x,y] = Random.Range(0,3);
+			}
 		}
 	}
 
@@ -169,21 +109,23 @@ public class TileMap : MonoBehaviour {
 				}
 
 				// Try straight up and down
-				if(y > 0)
-					graph[x,y].neighbours.Add( graph[x, y-1] );
-				if(y < mapSizeY-1)
-					graph[x,y].neighbours.Add( graph[x, y+1] );
-
+				if (y > 0) {
+					graph[x, y].neighbours.Add(graph[x, y - 1]);
+				}
+				if (y < mapSizeY - 1) {
+					graph[x, y].neighbours.Add(graph[x, y + 1]);
+				}
 				// This also works with 6-way hexes and n-way variable areas (like EU4)
 			}
 		}
 	}
 
+	// Instantiate the tiles
 	void GenerateMapVisual() {
 		for(int x=0; x < mapSizeX; x++) {
 			for(int y=0; y < mapSizeX; y++) {
 				TileType tt = tileTypes[ tiles[x,y] ];
-				GameObject go = (GameObject)Instantiate( tt.tileVisualPrefab, new Vector3(x + 0.5f, 0, y + 0.5f), Quaternion.identity );
+				GameObject go = (GameObject)Instantiate( tt.tileVisualPrefab, new Vector3(x, 0, y), Quaternion.identity );
 
 				ClickableTile ct = go.GetComponent<ClickableTile>();
 				ct.tileX = x;
@@ -194,7 +136,7 @@ public class TileMap : MonoBehaviour {
 	}
 
 	public Vector3 TileCoordToWorldCoord(int x, int y) {
-		return new Vector3(x, 0, y);
+		return new Vector3(x, 0, y + 0.5f);
 	}
 
 	public bool UnitCanEnterTile(int x, int y) {
@@ -272,7 +214,7 @@ public class TileMap : MonoBehaviour {
 			}
 		}
 
-		// If we get there, the either we found the shortest route
+		// If we get there, then either we found the shortest route
 		// to our target, or there is no route at ALL to our target.
 
 		if(prev[target] == null) {
@@ -290,7 +232,7 @@ public class TileMap : MonoBehaviour {
 			curr = prev[curr];
 		}
 
-		// Right now, currentPath describes a route from out target to our source
+		// Right now, currentPath describes a route from our target to our source
 		// So we need to invert it!
 
 		currentPath.Reverse();

@@ -11,9 +11,10 @@ public class ClickableTile : MonoBehaviour {
 	void OnMouseUp() {
 		Debug.Log ("Click!");
 
-		if(EventSystem.current.IsPointerOverGameObject())
+		if(EventSystem.current.IsPointerOverGameObject()) {
 			return;
-
+		}
+			
 		map.GeneratePathTo(tileX, tileY);
 	}
 

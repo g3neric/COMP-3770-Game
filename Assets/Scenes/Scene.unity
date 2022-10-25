@@ -268,6 +268,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecad0c981faa7a1458e9eaff9f302b76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mapSizeX: 25
+  mapSizeY: 25
   selectedUnit: {fileID: 1001566837}
   tileTypes:
   - name: TileGrass

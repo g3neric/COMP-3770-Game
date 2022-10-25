@@ -30,7 +30,7 @@ public class Unit : MonoBehaviour {
     }
 
 
-	void Update() {
+	void FixedUpdate() {
 		// Draw our debug line showing the pathfinding!
 		// NOTE: This won't appear in the actual game view.
 		if(currentPath != null) {
@@ -55,7 +55,7 @@ public class Unit : MonoBehaviour {
 			AdvancePathing();
 
 		// Smoothly animate towards the correct map tile.
-		transform.position = Vector3.Lerp(transform.position, map.TileCoordToWorldCoord( tileX, tileY ), 5f * Time.deltaTime);
+		transform.position = Vector3.Lerp(transform.position, map.TileCoordToWorldCoord( tileX, tileY ), 5f * Time.fixedDeltaTime);
 	}
 
 	// Advances our pathfinding progress by one tile.

@@ -1,18 +1,33 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.Assertions;
 
 public class TileMap : MonoBehaviour {
 	// Public variables
 	// Change these in the editor
+	[Space]
+	[Header("Map size")]
 	public int mapSizeX;
 	public int mapSizeY;
+	[Space(25)]
 
+	[Space]
+	[Header("Misc")]
 	public GameObject tileOutlinePrefab;
 	public GameObject selectedUnit;
+	public GameObject tilePrefab;
+	[Space(25)]
+
+	[Space]
+	[Header("Up to index (numOfRandomlyGeneratedTiles) - 1 will")]
+	[Header("be randomly generated. Every tile after that will")]
+	[Header("not be included in the random tile generation.")]
+	public int numOfRandomlyGeneratedTiles;
+	[Space(25)]
+	[Header("Frequencies in Tile Types MUST add up to 100!")]
 	public TileType[] tileTypes;
 	public Unit[] units;
-	public GameObject tilePrefab;
 
 	// Private variables
 	private int[,] tiles;
@@ -24,6 +39,7 @@ public class TileMap : MonoBehaviour {
 		selectedUnit.GetComponent<Unit>().tileX = (int)selectedUnit.transform.position.x;
 		selectedUnit.GetComponent<Unit>().tileY = (int)selectedUnit.transform.position.z;
 		selectedUnit.GetComponent<Unit>().map = this;
+		// Place tileOutline off screen initialy
 		tileOutline = (GameObject)Instantiate(tileOutlinePrefab, new Vector3(-10f, 0.001f, -10f), Quaternion.identity);
 
 		GenerateMapData();
@@ -31,41 +47,51 @@ public class TileMap : MonoBehaviour {
 		GenerateMapVisual();
 	}
 
-
-    void GenerateMapData() {
-		// Allocate our map tiles
+	// Allocate our map tiles
+	void GenerateMapData() {
 		tiles = new int[mapSizeX,mapSizeY];
-		
-		int x,y;
 
-		// Initialize our map tiles randomly
-		/*
-		please mind that this cannot work this way as it will possible softlock the player with mountains
-		a potential work around will be making a set-map, (see above commented out code) or having it check 
-		if (lasttile) was mountain then dont place another mountain, but thats kinda lame, 
-		in my opinion (Cheesey/Andrew) We should set certain areas that could be /mountain/swamp/grass/whateverelse
+		// Test if you messed up the frequency attributes in the editor
+		// Must add up to 100%.
+		int sum = 0;
+		for (int x = 0; x < numOfRandomlyGeneratedTiles; x++) {
+			sum += tileTypes[x].frequency;
+        }
+		Assert.AreEqual(sum, 100, "Tile frequencies do not add up to 100%");
 
-		or maybe even create a list of pre-made "chunks" and have it grab them from an array or smth, that way it'll always be playable Thanks 
-		*/
-		
-		for(x=0; x < mapSizeX; x++) {
-			for (y = 0; y < mapSizeX; y++) {
+		for (int x=0; x < mapSizeX; x++) {
+			for (int y = 0; y < mapSizeX; y++) {
+				// Generate sand
 				if (x == 0 || y == 0 || y == mapSizeY - 1 || x == mapSizeX - 1) {
-					tiles[x, y] = 0;
+					tiles[x, y] = 3;
 				} else {
+					
 					if (tiles[x-1, y] == 1 &&
 						tiles[x+1, y] == 1 &&
 						tiles[x, y-1] == 1 &&
 						tiles[x, y+1] == 1) {
 						tiles[x, y] = 1;
                     } else {
-						int num = Random.Range(1, tileTypes.Length);
-						if (num == 1) {
-							int num2 = Random.Range(1, tileTypes.Length);
-							tiles[x, y] = num2;
-						} else {
-							tiles[x, y] = num;
+						// Randomly generate number between 1 and 100
+						float num = Mathf.Ceil(Random.Range(0, 100));
+						// Initialize end points
+						int[] endPoints = new int[numOfRandomlyGeneratedTiles];
+						endPoints[0] = tileTypes[0].frequency;
+						for (int m = 1; m < numOfRandomlyGeneratedTiles; m++) {
+							endPoints[m] = endPoints[m - 1] + tileTypes[m].frequency;
+                        }
+
+						// Below or equal to the first endpoint
+						if (num <= endPoints[0]) {
+							tiles[x, y] = 0;
 						}
+
+						// Above the first end point
+						for (int z = 1; z < numOfRandomlyGeneratedTiles; z++) {
+							if (num >= endPoints[z - 1] && num <= endPoints[z]) {
+								tiles[x, y] = z;
+                            }
+                        }
 					}
 				}
 			}
@@ -94,8 +120,8 @@ public class TileMap : MonoBehaviour {
 		graph = new Node[mapSizeX,mapSizeY];
 
 		// Initialize a Node for each spot in the array
-		for(int x=0; x < mapSizeX; x++) {
-			for(int y=0; y < mapSizeX; y++) {
+		for(int x = 0; x < mapSizeX; x++) {
+			for(int y = 0; y < mapSizeX; y++) {
 				graph[x,y] = new Node();
 				graph[x,y].x = x;
 				graph[x,y].y = y;
@@ -103,8 +129,8 @@ public class TileMap : MonoBehaviour {
 		}
 
 		// Now that all the nodes exist, calculate their neighbours
-		for(int x=0; x < mapSizeX; x++) {
-			for(int y=0; y < mapSizeX; y++) {
+		for(int x = 0; x < mapSizeX; x++) {
+			for(int y = 0; y < mapSizeX; y++) {
 				// This is the 8-way connection version (allows diagonal movement)
 				// Try left
 				if(x > 0) {

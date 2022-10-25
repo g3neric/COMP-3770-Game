@@ -272,25 +272,30 @@ MonoBehaviour:
   mapSizeY: 25
   tileOutlinePrefab: {fileID: 2760457026279230676, guid: 32cb9ae5fcfb837419d4fd66843cdaac, type: 3}
   selectedUnit: {fileID: 1001566837}
+  tilePrefab: {fileID: 1561500678141819050, guid: 5bfcc5ff93c6bae40871ffb50a85224b, type: 3}
+  numOfRandomlyGeneratedTiles: 3
   tileTypes:
-  - name: TileSand
-    tileMaterial: {fileID: 2100000, guid: 755b381585014604eaafc03e6d029ffe, type: 2}
-    isWalkable: 1
-    movementCost: 1
   - name: TileMountain
     tileMaterial: {fileID: 2100000, guid: 51df02193c27d174fb46143210cf65cd, type: 2}
+    frequency: 15
     isWalkable: 0
     movementCost: 0
   - name: TileGrass
     tileMaterial: {fileID: 2100000, guid: 5b5213a88b306a34c819de586055efb8, type: 2}
+    frequency: 60
     isWalkable: 1
     movementCost: 1
   - name: TileSwamp
     tileMaterial: {fileID: 2100000, guid: e172110744277e743a1089a5ddf2a75b, type: 2}
+    frequency: 25
+    isWalkable: 1
+    movementCost: 2
+  - name: TileSand
+    tileMaterial: {fileID: 2100000, guid: 755b381585014604eaafc03e6d029ffe, type: 2}
+    frequency: 0
     isWalkable: 1
     movementCost: 2
   units: []
-  tilePrefab: {fileID: 1561500678141819050, guid: 5bfcc5ff93c6bae40871ffb50a85224b, type: 3}
 --- !u!1 &574976828
 GameObject:
   m_ObjectHideFlags: 0

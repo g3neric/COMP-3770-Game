@@ -7,9 +7,12 @@ public class TileMap : MonoBehaviour {
 	// Public variables
 	// Change these in the editor
 	[Space]
-	[Header("Map size")]
-	public int mapSizeX;
-	public int mapSizeY;
+	[Header("Map settings")]
+	[Header("These will only be used at runtime")]
+	[Range(10, 100)] public int mapSizeX;
+	[Range(10, 100)] public int mapSizeY;
+	[Range(0, 99)] public int shoreSize;
+	[Range(1, 100)] public int oceanSize;
 	[Space(25)]
 
 	[Space]
@@ -56,13 +59,31 @@ public class TileMap : MonoBehaviour {
 		for (int x = 0; x < numOfRandomlyGeneratedTiles; x++) {
 			sum += tileTypes[x].frequency;
         }
-		Assert.AreEqual(sum, 100, "Tile frequencies do not add up to 100%"); // Throw error if don't add up to 100
+		// Throw error if frequencies don't add up to 100
+		Assert.AreEqual(sum, 100, "Tile frequencies do not add up to 100%");
+
+		// Throw error is ocean is bigger than map
+		Assert.IsTrue(oceanSize < Mathf.Min(mapSizeY, mapSizeX), "Ocean is bigger than the map");
 
 		for (int x=0; x < mapSizeX; x++) {
 			for (int y = 0; y < mapSizeX; y++) {
-				// Generate sand
-				if (x == 0 || y == 0 || y == mapSizeY - 1 || x == mapSizeX - 1) {
-					tiles[x, y] = 3;
+				
+				if (x < oceanSize || y < oceanSize || y >= mapSizeY - oceanSize || x >= mapSizeX - oceanSize) {
+					// Generate ocean
+					// Look for which tile is water
+					for (int l = 0; l < tileTypes.Length; l++) {
+						if (tileTypes[l].name == "TileWater") {
+							tiles[x, y] = l;
+						}
+					}
+				} else if (x < oceanSize + shoreSize || y < oceanSize + shoreSize || y >= mapSizeY - shoreSize - oceanSize || x >= mapSizeX - shoreSize - oceanSize) {
+					// Generate sand
+					// Look for which tile is sand
+					for (int l = 0; l < tileTypes.Length; l++) {
+						if (tileTypes[l].name == "TileSand") {
+							tiles[x, y] = l;
+						}
+					}
 				} else {
 					// If current tile is surrounded by unwalkable tiles, then make it mountain (for now)
 					if (!tileTypes[tiles[x - 1, y]].isWalkable &&

@@ -61,7 +61,6 @@ public class CameraController : MonoBehaviour {
         ObjectCamTarget.GetComponent<Rigidbody>().drag = camTargetDrag;
         CamTrans = m_MainCamera.gameObject.GetComponent<Transform>();
         ObjectCamTargetRigidbody = ObjectCamTarget.GetComponent<Rigidbody>();
-        
     }
 
     void Update() {
@@ -89,6 +88,7 @@ public class CameraController : MonoBehaviour {
             ObjectCamTargetRigidbody.velocity = Vector3.ClampMagnitude(ObjectCamTargetRigidbody.velocity, ObjectCamTargetMaxSpeed);
         }
 
+        // Camera speed up when holding left shift
         if (Input.GetKeyDown(KeyCode.LeftShift)) {
             ObjectCamTargetMaxSpeed *= 2f;
             CamTargetSpeed *= 2f;
@@ -99,6 +99,7 @@ public class CameraController : MonoBehaviour {
             CamTargetSpeed /= 2f;
         }
 
+        // Camera spin when holding right click
         if (Input.GetMouseButtonDown(1)) {
             HasRightMouseDown = true;
             MouseDragStartPos = Input.mousePosition;
@@ -112,6 +113,7 @@ public class CameraController : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.Space)) {
             SnapToUnit();
         }
+
 
         if (Input.GetAxis("Mouse ScrollWheel") < 0f) {
             ZoomLevel += zoomSpeed;

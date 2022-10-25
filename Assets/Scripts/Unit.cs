@@ -24,9 +24,8 @@ public class Unit : MonoBehaviour {
 	private float spawnY;
 
 	void Start() {
-		spawnX = Mathf.Floor(Random.Range(0, map.mapSizeX));
-		spawnY = Mathf.Floor(Random.Range(0, map.mapSizeY));
-		gameObject.transform.position = new Vector3(spawnX, 0, spawnY);
+		tileX = (int)Mathf.Floor(map.mapSizeX / 2);
+		tileY = (int)Mathf.Floor(map.mapSizeY / 2);
     }
 
 
@@ -51,8 +50,10 @@ public class Unit : MonoBehaviour {
 
 		// Have we moved our visible piece close enough to the target tile that we can
 		// advance to the next step in our pathfinding?
-		if(Vector3.Distance(transform.position, map.TileCoordToWorldCoord( tileX, tileY )) < 0.1f)
+		if(Vector3.Distance(transform.position, map.TileCoordToWorldCoord( tileX, tileY )) < 0.1f) {
 			AdvancePathing();
+		}
+			
 
 		// Smoothly animate towards the correct map tile.
 		transform.position = Vector3.Lerp(transform.position, map.TileCoordToWorldCoord( tileX, tileY ), 5f * Time.fixedDeltaTime);

@@ -268,27 +268,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecad0c981faa7a1458e9eaff9f302b76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapSizeX: 10
-  mapSizeY: 10
+  mapSizeX: 30
+  mapSizeY: 30
+  shoreSize: 2
+  oceanSize: 10
   tileOutlinePrefab: {fileID: 2760457026279230676, guid: 32cb9ae5fcfb837419d4fd66843cdaac, type: 3}
   selectedUnit: {fileID: 1001566837}
   numOfRandomlyGeneratedTiles: 3
   tileTypes:
   - name: TileMountain
     tilePrefab: {fileID: 1561500678141819050, guid: 4286be4e03f01cb4d87ed39307b7ba42, type: 3}
-    frequency: 15
+    frequency: 10
     isWalkable: 0
     movementCost: 0
   - name: TileGrass
     tilePrefab: {fileID: 1561500678141819050, guid: 5bfcc5ff93c6bae40871ffb50a85224b, type: 3}
-    frequency: 60
+    frequency: 50
     isWalkable: 1
     movementCost: 1
   - name: TileSwamp
     tilePrefab: {fileID: 1561500678141819050, guid: f7e4c28b14f1e7e479bd6efff93fe237, type: 3}
-    frequency: 25
+    frequency: 40
     isWalkable: 1
     movementCost: 2
+  - name: TileWater
+    tilePrefab: {fileID: 1561500678141819050, guid: e247765d5302ab646af4a26655174545, type: 3}
+    frequency: 0
+    isWalkable: 0
+    movementCost: 0
   - name: TileSand
     tilePrefab: {fileID: 1561500678141819050, guid: ea9848a3677d68d4598478236ea28cdc, type: 3}
     frequency: 0
@@ -753,6 +760,51 @@ PrefabInstance:
       objectReference: {fileID: 359606190}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bfb7334471802504bb9a93c45831092d, type: 3}
+--- !u!1 &1229318556
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1229318558}
+  - component: {fileID: 1229318557}
+  m_Layer: 0
+  m_Name: InputController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1229318557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1229318556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fddc584564acda4caf836cb9c28af1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unit: {fileID: 1001566837}
+--- !u!4 &1229318558
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1229318556}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -61.007538, y: 33.477932, z: 30.796623}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1597912730
 GameObject:
   m_ObjectHideFlags: 0

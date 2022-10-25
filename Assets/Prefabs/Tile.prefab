@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3458047340487016476}
   - component: {fileID: 4062511559212973072}
   m_Layer: 0
-  m_Name: TileGrass
+  m_Name: Tile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -11,7 +11,7 @@ public class TileMap : MonoBehaviour {
 	public GameObject selectedUnit;
 	public TileType[] tileTypes;
 	public Unit[] units;
-
+	public GameObject tilePrefab;
 
 	// Private variables
 	private int[,] tiles;
@@ -125,9 +125,11 @@ public class TileMap : MonoBehaviour {
 		for(int x=0; x < mapSizeX; x++) {
 			for(int y=0; y < mapSizeX; y++) {
 				TileType tt = tileTypes[ tiles[x,y] ];
-				GameObject go = (GameObject)Instantiate( tt.tileVisualPrefab, new Vector3(x, 0, y), Quaternion.identity );
+				GameObject currentTile = (GameObject)Instantiate( tilePrefab, new Vector3(x, 0, y), Quaternion.identity );
 
-				ClickableTile ct = go.GetComponent<ClickableTile>();
+				currentTile.transform.GetComponent<Renderer>().material = tt.tileMaterial;
+
+				ClickableTile ct = currentTile.GetComponent<ClickableTile>();
 				ct.tileX = x;
 				ct.tileY = y;
 				ct.map = this;
@@ -135,7 +137,9 @@ public class TileMap : MonoBehaviour {
 		}
 	}
 
+	// Convert 2D tile (x, y) grid to 3D (x, 0, z) world coords
 	public Vector3 TileCoordToWorldCoord(int x, int y) {
+		// 0.5 unit offset so that the unit pathfinds to the middle of the square
 		return new Vector3(x, 0, y + 0.5f);
 	}
 

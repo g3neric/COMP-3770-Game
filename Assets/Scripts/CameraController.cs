@@ -46,18 +46,22 @@ public class CameraController : MonoBehaviour {
     private bool HasRightMouseDown;
     private Vector2 LastFrameMousePos;
 
+    private void SnapToUnit () {
+        ObjectCamTarget.transform.position = selectedObject.transform.position;
+    }
+
     void Start() {
         m_MainCamera = Camera.main;
-
+        
         // create empty game object cam target and add rigidbody
         ObjectCamTarget = new GameObject();
         ObjectCamTarget.AddComponent<Rigidbody>();
         ObjectCamTarget.name = "Cam Target";
         ObjectCamTarget.GetComponent<Rigidbody>().useGravity = false;
         ObjectCamTarget.GetComponent<Rigidbody>().drag = camTargetDrag;
-
         CamTrans = m_MainCamera.gameObject.GetComponent<Transform>();
         ObjectCamTargetRigidbody = ObjectCamTarget.GetComponent<Rigidbody>();
+        
     }
 
     void Update() {
@@ -106,7 +110,7 @@ public class CameraController : MonoBehaviour {
         }
 
         if (Input.GetKeyDown(KeyCode.Space)) {
-            ObjectCamTarget.transform.position = selectedObject.transform.position;
+            SnapToUnit();
         }
 
         if (Input.GetAxis("Mouse ScrollWheel") < 0f) {

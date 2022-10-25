@@ -9,8 +9,6 @@ public class ClickableTile : MonoBehaviour {
 	[HideInInspector] public int type;
 	[HideInInspector] public TileMap map;
 
-	private Color startcolor;
-
 	void OnMouseUp() {
 		if (!EventSystem.current.IsPointerOverGameObject()) {
 			map.GeneratePathTo(x, y);

@@ -8,8 +8,8 @@ public class Unit : MonoBehaviour {
 	// the world-space coordinates, because our map might be scaled
 	// or offset or something of that nature.  Also, during movement
 	// animations, we are going to be somewhere in between tiles.
-	public int tileX;
-	public int tileY;
+	[HideInInspector] public int tileX;
+	[HideInInspector] public int tileY;
 
 	public TileMap map;
 
@@ -19,6 +19,16 @@ public class Unit : MonoBehaviour {
 	// How far this unit can move in one turn. Note that some tiles cost extra.
 	int moveSpeed = 2;
 	float remainingMovement=2;
+
+	private float spawnX;
+	private float spawnY;
+
+	void Start() {
+		spawnX = Mathf.Floor(Random.Range(0, map.mapSizeX));
+		spawnY = Mathf.Floor(Random.Range(0, map.mapSizeY));
+		gameObject.transform.position = new Vector3(spawnX, 0, spawnY);
+    }
+
 
 	void Update() {
 		// Draw our debug line showing the pathfinding!

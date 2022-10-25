@@ -24,7 +24,6 @@ public class TileMap : MonoBehaviour {
 		selectedUnit.GetComponent<Unit>().tileX = (int)selectedUnit.transform.position.x;
 		selectedUnit.GetComponent<Unit>().tileY = (int)selectedUnit.transform.position.z;
 		selectedUnit.GetComponent<Unit>().map = this;
-
 		tileOutline = (GameObject)Instantiate(tileOutlinePrefab, new Vector3(-10f, 0.001f, -10f), Quaternion.identity);
 
 		GenerateMapData();
@@ -32,7 +31,8 @@ public class TileMap : MonoBehaviour {
 		GenerateMapVisual();
 	}
 
-	void GenerateMapData() {
+
+    void GenerateMapData() {
 		// Allocate our map tiles
 		tiles = new int[mapSizeX,mapSizeY];
 		
@@ -47,24 +47,38 @@ public class TileMap : MonoBehaviour {
 
 		or maybe even create a list of pre-made "chunks" and have it grab them from an array or smth, that way it'll always be playable Thanks 
 		*/
-
-		// i will create an algorithm for map generation after i overhaul this entire script
-		// but for now generating tiles completely randomly will do -tyler
 		
 		for(x=0; x < mapSizeX; x++) {
-			for(y=0; y < mapSizeX; y++) {
-				tiles[x, y] = Random.Range(0, 3);
+			for (y = 0; y < mapSizeX; y++) {
+				if (x == 0 || y == 0 || y == mapSizeY - 1 || x == mapSizeX - 1) {
+					tiles[x, y] = 0;
+				} else {
+					if (tiles[x-1, y] == 1 &&
+						tiles[x+1, y] == 1 &&
+						tiles[x, y-1] == 1 &&
+						tiles[x, y+1] == 1) {
+						tiles[x, y] = 1;
+                    } else {
+						int num = Random.Range(1, tileTypes.Length);
+						if (num == 1) {
+							int num2 = Random.Range(1, tileTypes.Length);
+							tiles[x, y] = num2;
+						} else {
+							tiles[x, y] = num;
+						}
+					}
+				}
 			}
 		}
 	}
 
 	public float CostToEnterTile(int sourceX, int sourceY, int targetX, int targetY) {
-
 		TileType tt = tileTypes[ tiles[targetX,targetY] ];
 
-		if(UnitCanEnterTile(targetX, targetY) == false)
+		if(UnitCanEnterTile(targetX, targetY) == false) {
 			return Mathf.Infinity;
-
+		}
+			
 		float cost = tt.movementCost;
 
 		if( sourceX!=targetX && sourceY!=targetY) {

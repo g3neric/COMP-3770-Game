@@ -16,7 +16,6 @@ public class TileMap : MonoBehaviour {
 	[Header("Misc")]
 	public GameObject tileOutlinePrefab;
 	public GameObject selectedUnit;
-	public GameObject tilePrefab;
 	[Space(25)]
 
 	[Space]
@@ -57,7 +56,7 @@ public class TileMap : MonoBehaviour {
 		for (int x = 0; x < numOfRandomlyGeneratedTiles; x++) {
 			sum += tileTypes[x].frequency;
         }
-		Assert.AreEqual(sum, 100, "Tile frequencies do not add up to 100%");
+		Assert.AreEqual(sum, 100, "Tile frequencies do not add up to 100%"); // Throw error if don't add up to 100
 
 		for (int x=0; x < mapSizeX; x++) {
 			for (int y = 0; y < mapSizeX; y++) {
@@ -65,11 +64,11 @@ public class TileMap : MonoBehaviour {
 				if (x == 0 || y == 0 || y == mapSizeY - 1 || x == mapSizeX - 1) {
 					tiles[x, y] = 3;
 				} else {
-					
-					if (tiles[x-1, y] == 1 &&
-						tiles[x+1, y] == 1 &&
-						tiles[x, y-1] == 1 &&
-						tiles[x, y+1] == 1) {
+					// If current tile is surrounded by unwalkable tiles, then make it mountain (for now)
+					if (!tileTypes[tiles[x - 1, y]].isWalkable &&
+						!tileTypes[tiles[x + 1, y]].isWalkable &&
+						!tileTypes[tiles[x, y - 1]].isWalkable &&
+						!tileTypes[tiles[x, y + 1]].isWalkable) {
 						tiles[x, y] = 1;
                     } else {
 						// Randomly generate number between 1 and 100
@@ -167,9 +166,7 @@ public class TileMap : MonoBehaviour {
 		for(int x=0; x < mapSizeX; x++) {
 			for(int y=0; y < mapSizeX; y++) {
 				TileType tt = tileTypes[ tiles[x,y] ];
-				GameObject currentTile = (GameObject)Instantiate(tilePrefab, new Vector3(x, 0f, y), Quaternion.identity);
-
-				currentTile.transform.GetComponent<Renderer>().material = tt.tileMaterial;
+				GameObject currentTile = (GameObject)Instantiate(tileTypes[tiles[x,y]].tilePrefab, new Vector3(x, 0f, y), Quaternion.identity);
 
 				ClickableTile ct = currentTile.GetComponent<ClickableTile>();
 				ct.x = x;

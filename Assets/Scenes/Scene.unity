@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.4511748, g: 0.48587897, b: 0.6698113, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: 85cf0b004bc4a654b9e501efcce47902, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: d4454f71d85928744be7771e2143dab7, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.67433286, g: 0.77783763, b: 0.78887975, a: 1}
+  m_IndirectSpecularColor: {r: 0.3134073, g: 0.3391749, b: 0.3817357, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -273,6 +273,7 @@ MonoBehaviour:
   shoreSize: 2
   oceanSize: 10
   tileOutlinePrefab: {fileID: 2760457026279230676, guid: 32cb9ae5fcfb837419d4fd66843cdaac, type: 3}
+  linePrefab: {fileID: 2376069853225440450, guid: 4f03582d3cedad943b8978041150335e, type: 3}
   selectedUnit: {fileID: 1001566837}
   numOfRandomlyGeneratedTiles: 3
   tileTypes:
@@ -302,6 +303,7 @@ MonoBehaviour:
     isWalkable: 1
     movementCost: 2
   units: []
+  createdLines: []
 --- !u!1 &574976828
 GameObject:
   m_ObjectHideFlags: 0
@@ -684,8 +686,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 907450981064da04fa37e6796b1c2dca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tileX: 0
-  tileY: 0
+  targetX: 0
+  targetY: 0
   map: {fileID: 359606190}
 --- !u!1001 &1224281084
 PrefabInstance:

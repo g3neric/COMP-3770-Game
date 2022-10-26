@@ -1,15 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using TMPro;
 
-public class Unit : MonoBehaviour {
+public class UnitPathfinding : MonoBehaviour {
 
-	// tileX and tileY represent the correct map-tile position
-	// for this piece.  Note that this doesn't necessarily mean
+	// Represents the correct map-tile position
+	// for this piece. Note that this doesn't necessarily mean
 	// the world-space coordinates, because our map might be scaled
 	// or offset or something of that nature.  Also, during movement
 	// animations, we are going to be somewhere in between tiles.
-	[HideInInspector] public int tileX;
-	[HideInInspector] public int tileY;
+	[HideInInspector] public int targetX;
+	[HideInInspector] public int targetY;
+
+	// UI
+	public TextMeshProUGUI movementLeft_Text;
 
 	public TileMap map;
 
@@ -17,67 +21,59 @@ public class Unit : MonoBehaviour {
 	public List<Node> currentPath = null;
 
 	// How far this unit can move in one turn. Note that some tiles cost extra.
-	int moveSpeed = 2;
-	float remainingMovement=2;
-
-	private float spawnX;
-	private float spawnY;
+	private int moveSpeed = 2;
+	private float remainingMovement = 0;
 
 	void Start() {
-		tileX = (int)Mathf.Floor(map.mapSizeX / 2);
-		tileY = (int)Mathf.Floor(map.mapSizeY / 2);
+		// Player spawns in middle of map
+		targetX = (int)Mathf.Floor(map.mapSizeX / 2);
+		targetY = (int)Mathf.Floor(map.mapSizeY / 2);
     }
 
-
 	void FixedUpdate() {
-		// Draw our debug line showing the pathfinding!
-		// NOTE: This won't appear in the actual game view.
+		// This will go in the player's own class later on
+		movementLeft_Text.text = "Movement left: " + remainingMovement;
+
 		if(currentPath != null) {
 			int currNode = 0;
 
-			while( currNode < currentPath.Count-1 ) {
-
-				Vector3 start = map.TileCoordToWorldCoord( currentPath[currNode].x, currentPath[currNode].y ) + 
-					new Vector3(0, 0, -0.5f) ;
-				Vector3 end   = map.TileCoordToWorldCoord( currentPath[currNode+1].x, currentPath[currNode+1].y )  + 
-					new Vector3(0, 0, -0.5f) ;
-
-				Debug.DrawLine(start, end, Color.red);
-
+			// Initialize (x, y) values of all nodes in currentPath using linked list
+			while( currNode < currentPath.Count - 1 ) {
+				Vector3 start = map.TileCoordToWorldCoord( currentPath[currNode].x, currentPath[currNode].y ) + new Vector3(0, 0, 0) ;
+				Vector3 end = map.TileCoordToWorldCoord( currentPath[currNode+1].x, currentPath[currNode+1].y ) + new Vector3(0, 0, 0) ;
+				
 				currNode++;
 			}
 		}
 
-		// Have we moved our visible piece close enough to the target tile that we can
-		// advance to the next step in our pathfinding?
-		if(Vector3.Distance(transform.position, map.TileCoordToWorldCoord( tileX, tileY )) < 0.1f) {
-			AdvancePathing();
-		}
-			
-
 		// Smoothly animate towards the correct map tile.
-		transform.position = Vector3.Lerp(transform.position, map.TileCoordToWorldCoord( tileX, tileY ), 5f * Time.fixedDeltaTime);
+		transform.position = Vector3.Lerp(transform.position, map.TileCoordToWorldCoord(targetX, targetY), 5f * Time.fixedDeltaTime);
 	}
 
 	// Advances our pathfinding progress by one tile.
-	void AdvancePathing() {
-		if(currentPath==null)
+	private void AdvancePathing() {
+		if(currentPath==null) {
 			return;
+		}
 
-		if(remainingMovement <= 0)
+		if(remainingMovement <= 0) {
 			return;
+		}
 
 		// Teleport us to our correct "current" position, in case we
 		// haven't finished the animation yet.
-		transform.position = map.TileCoordToWorldCoord( tileX, tileY );
+		transform.position = map.TileCoordToWorldCoord(targetX, targetY);
 
 		// Get cost from current tile to next tile
 		remainingMovement -= map.CostToEnterTile(currentPath[0].x, currentPath[0].y, currentPath[1].x, currentPath[1].y );
-		
+
 		// Move us to the next tile in the sequence
-		tileX = currentPath[1].x;
-		tileY = currentPath[1].y;
-		
+		targetX = currentPath[1].x;
+		targetY = currentPath[1].y;
+
+		// Remove the old animated line
+		Destroy(map.createdLines[0]);
+		map.createdLines.RemoveAt(0);
 		// Remove the old "current" tile from the pathfinding list
 		currentPath.RemoveAt(0);
 		

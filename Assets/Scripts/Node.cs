@@ -20,5 +20,4 @@ public class Node {
 			new Vector2(n.x, n.y)
 			);
 	}
-	
 }

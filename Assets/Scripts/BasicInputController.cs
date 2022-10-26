@@ -10,7 +10,7 @@ public class BasicInputController : MonoBehaviour {
     public GameObject unit;
     void Update() {
         if (Input.GetKeyDown("e")) {
-            unit.GetComponent<Unit>().NextTurn();
+            unit.GetComponent<UnitPathfinding>().NextTurn();
         }
     }
 }

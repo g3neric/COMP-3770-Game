@@ -17,7 +17,13 @@ public class TileMap : MonoBehaviour {
 
 	[Space]
 	[Header("Misc")]
+	// Tile outlines
 	public GameObject tileOutlinePrefab;
+	public GameObject tileHoverOutlinePrefab;
+	[HideInInspector] public GameObject tileOutline;
+	[HideInInspector] public GameObject tileHoverOutline;
+
+	public GameObject linePrefab;
 	public GameObject selectedUnit;
 	[Space(25)]
 
@@ -29,20 +35,27 @@ public class TileMap : MonoBehaviour {
 	[Space(25)]
 	[Header("Frequencies in Tile Types MUST add up to 100!")]
 	public TileType[] tileTypes;
-	public Unit[] units;
 
 	// Private variables
 	private int[,] tiles;
 	private Node[,] graph;
-	private GameObject tileOutline;
+	
+	// list containing all created animated pathfinding lines
+	public List<GameObject> createdLines;
 
 	void Start() {
 		// Setup the selectedUnit's variable
-		selectedUnit.GetComponent<Unit>().tileX = (int)selectedUnit.transform.position.x;
-		selectedUnit.GetComponent<Unit>().tileY = (int)selectedUnit.transform.position.z;
-		selectedUnit.GetComponent<Unit>().map = this;
-		// Place tileOutline off screen initialy
-		tileOutline = (GameObject)Instantiate(tileOutlinePrefab, new Vector3(-10f, 0.001f, -10f), Quaternion.identity);
+		selectedUnit.GetComponent<UnitPathfinding>().targetX = (int)selectedUnit.transform.position.x;
+		selectedUnit.GetComponent<UnitPathfinding>().targetY = (int)selectedUnit.transform.position.z;
+		selectedUnit.GetComponent<UnitPathfinding>().map = this;
+
+		// Instantiate tile outlines
+		// There's only two of these so we can just move it around the scene
+		tileOutline = (GameObject)Instantiate(tileOutlinePrefab, new Vector3(-100f, -100f, -100f), Quaternion.identity);
+		tileHoverOutline = (GameObject)Instantiate(tileHoverOutlinePrefab, new Vector3(-100f, -100f, -100f), Quaternion.identity);
+
+		// Initialize list
+		createdLines = new List<GameObject>();
 
 		GenerateMapData();
 		GeneratePathfindingGraph();
@@ -211,15 +224,44 @@ public class TileMap : MonoBehaviour {
 		return tileTypes[ tiles[x,y] ].isWalkable;
 	}
 
+	// Helper function to create animated line to end target
+	private GameObject CreateAnimatedLine(Vector3 start, Vector3 end, float delay) {
+		GameObject line = Instantiate(linePrefab, start, Quaternion.identity);
+		// Rotate towards next position in path
+		line.transform.LookAt(end);
+
+		// You have to access particle system properties through particlesystem.main for some reason
+		ParticleSystem ps = line.GetComponent<ParticleSystem>();
+		var main = ps.main;
+		main.startDelay = delay;
+		
+		if (start.x != end.x && start.z != end.z) {
+			// If the line is on an angle, then it is slightly longer
+			// Therefore, use pythagorean theorem to extend this line!
+			// I just hardcoded the results because we won't need to dynamically change them.
+			main.maxParticles = 16;
+			main.startLifetime = 0.35355f;
+
+		}
+		return line;
+	}
+
 	public void GeneratePathTo(int x, int y) {
 		// Clear out our unit's old path.
-		selectedUnit.GetComponent<Unit>().currentPath = null;
-		tileOutline.transform.position = TileCoordToWorldCoord(x, y) - new Vector3(0, 0, 0.5f);
+		selectedUnit.GetComponent<UnitPathfinding>().currentPath = null;
 
-		if( UnitCanEnterTile(x,y) == false ) {
-			// We probably clicked on a mountain or something, so just quit out.
+		if (UnitCanEnterTile(x,y) == false ) {
+			// We clicked on an unwalkable tile
+			for (int i = 0; i < createdLines.Count; i++) {
+				Destroy(createdLines[i]);
+			}
+			createdLines.Clear();
+			tileOutline.transform.position = new Vector3(-100f, -100f, -100f);
 			return;
 		}
+
+		// Move outline to new end target
+		tileOutline.transform.position = TileCoordToWorldCoord(x, y) - new Vector3(0, -0.01f, 0.5f);
 
 		Dictionary<Node, float> dist = new Dictionary<Node, float>();
 		Dictionary<Node, Node> prev = new Dictionary<Node, Node>();
@@ -228,8 +270,8 @@ public class TileMap : MonoBehaviour {
 		List<Node> unvisited = new List<Node>();
 		
 		Node source = graph[
-		                    selectedUnit.GetComponent<Unit>().tileX, 
-		                    selectedUnit.GetComponent<Unit>().tileY
+		                    selectedUnit.GetComponent<UnitPathfinding>().targetX, 
+		                    selectedUnit.GetComponent<UnitPathfinding>().targetY
 		                    ];
 		
 		Node target = graph[
@@ -240,10 +282,7 @@ public class TileMap : MonoBehaviour {
 		dist[source] = 0;
 		prev[source] = null;
 
-		// Initialize everything to have INFINITY distance, since
-		// we don't know any better right now. Also, it's possible
-		// that some nodes CAN'T be reached from the source,
-		// which would make INFINITY a reasonable value
+		// Initialize everything to have infinity distance
 		foreach(Node v in graph) {
 			if(v != source) {
 				dist[v] = Mathf.Infinity;
@@ -299,10 +338,25 @@ public class TileMap : MonoBehaviour {
 
 		// Right now, currentPath describes a route from our target to our source
 		// So we need to invert it!
-
 		currentPath.Reverse();
 
-		selectedUnit.GetComponent<Unit>().currentPath = currentPath;
-	}
+		// Update current path
+		selectedUnit.GetComponent<UnitPathfinding>().currentPath = currentPath;
 
+		// Destroy old line objects
+		for (int i = 0; i < createdLines.Count; i++) {
+			Destroy(createdLines[i]);
+        }
+		// Reset list of line objects
+		createdLines.Clear();
+
+		// Draw animated line to end destination
+		float startDelayCount = 0;
+		for (int i = 0; i < currentPath.Count - 1; i++) {
+			Vector3 start = new Vector3(currentPath[i].x, 0.05f, currentPath[i].y);
+			Vector3 end = new Vector3(currentPath[i + 1].x, 0.05f, currentPath[i + 1].y);
+			createdLines.Add(CreateAnimatedLine(start, end, startDelayCount));
+			startDelayCount += 0.25f;
+		}
+	}
 }

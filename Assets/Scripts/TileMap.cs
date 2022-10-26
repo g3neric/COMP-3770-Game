@@ -225,23 +225,40 @@ public class TileMap : MonoBehaviour {
 	}
 
 	// Helper function to create animated line to end target
-	private GameObject CreateAnimatedLine(Vector3 start, Vector3 end, float delay) {
+	private GameObject CreateAnimatedLine(Vector3 start, Vector3 end, float delay, bool last) {
 		GameObject line = Instantiate(linePrefab, start, Quaternion.identity);
 		// Rotate towards next position in path
 		line.transform.LookAt(end);
 
 		// You have to access particle system properties through particlesystem.main for some reason
-		ParticleSystem ps = line.GetComponent<ParticleSystem>();
+		ParticleSystem ps = line.transform.GetComponent<ParticleSystem>();
 		var main = ps.main;
 		main.startDelay = delay;
-		
-		if (start.x != end.x && start.z != end.z) {
-			// If the line is on an angle, then it is slightly longer
-			// Therefore, use pythagorean theorem to extend this line!
-			// I just hardcoded the results because we won't need to dynamically change them.
-			main.maxParticles = 16;
-			main.startLifetime = 0.35355f;
 
+		// If the line is on an angle, then it is slightly longer
+		if (start.x != end.x && start.z != end.z) {
+			// Therefore, use pythagorean theorem to extend this line!
+			// I just hardcoded the results they are constants 
+			main.maxParticles = 16;
+
+			if (last) {
+				main.startLifetime = 0.125f;
+			} else {
+				main.startLifetime = 0.25f;
+			}
+
+			line.transform.localScale = new Vector3(1.41421f, 0, 1.41421f);
+
+		}
+
+		// Last piece in the line; should be half as long
+		if (last) {
+			// Since the scale is halfed here...
+			line.transform.localScale /= 2;
+			// ...the particles will be twice as small, and go twice as slow
+			main.startLifetime = 0.125f;
+			main.startSpeed = 8;
+			main.startSize = 0.2f;
 		}
 		return line;
 	}
@@ -355,7 +372,11 @@ public class TileMap : MonoBehaviour {
 		for (int i = 0; i < currentPath.Count - 1; i++) {
 			Vector3 start = new Vector3(currentPath[i].x, 0.05f, currentPath[i].y);
 			Vector3 end = new Vector3(currentPath[i + 1].x, 0.05f, currentPath[i + 1].y);
-			createdLines.Add(CreateAnimatedLine(start, end, startDelayCount));
+			bool last = false;
+			if (i == currentPath.Count - 2) {
+				last = true;
+            }
+			createdLines.Add(CreateAnimatedLine(start, end, startDelayCount, last));
 			startDelayCount += 0.25f;
 		}
 	}

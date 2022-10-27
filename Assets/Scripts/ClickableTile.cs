@@ -17,6 +17,7 @@ public class ClickableTile : MonoBehaviour {
 		}
 	}
 
+	// Move hover outline to current tile
     void OnMouseEnter() {
 		if (!EventSystem.current.IsPointerOverGameObject() && !completed) {
 			map.tileHoverOutline.transform.position = transform.position + new Vector3(0, 0.01f, 0);
@@ -24,6 +25,7 @@ public class ClickableTile : MonoBehaviour {
 		}
     }
 
+	// Banish hover outline to the void
     void OnMouseExit() {
 		if (!EventSystem.current.IsPointerOverGameObject()) {
 			completed = false;

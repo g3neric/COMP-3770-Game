@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using TMPro;
+
 
 public class UnitPathfinding : MonoBehaviour {
 
@@ -12,9 +12,6 @@ public class UnitPathfinding : MonoBehaviour {
 	[HideInInspector] public int targetX;
 	[HideInInspector] public int targetY;
 
-	// UI
-	public TextMeshProUGUI movementLeft_Text;
-
 	public TileMap map;
 
 	// Our pathfinding info.  Null if we have no destination ordered.
@@ -23,18 +20,17 @@ public class UnitPathfinding : MonoBehaviour {
 	// How far this unit can move in one turn. Note that some tiles cost extra.
 	private int moveSpeed = 2;
 	private float remainingMovement = 0;
-
-	void Start() {
-		// Player spawns in middle of map
-		targetX = (int)Mathf.Floor(map.mapSizeX / 2);
-		targetY = (int)Mathf.Floor(map.mapSizeY / 2);
-    }
+	
+	public void SpawnPlayer(int x, int y) {
+		targetX = x; 
+		targetY = y;
+		transform.position = map.TileCoordToWorldCoord(targetX, targetY);
+	}
 
 	void FixedUpdate() {
-		// This will go in the player's own class later on
-		movementLeft_Text.text = "Movement left: " + remainingMovement;
-
-		if(currentPath != null) {
+		print(targetX + " " + targetY);
+		// Smoothly animate towards the correct map tile.
+		if (currentPath != null) {
 			int currNode = 0;
 
 			// Initialize (x, y) values of all nodes in currentPath using linked list
@@ -46,8 +42,7 @@ public class UnitPathfinding : MonoBehaviour {
 			}
 		}
 
-		// Smoothly animate towards the correct map tile.
-		transform.position = Vector3.Lerp(transform.position, map.TileCoordToWorldCoord(targetX, targetY), 5f * Time.fixedDeltaTime);
+		transform.position = Vector3.Lerp(transform.position, map.TileCoordToWorldCoord(targetX, targetY), 10f * Time.fixedDeltaTime);
 	}
 
 	// Advances our pathfinding progress by one tile.

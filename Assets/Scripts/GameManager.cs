@@ -4,42 +4,99 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour {
-	public GameObject unitPrefab; // unit model
 
+	// I KNOW THIS IS A LIL MESSY I'LL CLEAN IT UP LATER
+
+	[HideInInspector] public GameObject selectedUnit; // currently selected unit
+
+	[HideInInspector] public int turnCount = 1;
+
+	// References and prefabs
+	public GameObject characterModel;
+	public GameObject linePrefab;
+	public GameObject tileOutlinePrefab;
+	public GameObject tileHoverOutlinePrefab;
+	// scene object references
 	public Button button;
-
 	public GameObject Camera; // camera
+	public GameObject tileMapController; // can't reference just components so i have to reference the game object first >:(
+	[HideInInspector] public TileMap tileMap;
 
-	public GameObject tileMap;
-
-	[HideInInspector] public GameObject selectedObject; // currently selected object
+	// character class containing all the character's stats
+	[HideInInspector] public Character characterClass = new Character(); // player character
+	[HideInInspector] public List<Character> otherCharacters; // NPCs
 
 	// This is only temporarily a Start() function.
 	// Later on, this method will be called when a
 	// new game is started from the main menu.
-	void Awake() {
-		// Make this gameobject persistant throughout scenes
+	void Start() {
+		// initiate controller variables 
+		tileMap = tileMapController.GetComponent<TileMap>();
+		tileMap.gameManager = this;
+
+		// Make this game object persistant throughout scenes
 		DontDestroyOnLoad(gameObject);
 
-		// Create the unit
-		GameObject unit = Instantiate(unitPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity);
-		// Give the unit a pathfinding script and spawn it
-		UnitPathfinding unitPathfinding = unit.AddComponent<UnitPathfinding>();
-		selectedObject = unit;
-
 		// Initiate all the tile map stuff
-		tileMap.GetComponent<TileMap>().InitiateTileMap(unit);
+		tileMap.InitiateTileMap();
+
+		// Create and spawn the player's character
+		CreatePlayerCharacter();
+
+		// Temporary dev stuff:
+		characterClass.AP = 2;
+		characterClass.maxAP = 2;
 
 		// Initiate camera controller
-		Camera.GetComponent<CameraController>().selectedObject = this.selectedObject;
-
-		// Initiate button
-		button.GetComponent<Button>().onClick.AddListener(delegate { unitPathfinding.NextTurn(); });
+		Camera.GetComponent<CameraController>().selectedObject = selectedUnit;
 	}
 
-    void Update() {
-        if (selectedObject != tileMap.GetComponent<TileMap>().selectedUnit) {
-			// Disable pathfinding?
+	// I seperated this class for easy viewing
+	public void CreatePlayerCharacter() {
+		// Later on, when we get a menu, then "Character" below will be replaced 
+		// by the player's chosen class which is inherited from the Character class
+		characterClass.characterPrefab = characterModel; 
+
+		// Create the player's unit model
+		selectedUnit = Instantiate(characterClass.characterPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity);
+
+		// Give the player's character a pathfinding script
+		UnitPathfinding unitPathfinding = selectedUnit.AddComponent<UnitPathfinding>();
+		unitPathfinding.gameManager = this;
+		unitPathfinding.map = tileMap;
+
+		// Check if chosen position is walkable
+		int tempX = Mathf.FloorToInt(tileMap.mapSizeX / 2);
+		int tempY = Mathf.FloorToInt(tileMap.mapSizeY / 2);
+		while (!tileMap.tileTypes[tileMap.tiles[tempX, tempY]].isWalkable) {
+			// Keep moving spawn position until spawn is walkable
+			tempX += 1;
+			tempY += 1;
+		}
+		unitPathfinding.SpawnPlayer(tempX, tempY);
+
+		// Initiate next turn button
+		button.GetComponent<Button>().onClick.AddListener(delegate { FinishTurn(); });
+	}
+
+	// player ended their turn; on to the next
+	// ALWAYS reference this version of the method, as it calls all the others!
+	public void FinishTurn() {
+		// resolve the player's actions first
+		if (characterClass.AP > 0) {
+			selectedUnit.GetComponent<UnitPathfinding>().TakeMovement();
+		}
+		characterClass.FinishTurn(); // update character stats
+
+		// resolve NPC actions
+		for (int i = 0; i < otherCharacters.Count; i++) {
+			// complete NPC actions here
         }
+		turnCount++;
     }
+	void Update() {
+		if (Input.GetKeyDown("e")) {
+			FinishTurn();
+		}
+	}
 }

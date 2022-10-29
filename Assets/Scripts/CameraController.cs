@@ -15,7 +15,7 @@ public class CameraController : MonoBehaviour {
     public float camTargetDrag; // affects how slide-y the camera feels - when you let go how much does it move
 
     // the selected object
-    public GameObject selectedObject;
+    [HideInInspector] public GameObject selectedObject;
 
     private GameObject ObjectCamTarget;
     private Rigidbody ObjectCamTargetRigidbody;
@@ -25,10 +25,6 @@ public class CameraController : MonoBehaviour {
 
     // camera rotation around CamTargetTrans
     private float CamRotation;
-
-    // velocities
-    private float xTargetVelocity;
-    private float zTargetVelocity;
 
     // zoom
     private float zoomLevel;

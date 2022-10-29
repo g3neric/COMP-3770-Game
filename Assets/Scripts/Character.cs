@@ -1,30 +1,36 @@
+using UnityEngine;
+[System.Serializable]
+
 // All player classes and enemies will be 
 // inherited from this Character base class
 public class Character {
-    // base stats - all units will differ
+    // character model
+    public GameObject characterPrefab;
+
+    // base stats - all classes will differ
     // health
-    public int HP;
-    public int maxHP;
-    
+    [HideInInspector] public int HP;
+    [HideInInspector] public int maxHP;
+
     // action points
-    public int AP;
-    public int maxAP;
+    [HideInInspector] public int AP;
+    [HideInInspector] public int maxAP;
 
     // other base stats
-    public int range;
-    public string name;
-    public float luckMultiplier;
+    [HideInInspector] public int range;
+    [HideInInspector] public string name;
+    [HideInInspector] public float luckMultiplier;
 
     // variable stats - all units start with 0
-    public int gold;
-    public int killCount;
+    [HideInInspector] public int gold;
+    [HideInInspector] public int killCount;
 
     public Character() {
         this.killCount = 0;
         this.gold = 0;
     }
 
-    public void EndTurn() {
+    public void FinishTurn() {
         if (this.HP > this.maxHP) {
             this.HP = this.maxHP;
         } else if (this.HP <= 0) {

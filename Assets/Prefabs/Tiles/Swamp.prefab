@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 4518437496574332041}
   - component: {fileID: 7671986785949401944}
   - component: {fileID: 7032733556861446998}
-  - component: {fileID: 3458047340487016476}
   - component: {fileID: 4062511559212973072}
   m_Layer: 0
   m_Name: Swamp
@@ -85,22 +84,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &3458047340487016476
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1561500678141819050}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eee610a8e58257849be4cf03baa12675, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  x: 0
-  y: 0
-  type: 0
-  map: {fileID: 2490276706987498969, guid: 2ce07566a427fa645b805c00df7bb6f7, type: 3}
 --- !u!65 &4062511559212973072
 BoxCollider:
   m_ObjectHideFlags: 0

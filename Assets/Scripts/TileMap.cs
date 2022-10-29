@@ -4,10 +4,10 @@ using System.Linq;
 using UnityEngine.Assertions;
 
 public class TileMap : MonoBehaviour {
-	// Public variables
-	[HideInInspector] public GameObject selectedUnit;
-	[Space(25)]
+	// link to game manager
+	[HideInInspector] public GameManager gameManager;
 
+	// Public variables
 	[Space]
 	[Header("Map settings")]
 	[Range(10, 100)] public int mapSizeX;
@@ -27,44 +27,18 @@ public class TileMap : MonoBehaviour {
 
 	[Space]
 	[Header("Prefabs")]
-	// Tile outlines
-	public GameObject linePrefab;
-	public GameObject tileOutlinePrefab;
-	public GameObject tileHoverOutlinePrefab;
-	[HideInInspector] public GameObject tileOutline;
-	[HideInInspector] public GameObject tileHoverOutline;
+
+	// List of tile types, represented by integers
+	public int[,] tiles;
 
 	// Private variables
-	private int[,] tiles;
 	private Node[,] graph;
-
-	// list containing all created animated pathfinding lines
-	[HideInInspector] public List<GameObject> createdLines;
-
-	public void InitiateTileMap(GameObject unit) {
-		// Setup the selectedUnit's variable
-		selectedUnit = unit;
-		UnitPathfinding unitPathfinding = unit.GetComponent<UnitPathfinding>();
-		unitPathfinding.targetX = (int)selectedUnit.transform.position.x;
-		unitPathfinding.targetY = (int)selectedUnit.transform.position.z;
-		unitPathfinding.map = this;
-		// Spawn player
-		unitPathfinding.SpawnPlayer(Mathf.FloorToInt(mapSizeX / 2),
-									Mathf.FloorToInt(mapSizeY / 2));
-
+	
+	public void InitiateTileMap() {
 		// Initiate the map and pathfinding
 		GenerateMapData(); // determine which tiles go where
 		GeneratePathfindingGraph(); // pathfinding
 		GenerateMapVisual(); // draw map
-
-		// Instantiate tile outlines
-		// There's only two of these so we can just move it around the scene
-		tileOutline = (GameObject)Instantiate(tileOutlinePrefab, new Vector3(-100f, -100f, -100f), Quaternion.identity);
-		tileHoverOutline = (GameObject)Instantiate(tileHoverOutlinePrefab, new Vector3(-100f, -100f, -100f), Quaternion.identity);
-
-		// Initialize list
-		createdLines = new List<GameObject>();
-
 	}
 
 	// Allocate our map tiles
@@ -136,20 +110,16 @@ public class TileMap : MonoBehaviour {
 		}
 	}
 
-	public float CostToEnterTile(int sourceX, int sourceY, int targetX, int targetY) {
+	public int CostToEnterTile(int targetX, int targetY) {
 		TileType tt = tileTypes[ tiles[targetX,targetY] ];
 
-		if(UnitCanEnterTile(targetX, targetY) == false) {
-			return Mathf.Infinity;
+		if (UnitCanEnterTile(targetX, targetY) == false) {
+			// unit cannot enter tile, so return big unreachable number
+			return int.MaxValue;
 		}
-			
-		float cost = tt.movementCost;
 
-		if( sourceX!=targetX && sourceY!=targetY) {
-			// We are moving diagonally!  Fudge the cost for tie-breaking
-			// Purely a cosmetic thing!
-			cost += 0.001f;
-		}
+		int cost = tt.movementCost;
+
 		return cost;
 	}
 
@@ -207,10 +177,11 @@ public class TileMap : MonoBehaviour {
 				TileType tt = tileTypes[ tiles[x,y] ];
 				GameObject currentTile = Instantiate(tileTypes[tiles[x,y]].tilePrefab, new Vector3(x, 0f, y), Quaternion.identity);
 
-				ClickableTile ct = currentTile.GetComponent<ClickableTile>();
+				ClickableTile ct = currentTile.AddComponent<ClickableTile>();
+				ct.map = this;
+				ct.gameManager = gameManager;
 				ct.x = x;
 				ct.y = y;
-				ct.map = this;
 			}
 		}
 	}
@@ -222,96 +193,34 @@ public class TileMap : MonoBehaviour {
 	}
 
 	public bool UnitCanEnterTile(int x, int y) {
-		// We could test the unit's walk/hover/fly type against various
-		// terrain flags here to see if they are allowed to enter the tile.
-
+		// check if tiletype is walkable
 		return tileTypes[ tiles[x,y] ].isWalkable;
 	}
 
-	// Helper function to create animated line to end target
-	private GameObject CreateAnimatedLine(Vector3 start, Vector3 end, float delay, bool last) {
-		// Create a line and its particle system effects
-		GameObject line = Instantiate(linePrefab, start, Quaternion.identity);
-
-		// Rotate towards next position in path
-		line.transform.LookAt(end);
-
-		// You have to access particle system properties through particlesystem.main for some reason
-		ParticleSystem ps = line.transform.GetComponent<ParticleSystem>();
-		var main = ps.main;
-		main.startDelay = delay;
-
-		// If the line is on an angle, then it is slightly longer
-		if (start.x != end.x && start.z != end.z) {
-			// Therefore, use pythagorean theorem to extend this line!
-			// I just hardcoded the results since they are constants 
-			main.maxParticles = 16;
-
-			// Fudging the numbers >:)
-			if (last) {
-				main.startLifetime = 0.125f;
-			} else {
-				main.startLifetime = 0.25f;
-			}
-
-			// Change the size of the actual line object
-			line.transform.localScale = new Vector3(1.41421f, 0, 1.41421f);
-		}
-
-		// Last piece in the line; should be half as long
-		if (last) {
-			// Since the scale is halfed here...
-			line.transform.localScale /= 2;
-			// ...the particles will be half the size, and go half the speed.
-			// So let's fix that:
-			main.startLifetime = 0.125f;
-			main.startSpeed = 8;
-			main.startSize = 0.2f;
-		}
-		return line; // will be added to a list in the calling function
-	}
-
-	public void GeneratePathTo(int x, int y) {
-		// Clear out our unit's old path.
-		selectedUnit.GetComponent<UnitPathfinding>().currentPath = null;
-
-		// Destroy old pathfinding liens
-		for (int i = 0; i < createdLines.Count; i++) {
-			Destroy(createdLines[i]);
-		}
-		createdLines.Clear();
-
-		if (UnitCanEnterTile(x,y) == false ) {
-			// We clicked on an unwalkable tile
-			tileOutline.transform.position = new Vector3(-100f, -100f, -100f);
-			return;
-		}
-
-		// Move outline to new end target
-		tileOutline.transform.position = TileCoordToWorldCoord(x, y) - new Vector3(0, -0.01f, 0);
-
+	// Base function to generate path from [sourceX, sourceY] to [destX, destY]
+	public List<Node> GeneratePath (int sourceX, int sourceY, int destX, int destY) {
 		Dictionary<Node, float> dist = new Dictionary<Node, float>();
 		Dictionary<Node, Node> prev = new Dictionary<Node, Node>();
 
 		// Setup the "Q" -- the list of nodes we haven't checked yet.
 		List<Node> unvisited = new List<Node>();
-		
+
 		Node source = graph[
-		                    selectedUnit.GetComponent<UnitPathfinding>().targetX, 
-		                    selectedUnit.GetComponent<UnitPathfinding>().targetY
-		                    ];
-		
+							sourceX,
+							sourceY
+							];
+
 		Node target = graph[
-		                    x, 
-		                    y
-		                    ];
-		
+							destX,
+							destY
+							];
+
 		dist[source] = 0;
 		prev[source] = null;
 
 		// Initialize everything to have infinity distance
-		foreach(Node v in graph) {
-			if(v != source) {
+		foreach (Node v in graph) {
+			if (v != source) {
 				dist[v] = Mathf.Infinity;
 				prev[v] = null;
 			}
@@ -319,26 +228,26 @@ public class TileMap : MonoBehaviour {
 			unvisited.Add(v);
 		}
 
-		while(unvisited.Count > 0) {
+		while (unvisited.Count > 0) {
 			// "u" is going to be the unvisited node with the smallest distance.
 			Node u = null;
 
-			foreach(Node possibleU in unvisited) {
-				if(u == null || dist[possibleU] < dist[u]) {
+			foreach (Node possibleU in unvisited) {
+				if (u == null || dist[possibleU] < dist[u]) {
 					u = possibleU;
 				}
 			}
 
-			if(u == target) {
-				break;	// Exit the while loop!
+			if (u == target) {
+				break;  // Exit the while loop!
 			}
 
 			unvisited.Remove(u);
 
-			foreach(Node v in u.neighbours) {
+			foreach (Node v in u.neighbours) {
 				//float alt = dist[u] + u.DistanceTo(v);
-				float alt = dist[u] + CostToEnterTile(u.x, u.y, v.x, v.y);
-				if( alt < dist[v] ) {
+				float alt = dist[u] + CostToEnterTile(v.x, v.y);
+				if (alt < dist[v]) {
 					dist[v] = alt;
 					prev[v] = u;
 				}
@@ -348,9 +257,9 @@ public class TileMap : MonoBehaviour {
 		// If we get there, then either we found the shortest route
 		// to our target, or there is no route at ALL to our target.
 
-		if(prev[target] == null) {
+		if (prev[target] == null) {
 			// No route between our target and the source
-			return;
+			return null;
 		}
 
 		List<Node> currentPath = new List<Node>();
@@ -358,7 +267,7 @@ public class TileMap : MonoBehaviour {
 		Node curr = target;
 
 		// Step through the "prev" chain and add it to our path
-		while(curr != null) {
+		while (curr != null) {
 			currentPath.Add(curr);
 			curr = prev[curr];
 		}
@@ -367,20 +276,14 @@ public class TileMap : MonoBehaviour {
 		// So we need to invert it!
 		currentPath.Reverse();
 
-		// Update current path
-		selectedUnit.GetComponent<UnitPathfinding>().currentPath = currentPath;
+		return currentPath;
+	}
 
-		// Draw animated line to end destination
-		float startDelayCount = 0;
-		for (int i = 0; i < currentPath.Count - 1; i++) {
-			Vector3 start = new Vector3(currentPath[i].x, 0.05f, currentPath[i].y);
-			Vector3 end = new Vector3(currentPath[i + 1].x, 0.05f, currentPath[i + 1].y);
-			bool last = false;
-			if (i == currentPath.Count - 2) {
-				last = true;
-            }
-			createdLines.Add(CreateAnimatedLine(start, end, startDelayCount, last));
-			startDelayCount += 0.25f;
-		}
+	// Passthrough helper function
+	public void GeneratePathTo(int sourceX, int sourceY, int destX, int destY) {
+		// Clear out our unit's old path.
+		gameManager.selectedUnit.GetComponent<UnitPathfinding>().currentPath = null;
+		// Update current path
+		gameManager.selectedUnit.GetComponent<UnitPathfinding>().currentPath = GeneratePath(sourceX, sourceY, destX, destY);
 	}
 }

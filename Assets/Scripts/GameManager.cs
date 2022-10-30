@@ -11,12 +11,20 @@ public class GameManager : MonoBehaviour {
 
 	[HideInInspector] public int turnCount = 1;
 
-	// References and prefabs
+	public enum GraphicsSetting { Low, Medium, High };
+
+	// Prefabs
+	[Space]
+	[Header("Prefabs")]
+	[Space]
 	public GameObject characterModel;
 	public GameObject linePrefab;
 	public GameObject tileOutlinePrefab;
 	public GameObject tileHoverOutlinePrefab;
 	// scene object references
+	[Space]
+	[Header("Scene object references")]
+	[Space]
 	public Button button;
 	public GameObject Camera; // camera
 	public GameObject tileMapController; // can't reference just components so i have to reference the game object first >:(

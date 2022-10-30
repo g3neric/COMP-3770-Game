@@ -13,15 +13,16 @@ public class TileMap : MonoBehaviour {
 	[Range(10, 100)] public int mapSize;
 	public int shoreSize;
 	public float shoreVariation;
+	[Range(5, 20)] public float biomeSize;
 	[Range(1, 100)] public int oceanSize;
-	[Space(25)]
+	[Space()]
 
 	[Space]
 	[Header("Up to index (numOfRandomlyGeneratedTiles) - 1 will")]
 	[Header("be randomly generated. Every tile after that will")]
 	[Header("not be included in the random tile generation.")]
 	public int numOfRandomlyGeneratedTiles;
-	[Space(25)]
+	[Space()]
 	[Header("Frequencies in Tile Types MUST add up to 100!")]
 	public TileType[] tileTypes;
 
@@ -36,13 +37,13 @@ public class TileMap : MonoBehaviour {
 	
 	public void InitiateTileMap() {
 		// Initiate the map and pathfinding
-		GenerateMapData(); // determine which tiles go where
+		GenerateTileMap(); // generate map
 		fullMapGraph = GeneratePathfindingGraph(mapSize, 0); // pathfinding
-		GenerateMapVisual(); // draw map
 	}
 
 	// Allocate our map tiles
-	public void GenerateMapData() {
+	// I combined GenerateMapVisual() into this function
+	public void GenerateTileMap() {
 		tiles = new int[mapSize, mapSize];
 
 		// Test if you messed up the frequency attributes in the editor
@@ -71,6 +72,11 @@ public class TileMap : MonoBehaviour {
 			}
 		}
 
+		// Since perlin noise will generate the same values every time, we have to change the
+		// part of the perlin noise map that we use each time. In order to do this we offset
+		// the x and y values by different (random) amounts each time we generate our tilemap
+		float mapSeed = Random.Range(1, 100);
+
 		// iterate over every tile
 		for (int x = 0; x < mapSize; x++) {
 			for (int y = 0; y < mapSize; y++) {
@@ -95,10 +101,11 @@ public class TileMap : MonoBehaviour {
 					// Generate sand tile
 					tiles[x, y] = sandType;
 				} else {
-					// Generate other tile according to frequencies
+					// Generate remaining tiles
 
-					// Randomly generate number between 1 and 100
-					float num = Mathf.Ceil(Random.Range(0, 100));
+					// Generate number between 0 and 100 using perlin noise
+					float num = 100 * Mathf.PerlinNoise( mapSeed + ((float)biomeSize * x / mapSize), mapSeed + ((float)biomeSize * y / mapSize));
+					print("Perlin number: " + num);
 
 					// Initialize end points
 					int[] endPoints = new int[numOfRandomlyGeneratedTiles];
@@ -148,6 +155,20 @@ public class TileMap : MonoBehaviour {
 				}
 			}
 		}
+
+		// Generate map visual
+		for (int x = 0; x < mapSize; x++) {
+			for (int y = 0; y < mapSize; y++) {
+				TileType tt = tileTypes[tiles[x, y]];
+				GameObject currentTile = Instantiate(tileTypes[tiles[x, y]].tilePrefab, new Vector3(x, 0f, y), Quaternion.identity);
+
+				ClickableTile ct = currentTile.AddComponent<ClickableTile>();
+				ct.map = this;
+				ct.gameManager = gameManager;
+				ct.x = x;
+				ct.y = y;
+			}
+		}
 	}
 
 	public bool UnitCanEnterTile(int x, int y) {
@@ -159,8 +180,8 @@ public class TileMap : MonoBehaviour {
 		TileType tt = tileTypes[ tiles[targetX,targetY] ];
 
 		if (UnitCanEnterTile(targetX, targetY) == false) {
-			// unit cannot enter tile, so return big unreachable number
-			return int.MaxValue;
+			// unit cannot enter tile, so return big number
+			return mapSize;
 		}
 
 		int cost = tt.movementCost;
@@ -217,29 +238,11 @@ public class TileMap : MonoBehaviour {
 		return graph;
 	}
 
-	// Instantiate the tiles
-	void GenerateMapVisual() {
-		for(int x=0; x < mapSize; x++) {
-			for(int y=0; y < mapSize; y++) {
-				TileType tt = tileTypes[ tiles[x,y] ];
-				GameObject currentTile = Instantiate(tileTypes[tiles[x,y]].tilePrefab, new Vector3(x, 0f, y), Quaternion.identity);
-
-				ClickableTile ct = currentTile.AddComponent<ClickableTile>();
-				ct.map = this;
-				ct.gameManager = gameManager;
-				ct.x = x;
-				ct.y = y;
-			}
-		}
-	}
-
 	// Convert 2D tile (x, y) grid to 3D (x, 0, z) world coords
 	public Vector3 TileCoordToWorldCoord(int x, int y) {
 		// 0.5 unit offset so that the unit pathfinds to the middle of the square
 		return new Vector3(x, 0f, y);
 	}
-
-	
 
 	// Base function to generate path from [sourceX, sourceY] to [destX, destY]
 	public List<Node> DijkstraPath (int sourceX, int sourceY, int destX, int destY, Node[,] graph) {

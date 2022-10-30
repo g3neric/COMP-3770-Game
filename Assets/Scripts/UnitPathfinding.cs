@@ -34,7 +34,6 @@ public class UnitPathfinding : MonoBehaviour {
 		createdLines = new List<GameObject>();
 	}
 	void FixedUpdate() {
-		print(targetX + " " + targetY);
 		// Smoothly animate towards the correct map tile.
 		if (currentPath != null) {
 			int currNode = 0;
@@ -55,18 +54,33 @@ public class UnitPathfinding : MonoBehaviour {
 		targetX = x; 
 		targetY = y;
 		transform.position = map.TileCoordToWorldCoord(targetX, targetY);
-		DrawPossibleMovements();
+		
 	}
 
 	private void DrawPossibleMovements() {
 		// I'm trying to draw the possible movements you can take on the screen
 		// This is a WIP
-		for (int x = 0; x < map.mapSizeX; x++) {
-			for (int y = 0; y < map.mapSizeY; y++) {
-				//if (map.GeneratePath(targetX, targetY, x, y) != null) {
-				//	print("can move to x: " + x + " y: " + y);
-                //}
-			}
+
+		// "range" is the side length of the character's total range square
+		// The character can move maxAP units to either side, and plus 1 for the tile they're standing on
+		int range = (gameManager.characterClass.maxAP * 2) + 1;
+
+		// Generate a graph of size maxAP * 2 + 1 by maxAP * 2 + 1
+		// This will be the furthest the character could conceivably move on an open map with no obstacles
+		Node[,] graph = map.GeneratePathfindingGraph(range, targetX - gameManager.characterClass.maxAP);
+
+		// Test each tile in range of the player to see if they can path there
+		for (int x = 0; x < range; x++) {
+			for (int y = 0; y < range; y++) {
+				if (map.DijkstraPath(gameManager.characterClass.maxAP, gameManager.characterClass.maxAP, x, y, graph) != null) {
+					// There is a path to the specified tile
+					// Create visual on this tile
+					print("x: " + x + "   y: " + y);
+                } else {
+					// No path to specified tile
+					print("NULL! x: " + x + "   y: " + y);
+				}
+            }
         }
     }
 

@@ -859,10 +859,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameManager: {fileID: 0}
-  mapSizeX: 50
-  mapSizeY: 50
+  mapSize: 40
   shoreSize: 2
-  oceanSize: 15
+  shoreVariation: 1
+  oceanSize: 5
   numOfRandomlyGeneratedTiles: 3
   tileTypes:
   - name: TileMountain

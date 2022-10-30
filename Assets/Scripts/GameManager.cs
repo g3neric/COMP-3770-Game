@@ -66,8 +66,8 @@ public class GameManager : MonoBehaviour {
 		unitPathfinding.map = tileMap;
 
 		// Check if chosen position is walkable
-		int tempX = Mathf.FloorToInt(tileMap.mapSizeX / 2);
-		int tempY = Mathf.FloorToInt(tileMap.mapSizeY / 2);
+		int tempX = Mathf.FloorToInt(tileMap.mapSize / 2);
+		int tempY = Mathf.FloorToInt(tileMap.mapSize / 2);
 		while (!tileMap.tileTypes[tileMap.tiles[tempX, tempY]].isWalkable) {
 			// Keep moving spawn position until spawn is walkable
 			tempX += 1;

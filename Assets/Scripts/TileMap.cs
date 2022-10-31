@@ -7,14 +7,14 @@ public class TileMap : MonoBehaviour {
 	// link to game manager
 	[HideInInspector] public GameManager gameManager;
 
-	// Public variables
+	// Map generation variables
 	[Space]
 	[Header("Map settings")]
-	[Range(10, 100)] public int mapSize;
+	[Range(20, 100)] public int mapSize;
 	public int shoreSize;
 	public float shoreVariation;
 	[Range(5, 20)] public float biomeSize;
-	[Range(1, 100)] public int oceanSize;
+	[Range(10, 100)] public int oceanSize;
 	[Space()]
 
 	[Space]
@@ -37,13 +37,13 @@ public class TileMap : MonoBehaviour {
 	
 	public void InitiateTileMap() {
 		// Initiate the map and pathfinding
-		GenerateTileMap(); // generate map
+		GenerateMap(); // generate map
 		fullMapGraph = GeneratePathfindingGraph(mapSize, 0); // pathfinding
 	}
 
 	// Allocate our map tiles
-	// I combined GenerateMapVisual() into this function
-	public void GenerateTileMap() {
+	// I combined GenerateMapVisual() into this function becuz it didnt need to be seperate
+	public void GenerateMap() {
 		tiles = new int[mapSize, mapSize];
 
 		// Test if you messed up the frequency attributes in the editor
@@ -55,7 +55,7 @@ public class TileMap : MonoBehaviour {
 		// Throw error if frequencies don't add up to 100
 		Assert.AreEqual(sum, 100, "Tile frequencies do not add up to 100%");
 
-		// Throw error is ocean is bigger than map
+		// Throw error if ocean is bigger than map
 		Assert.IsTrue(oceanSize < Mathf.Min(mapSize, mapSize), "Ocean is bigger than the map");
 
 		// Look for which tile is sand and water because they can be accidentally moved around in editor
@@ -103,9 +103,8 @@ public class TileMap : MonoBehaviour {
 				} else {
 					// Generate remaining tiles
 
-					// Generate number between 0 and 100 using perlin noise
+					// Generate number using perlin noise
 					float num = 100 * Mathf.PerlinNoise( mapSeed + ((float)biomeSize * x / mapSize), mapSeed + ((float)biomeSize * y / mapSize));
-					print("Perlin number: " + num);
 
 					// Initialize end points
 					int[] endPoints = new int[numOfRandomlyGeneratedTiles];
@@ -140,7 +139,6 @@ public class TileMap : MonoBehaviour {
 					!tileTypes[tiles[x + 1, y]].isWalkable &&
 					!tileTypes[tiles[x, y - 1]].isWalkable &&
 					!tileTypes[tiles[x, y + 1]].isWalkable) {
-						
 						tiles[x, y] = mountainType;
 					}
 
@@ -156,12 +154,19 @@ public class TileMap : MonoBehaviour {
 			}
 		}
 
-		// Generate map visual
+		// Generate map visuals
 		for (int x = 0; x < mapSize; x++) {
 			for (int y = 0; y < mapSize; y++) {
 				TileType tt = tileTypes[tiles[x, y]];
 				GameObject currentTile = Instantiate(tileTypes[tiles[x, y]].tilePrefab, new Vector3(x, 0f, y), Quaternion.identity);
 
+				// Randomly rotate tile a little so there's not as much reptition
+				if (currentTile.name != "water_tile") {
+					// but don't rotate water because that looks weird
+					int phase = Mathf.RoundToInt(Random.Range(1, 3));
+					currentTile.transform.Rotate(0f, 90f * phase, 0f, Space.World);
+				}
+				
 				ClickableTile ct = currentTile.AddComponent<ClickableTile>();
 				ct.map = this;
 				ct.gameManager = gameManager;

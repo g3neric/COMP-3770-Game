@@ -11,8 +11,6 @@ public class GameManager : MonoBehaviour {
 
 	[HideInInspector] public int turnCount = 1;
 
-	public enum GraphicsSetting { Low, Medium, High };
-
 	// Prefabs
 	[Space]
 	[Header("Prefabs")]
@@ -51,12 +49,12 @@ public class GameManager : MonoBehaviour {
 		// Create and spawn the player's character
 		CreatePlayerCharacter();
 
-		// Temporary dev stuff:
-		characterClass.AP = 2;
-		characterClass.maxAP = 2;
+		// Temporary dev stuff
+		// These will be controlled by the class the player chooses later on
+		characterClass.AP = 3;
+		characterClass.maxAP = 3;
 
-		// Initiate camera controller
-		Camera.GetComponent<CameraController>().selectedObject = selectedUnit;
+		
 	}
 
 	// I seperated this class for easy viewing

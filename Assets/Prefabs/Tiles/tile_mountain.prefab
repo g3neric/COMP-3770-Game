@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7032733556861446998}
   - component: {fileID: 4062511559212973072}
   m_Layer: 0
-  m_Name: Swamp
+  m_Name: tile_mountain
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -62,7 +62,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e172110744277e743a1089a5ddf2a75b, type: 2}
+  - {fileID: 2100000, guid: 51df02193c27d174fb46143210cf65cd, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

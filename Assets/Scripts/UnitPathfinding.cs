@@ -116,8 +116,6 @@ public class UnitPathfinding : MonoBehaviour {
 			// destination -- and we are standing on it!
 			// So let's just clear our pathfinding info.
 			currentPath = null;
-		} else {
-			DrawPossibleMovements();
 		}
 	}
 

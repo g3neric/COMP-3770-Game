@@ -19,7 +19,7 @@ public class GameManager : MonoBehaviour {
 	public GameObject linePrefab;
 	public GameObject tileOutlinePrefab;
 	public GameObject tileHoverOutlinePrefab;
-	public GameObject tilePossibleMovementOutlinePrefab;
+	public GameObject[] tilePossibleMovementOutlinePrefabs;
 	// scene object references
 	[Space]
 	[Header("Scene object references")]
@@ -52,10 +52,9 @@ public class GameManager : MonoBehaviour {
 
 		// Temporary dev stuff
 		// These will be controlled by the class the player chooses later on
-		characterClass.AP = 3;
-		characterClass.maxAP = 3;
-
-		
+		characterClass.AP = 6;
+		characterClass.maxAP = 6;
+		characterClass.viewRange = 15;
 	}
 
 	// I seperated this class for easy viewing

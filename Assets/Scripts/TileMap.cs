@@ -31,6 +31,7 @@ public class TileMap : MonoBehaviour {
 
 	// List of tile types, represented by integers
 	public int[,] tiles;
+	public GameObject[,] tilesObjects;
 
 	// Private variables
 	[HideInInspector] public Node[,] fullMapGraph;
@@ -44,7 +45,8 @@ public class TileMap : MonoBehaviour {
 	// Allocate our map tiles
 	// I combined GenerateMapVisual() into this function becuz it didnt need to be seperate
 	public void GenerateMap() {
-		tiles = new int[mapSize, mapSize];
+		tiles = new int[mapSize, mapSize]; // all of the tile types
+		tilesObjects = new GameObject[mapSize, mapSize]; // all gameobjects of tiles
 
 		// Test if you messed up the frequency attributes in the editor
 		// Must add up to 100%.
@@ -159,6 +161,7 @@ public class TileMap : MonoBehaviour {
 			for (int y = 0; y < mapSize; y++) {
 				TileType tt = tileTypes[tiles[x, y]];
 				GameObject currentTile = Instantiate(tileTypes[tiles[x, y]].tilePrefab, new Vector3(x, 0f, y), Quaternion.identity);
+				tilesObjects[x, y] = currentTile;
 
 				// Randomly rotate tile a little so there's not as much reptition
 				if (currentTile.name != "water_tile") {
@@ -274,6 +277,7 @@ public class TileMap : MonoBehaviour {
 				for (int i = 0; i < current.neighbours.Count; i++) {
 					Node currentNeighbor = current.neighbours[i];
 					int distance = current.distance + tileTypes[tiles[currentNeighbor.x, currentNeighbor.y]].movementCost;
+					
 					// Check if neighbour is walkable, in range and hasn't been visited yet
 					if (tileTypes[tiles[currentNeighbor.x, currentNeighbor.y]].isWalkable &&
 						distance <= maxDistance &&

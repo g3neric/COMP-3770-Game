@@ -14,11 +14,12 @@ public class UnitPathfinding : MonoBehaviour {
 
 	public TileMap map;
 
-	// All the visual tile line and outline stuff
+	// All the visual and outline stuff
 	[HideInInspector] public List<GameObject> createdLines; // list containing all created animated pathfinding lines
 	[HideInInspector] public GameObject tileOutline;
 	[HideInInspector] public GameObject tileHoverOutline;
 	[HideInInspector] public List<GameObject> createdMovementOutlines;
+	[HideInInspector] public List<GameObject> enabledTiles; // for fog of war
 
 	// Our pathfinding info.  Null if we have no destination ordered.
 	public List<Node> currentPath = null;
@@ -33,6 +34,7 @@ public class UnitPathfinding : MonoBehaviour {
 
 		// Initialize list for the line segments
 		createdLines = new List<GameObject>();
+		enabledTiles = new List<GameObject>();
 	}
 	void FixedUpdate() {
 		// Smoothly animate towards the correct map tile.
@@ -58,26 +60,165 @@ public class UnitPathfinding : MonoBehaviour {
 
 		// Draw possible movements right when you spawn
 		createdMovementOutlines = new List<GameObject>();
+		
 		DrawPossibleMovements();
+		DrawFogOfWar();
 	}
 
+	// Outline the tiles that the player has enough AP to move to
+	// This function is a little messy at the bottom with all the if statements
+	// and hard coded values, but whatever IDK how to optimize it more than this
 	public void DrawPossibleMovements() {
+		// you can only move up to AP units away from your current position
 		int AP = gameManager.characterClass.AP;
 
+		// Clear out the old outlines and delete them
 		for (int i = 0; i < createdMovementOutlines.Count; i++) {
 			Destroy(createdMovementOutlines[i]);
 		}
 		createdMovementOutlines.Clear();
 
+		// all the tiles in movement range, stored as their [x, y] coordinates on grid
+		List<int[]> tilePosInMovementRange = new List<int[]>();
+
+		// iterate over each tile in range of the player
 		for (int x = targetX - AP; x <= targetX + AP; x++) {
 			for (int y = targetY - AP; y <= targetY + AP; y++) {
-				if (!(x == targetX && y == targetY) &&
-					map.BreadthFirstSearch(map.fullMapGraph[targetX, targetY], map.fullMapGraph[x, y], AP) != null) {
-					createdMovementOutlines.Add(Instantiate(gameManager.tilePossibleMovementOutlinePrefab, new Vector3(x, 0.01f, y), Quaternion.identity));
+				// check if there's a path to current tile from the player's current position
+				if (map.BreadthFirstSearch(map.fullMapGraph[targetX, targetY], map.fullMapGraph[x, y], AP) != null) {
+					// Put the current tile position in list
+					int[] temp = new int[2];
+					temp[0] = x;
+					temp[1] = y;
+					tilePosInMovementRange.Add(temp);
 				}
 			}
         }
+
+		// instiate possible movement outlines
+		foreach (int[] i in tilePosInMovementRange) {
+			// determine which neighbours are also in movement range
+			int[] temp = new int[2];
+
+			// [0] = above, [1] = right, [2] = left, [3] = below
+			bool[] neighbourValues = new bool[4];
+
+			// check if neighbours are also in the list of possible movements
+
+			foreach (int[] j in tilePosInMovementRange) {
+				// above neighbour
+				if (j[0] == i[0] && j[1] == i[1] + 1) {
+					neighbourValues[0] = true;
+				}
+				// right neighbour
+				if (j[0] == i[0] + 1 && j[1] == i[1]) {
+					neighbourValues[1] = true;
+				}
+				// left neighbour
+				if (j[0] == i[0] - 1 && j[1] == i[1]) {
+					neighbourValues[2] = true;
+				}
+				// below neighbour
+				if (j[0] == i[0] && j[1] == i[1] - 1) {
+					neighbourValues[3] = true;
+				}
+			}
+
+			// count how many neighbours are in movement list
+			int tempSum = 0;
+			for (int j = 0; j < 4; j++) {
+				if (neighbourValues[j]) {
+					tempSum++;
+				}
+			}
+
+			// instantiate outline - make sure current tile has between 1 and 3 neighbours in list.
+			// if it doesn't, then we dont instantiate it
+			if (tempSum <= 3 && tempSum > 0) {
+				// position of outline
+				Vector3 pos = new Vector3(i[0], 0.01f, i[1]);
+				// rotation of outline
+				float yRotation = 0f;
+				// default
+				GameObject prefab = null;
+
+				if (tempSum == 3) {
+					// 3 neighbours in list
+					prefab = gameManager.tilePossibleMovementOutlinePrefabs[0];
+
+					if (!neighbourValues[0]) {
+						// no neighbour above
+						yRotation = 180f;
+					} else if (!neighbourValues[1]) {
+						// no neighbour right
+						yRotation = 270f;
+					} else if (!neighbourValues[2]) {
+						// no neighbour left
+						yRotation = 90f;
+					} else if (!neighbourValues[3]) {
+						// no neighbour below
+						yRotation = 0f;
+					}
+				} else if (tempSum == 2) {
+					// 2 neighbours in list
+					prefab = gameManager.tilePossibleMovementOutlinePrefabs[1];
+
+					// shape: |_
+					if (!neighbourValues[0] && !neighbourValues[1]) {
+						// no neighbour above and to right
+						yRotation = 270f;
+					} else if (!neighbourValues[0] && !neighbourValues[2]) {
+						// no neighbour above and to left
+						yRotation = 180f;
+					} else if (!neighbourValues[3] && !neighbourValues[1]) {
+						// no neighbour below and to right
+						yRotation = 0f;
+					} else if (!neighbourValues[3] && !neighbourValues[2]) {
+						// no neighbour below and to left
+						yRotation = 90f;
+
+					// shape: | |
+					} else if (!neighbourValues[1] && !neighbourValues[2]) {
+						// no neighbour right and left
+						yRotation = 90f;
+						prefab = gameManager.tilePossibleMovementOutlinePrefabs[3];
+					} else if (!neighbourValues[0] && !neighbourValues[3]) {
+						// no neighbour above and below
+						yRotation = 180f;
+						prefab = gameManager.tilePossibleMovementOutlinePrefabs[3];
+					}
+				} else if (tempSum == 1) {
+					// 1 neighbour in list
+					prefab = gameManager.tilePossibleMovementOutlinePrefabs[2];
+
+					if (neighbourValues[0]) {
+						// no neighbour above
+						yRotation = 360f;
+					} else if (neighbourValues[1]) {
+						// no neighbour right
+						yRotation = 90f;
+					} else if (neighbourValues[2]) {
+						// no neighbour left
+						yRotation = 270f;
+					} else if (neighbourValues[3]) {
+						// no neighbour below
+						yRotation = 180f;
+					}
+				}
+				// instantiate outline
+				GameObject tempObj = Instantiate(prefab, pos, Quaternion.identity);
+				// rotate outline
+				tempObj.transform.Rotate(0f, yRotation, 0f, Space.World);
+				// add outline to list of all created outlines
+				createdMovementOutlines.Add(tempObj);
+			}
+		}
     }
+
+	// Hide the tiles that the player is too far away to see
+	public void DrawFogOfWar() {
+		return;
+	}
 
 	// Advances our pathfinding progress by one tile.
 	private void AdvancePathing() {
@@ -208,6 +349,8 @@ public class UnitPathfinding : MonoBehaviour {
 		while (currentPath != null && gameManager.characterClass.AP - map.CostToEnterTile(currentPath[1].x, currentPath[1].y) >= 0) {
 			AdvancePathing();
 		}
+		
 		DrawPossibleMovements();
+		DrawFogOfWar();
 	}
 }

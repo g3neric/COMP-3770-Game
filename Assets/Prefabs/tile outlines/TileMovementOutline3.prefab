@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 937762169126951073}
   - component: {fileID: 8406543184080720649}
   m_Layer: 0
-  m_Name: TilePossibleMovementOutline
+  m_Name: TileMovementOutline3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -61,7 +61,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 69d0faf52a62c6c4cbdc27c886d699c0, type: 2}
+  - {fileID: 2100000, guid: 8e7223af871313a45a8ee8e3edf86c49, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

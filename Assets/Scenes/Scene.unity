@@ -123,6 +123,37 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &121992903
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 121992904}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &121992904
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 121992903}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1, y: 0, z: -1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &337448049
 GameObject:
   m_ObjectHideFlags: 0
@@ -826,7 +857,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameManagerObject: {fileID: 1985101242}
   CamTargetSpeed: 10
-  CamTargetRadius: 4
+  CamTargetRadius: 3.5
   ObjectCamTargetMaxSpeed: 4
   CamRotationSpeed: 55
   zoomSpeed: 0.2
@@ -861,9 +892,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameManager: {fileID: 0}
-  mapSize: 75
-  shoreSize: 4
-  shoreVariation: 1.5
+  mapSize: 100
+  shoreSize: 7
+  shoreVariation: 6
   biomeSize: 10
   oceanSize: 10
   numOfRandomlyGeneratedTiles: 4
@@ -892,7 +923,7 @@ MonoBehaviour:
     tilePrefab: {fileID: 1561500678141819050, guid: ea9848a3677d68d4598478236ea28cdc, type: 3}
     frequency: 0
     isWalkable: 1
-    movementCost: 2
+    movementCost: 1
   - name: TileWater
     tilePrefab: {fileID: 1561500678141819050, guid: e247765d5302ab646af4a26655174545, type: 3}
     frequency: 0
@@ -1401,19 +1432,24 @@ MonoBehaviour:
   linePrefab: {fileID: 1232140211224243061, guid: e134a70f78b489041913528af49ee671, type: 3}
   tileOutlinePrefab: {fileID: 2760457026279230676, guid: 32cb9ae5fcfb837419d4fd66843cdaac, type: 3}
   tileHoverOutlinePrefab: {fileID: 2760457026279230676, guid: 1f1bc39c245c084448960fa33aecc9d2, type: 3}
-  tilePossibleMovementOutlinePrefab: {fileID: 2760457026279230676, guid: a7d40dc6b3cd9be4aac9e42c32134699, type: 3}
+  tilePossibleMovementOutlinePrefabs:
+  - {fileID: 2760457026279230676, guid: 91197c7f1f1bac14fa9567998274489a, type: 3}
+  - {fileID: 2760457026279230676, guid: cf5f426c2e87b3a4cb80833031aa17d6, type: 3}
+  - {fileID: 2760457026279230676, guid: 04a4b5bfa6896414da0ab182f8cc65e0, type: 3}
+  - {fileID: 2760457026279230676, guid: 2864027a33830634f834319c2d2fec95, type: 3}
   button: {fileID: 574976830}
   Camera: {fileID: 963194225}
   tileMapController: {fileID: 1081531526}
   tileMap: {fileID: 1081531526}
   characterClass:
     characterPrefab: {fileID: 0}
+    name: 
     HP: 0
     maxHP: 0
     AP: 0
     maxAP: 0
-    range: 0
-    name: 
+    attackRange: 0
+    viewRange: 0
     luckMultiplier: 0
     gold: 0
     killCount: 0

@@ -7,6 +7,8 @@ public class Character {
     // character model
     public GameObject characterPrefab;
 
+    [HideInInspector] public string name;
+
     // base stats - all classes will differ
     // health
     [HideInInspector] public int HP;
@@ -17,9 +19,9 @@ public class Character {
     [HideInInspector] public int maxAP;
 
     // other base stats
-    [HideInInspector] public int range;
-    [HideInInspector] public string name;
-    [HideInInspector] public float luckMultiplier;
+    [HideInInspector] public int attackRange; // for combat
+    [HideInInspector] public int viewRange; // for fog of war
+    [HideInInspector] public float luckMultiplier; // used by joker class
 
     // variable stats - all units start with 0
     [HideInInspector] public int gold;

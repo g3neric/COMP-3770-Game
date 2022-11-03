@@ -33,7 +33,7 @@ public class TileMap : MonoBehaviour {
 	public int[,] tiles;
 
 	// Private variables
-	private Node[,] fullMapGraph;
+	[HideInInspector] public Node[,] fullMapGraph;
 	
 	public void InitiateTileMap() {
 		// Initiate the map and pathfinding
@@ -247,6 +247,52 @@ public class TileMap : MonoBehaviour {
 	public Vector3 TileCoordToWorldCoord(int x, int y) {
 		// 0.5 unit offset so that the unit pathfinds to the middle of the square
 		return new Vector3(x, 0f, y);
+	}
+
+	// Optimized for drawing possible movements
+	public List<Node> BreadthFirstSearch(Node start, Node end, int maxDistance) {
+		List<Node> result = new List<Node>();
+		List<Node> visited = new List<Node>();
+		Queue<Node> work = new Queue<Node>();
+
+		start.history = new List<Node>();
+		visited.Add(start);
+		work.Enqueue(start);
+
+		while (work.Count > 0) {
+			Node current = work.Dequeue();
+			if (current == end) {
+				// Found the final node
+				result = current.history;
+				result.Add(current);
+				for (int i = 0; i < visited.Count; i++) {
+					visited[i].distance = 0;
+				}
+				return result;
+			} else {
+				// Not the final node
+				for (int i = 0; i < current.neighbours.Count; i++) {
+					Node currentNeighbor = current.neighbours[i];
+					int distance = current.distance + tileTypes[tiles[currentNeighbor.x, currentNeighbor.y]].movementCost;
+					// Check if neighbour is walkable, in range and hasn't been visited yet
+					if (tileTypes[tiles[currentNeighbor.x, currentNeighbor.y]].isWalkable &&
+						distance <= maxDistance &&
+						!visited.Contains(currentNeighbor)) {
+						// Neighbour is in range, walkable and hasn't been visited yet! Yay!
+						currentNeighbor.distance = distance;
+						currentNeighbor.history = new List<Node>(current.history);
+						currentNeighbor.history.Add(current);
+						visited.Add(currentNeighbor);
+						work.Enqueue(currentNeighbor);
+					}
+				}
+			}
+		}
+		//Route not found, loop ends
+		for (int i = 0; i < visited.Count; i++) {
+			visited[i].distance = 0;
+		}
+		return null;
 	}
 
 	// Base function to generate path from [sourceX, sourceY] to [destX, destY]

@@ -18,6 +18,7 @@ public class UnitPathfinding : MonoBehaviour {
 	[HideInInspector] public List<GameObject> createdLines; // list containing all created animated pathfinding lines
 	[HideInInspector] public GameObject tileOutline;
 	[HideInInspector] public GameObject tileHoverOutline;
+	[HideInInspector] public List<GameObject> createdMovementOutlines;
 
 	// Our pathfinding info.  Null if we have no destination ordered.
 	public List<Node> currentPath = null;
@@ -54,43 +55,33 @@ public class UnitPathfinding : MonoBehaviour {
 		targetX = x; 
 		targetY = y;
 		transform.position = map.TileCoordToWorldCoord(targetX, targetY);
-		
+
+		// Draw possible movements right when you spawn
+		createdMovementOutlines = new List<GameObject>();
+		DrawPossibleMovements();
 	}
 
-	private void DrawPossibleMovements() {
-		// I'm trying to draw the possible movements you can take on the screen
-		// This is a WIP
+	public void DrawPossibleMovements() {
+		int AP = gameManager.characterClass.AP;
 
-		// "range" is the side length of the character's total range square
-		// The character can move maxAP units to either side, and plus 1 for the tile they're standing on
-		int range = (gameManager.characterClass.maxAP * 2) + 1;
+		for (int i = 0; i < createdMovementOutlines.Count; i++) {
+			Destroy(createdMovementOutlines[i]);
+		}
+		createdMovementOutlines.Clear();
 
-		// Generate a graph of size maxAP * 2 + 1 by maxAP * 2 + 1
-		// This will be the furthest the character could conceivably move on an open map with no obstacles
-		Node[,] graph = map.GeneratePathfindingGraph(range, targetX - gameManager.characterClass.maxAP);
-
-		// Test each tile in range of the player to see if they can path there
-		for (int x = 0; x < range; x++) {
-			for (int y = 0; y < range; y++) {
-				if (map.DijkstraPath(gameManager.characterClass.maxAP, gameManager.characterClass.maxAP, x, y, graph) != null) {
-					// There is a path to the specified tile
-					// Create visual on this tile
-					print("x: " + x + "   y: " + y);
-                } else {
-					// No path to specified tile
-					print("NULL! x: " + x + "   y: " + y);
+		for (int x = targetX - AP; x <= targetX + AP; x++) {
+			for (int y = targetY - AP; y <= targetY + AP; y++) {
+				if (!(x == targetX && y == targetY) &&
+					map.BreadthFirstSearch(map.fullMapGraph[targetX, targetY], map.fullMapGraph[x, y], AP) != null) {
+					createdMovementOutlines.Add(Instantiate(gameManager.tilePossibleMovementOutlinePrefab, new Vector3(x, 0.01f, y), Quaternion.identity));
 				}
-            }
+			}
         }
     }
 
 	// Advances our pathfinding progress by one tile.
 	private void AdvancePathing() {
-		if(currentPath==null) {
-			return;
-		}
-
-		if(gameManager.characterClass.AP <= 0) {
+		if(currentPath == null || gameManager.characterClass.AP <= 0 ) {
 			return;
 		}
 
@@ -104,14 +95,14 @@ public class UnitPathfinding : MonoBehaviour {
 		// Move us to the next tile in the sequence
 		targetX = currentPath[1].x;
 		targetY = currentPath[1].y;
-
+		
 		// Remove the old animated line
 		Destroy(createdLines[0]);
 		createdLines.RemoveAt(0);
 		// Remove the old "current" tile from the pathfinding list
 		currentPath.RemoveAt(0);
-		
-		if(currentPath.Count == 1) {
+
+		if (currentPath.Count == 1) {
 			// We only have one tile left in the path, and that tile MUST be our ultimate
 			// destination -- and we are standing on it!
 			// So let's just clear our pathfinding info.
@@ -162,8 +153,24 @@ public class UnitPathfinding : MonoBehaviour {
 		return line; // will be added to a list in the calling function
 	}
 
+	// Helper function to destroy animated line and tile selection outline
+	private void DestroyAnimatedLine() {
+		// Destroy old pathfinding visual lines
+		for (int i = 0; i < createdLines.Count; i++) {
+			Destroy(createdLines[i]);
+		}
+		createdLines.Clear();
+		// Move outline to new end target
+		tileOutline.transform.position = new Vector3(-100f, -100f, -100f);
+	}
+
 	public void PathToLocation(int x, int y, GameObject tileGameObject) {
 		// This method encompasses everything that happens when you click a tile
+		DestroyAnimatedLine();
+
+		if (map.UnitCanEnterTile(x, y) == false) {
+			return;
+		}
 
 		if (tilePlayerIsOn != null) {
 			// player is moving from another tile, so reset the old tile
@@ -172,18 +179,6 @@ public class UnitPathfinding : MonoBehaviour {
 
 		// keep track of the tile the player is moving to
 		tilePlayerIsOn = tileGameObject;
-
-		// Destroy old pathfinding visual lines
-		for (int i = 0; i < createdLines.Count; i++) {
-			Destroy(createdLines[i]);
-		}
-		createdLines.Clear();
-
-		if (map.UnitCanEnterTile(x, y) == false) {
-			// We clicked on an unwalkable tile, so yeet the tile outline into the void
-			tileOutline.transform.position = new Vector3(-100f, -100f, -100f);
-			return;
-		}
 
 		// Move outline to new end target
 		tileOutline.transform.position = map.TileCoordToWorldCoord(x, y) - new Vector3(0, -0.01f, 0);
@@ -205,10 +200,14 @@ public class UnitPathfinding : MonoBehaviour {
 			startDelayCount += 0.25f;
 		}
 	}
+
+	// This method will keep moving the character in the path they have chosen
+	// until they run out of movement points
 	public void TakeMovement() {
 		// Make sure to wrap-up any outstanding movement left over.
-		while (currentPath != null && gameManager.characterClass.AP > 0) {
+		while (currentPath != null && gameManager.characterClass.AP - map.CostToEnterTile(currentPath[1].x, currentPath[1].y) >= 0) {
 			AdvancePathing();
 		}
+		DrawPossibleMovements();
 	}
 }

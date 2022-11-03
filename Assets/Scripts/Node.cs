@@ -5,7 +5,9 @@ public class Node {
 	public List<Node> neighbours;
 	public int x;
 	public int y;
-	
+	public List<Node> history; // for BFS
+	public int distance = 0;
+
 	public Node() {
 		neighbours = new List<Node>();
 	}

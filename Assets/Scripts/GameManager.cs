@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour {
 	public GameObject linePrefab;
 	public GameObject tileOutlinePrefab;
 	public GameObject tileHoverOutlinePrefab;
+	public GameObject tilePossibleMovementOutlinePrefab;
 	// scene object references
 	[Space]
 	[Header("Scene object references")]
@@ -93,6 +94,7 @@ public class GameManager : MonoBehaviour {
 			selectedUnit.GetComponent<UnitPathfinding>().TakeMovement();
 		}
 		characterClass.FinishTurn(); // update character stats
+		selectedUnit.GetComponent<UnitPathfinding>().DrawPossibleMovements();
 
 		// resolve NPC actions
 		for (int i = 0; i < otherCharacters.Count; i++) {

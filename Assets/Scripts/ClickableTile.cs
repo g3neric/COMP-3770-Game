@@ -38,7 +38,7 @@ public class ClickableTile : MonoBehaviour {
 	// Move hover outline to current tile
     void OnMouseEnter() {
 		if (!EventSystem.current.IsPointerOverGameObject() && !completed) {
-			unitPathfinding.tileHoverOutline.transform.position = transform.position + new Vector3(0, 0.01f, 0);
+			unitPathfinding.tileHoverOutline.transform.position = transform.position + new Vector3(0, 0.011f, 0);
 			completed = true;
 		}
     }

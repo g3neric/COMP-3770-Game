@@ -50,5 +50,17 @@ public class ClickableTile : MonoBehaviour {
 			unitPathfinding.tileHoverOutline.transform.position = new Vector3(-100f, -100f, -100f);
 		}
 	}
+
+	void OnBecameVisible() {
+		foreach (Transform child in transform) {
+			child.gameObject.SetActive(true);
+		}
+	}
+
+    void OnBecameInvisible() {
+		foreach (Transform child in transform) {
+			child.gameObject.SetActive(false);
+		}
+	}
 }
 

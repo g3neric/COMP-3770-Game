@@ -1,3 +1,6 @@
+// Desgined and created by Tyler R. Renaud
+// All rights belong to creator
+
 public class Engineer : Character {
     public Engineer() {
         this.maxAP = 4;

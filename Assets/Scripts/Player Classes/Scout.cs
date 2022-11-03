@@ -1,3 +1,6 @@
+// Desgined and created by Tyler R. Renaud
+// All rights belong to creator
+
 public class Scout : Character {
     public Scout() {
         this.maxAP = 3;

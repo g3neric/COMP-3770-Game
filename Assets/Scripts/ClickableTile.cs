@@ -1,3 +1,6 @@
+// Desgined and created by Andrew Simon and Tyler R. Renaud
+// All rights belong to creator
+
 using UnityEngine;
 using UnityEngine.EventSystems;
 

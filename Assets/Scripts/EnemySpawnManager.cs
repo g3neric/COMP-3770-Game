@@ -1,3 +1,6 @@
+// Desgined and created by Tyler R. Renaud
+// All rights belong to creator
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

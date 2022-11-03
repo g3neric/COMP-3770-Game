@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿// Desgined and created by Andrew Simon and Tyler R. Renaud
+// All rights belong to creator
+
+using UnityEngine;
 using System.Collections.Generic;
 
 public class Node {

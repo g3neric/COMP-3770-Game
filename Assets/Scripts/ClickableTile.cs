@@ -24,7 +24,7 @@ public class ClickableTile : MonoBehaviour {
 	void OnMouseUp() {
 		unitPathfinding = gameManager.selectedUnit.GetComponent<UnitPathfinding>();
 		if (!EventSystem.current.IsPointerOverGameObject()) {
-			if (gameManager.cs == ControlState.Move) {
+			if (gameManager.cs == ItemSelected.Move) {
 				// move state
 
 				if (currentCharacterOnTile == null) {
@@ -34,8 +34,6 @@ public class ClickableTile : MonoBehaviour {
 					unitPathfinding.PathToLocation(x, y, gameObject);
 					unitPathfinding.TakeMovement();
 				}
-			} else if (gameManager.cs == ControlState.Attack) {
-				// attack state
 			}
 		}
 	}

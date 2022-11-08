@@ -4,9 +4,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
-public enum ControlState { Move, Attack, Deselected };
+public enum ItemSelected { Move, Item1, Item2, Deselected };
 
 public class GameManager : MonoBehaviour {
 
@@ -16,7 +15,7 @@ public class GameManager : MonoBehaviour {
 
 	[HideInInspector] public int turnCount = 1;
 
-	public ControlState cs = ControlState.Deselected;
+	public ItemSelected cs = ItemSelected.Deselected;
 
 	// Prefabs
 	[Space]
@@ -63,20 +62,26 @@ public class GameManager : MonoBehaviour {
 		CreatePlayerCharacter();
 	}
 
-	public void SetControlState(ControlState newCS) {
-		// refresh outlines
-
+	public void SetItemSelected(ItemSelected newCS) {
+		unitPathfinding.DestroyOutlines(unitPathfinding.createdRangeOutlines);
+		unitPathfinding.DestroyOutlines(unitPathfinding.createdMovementOutlines);
 		// check which state was clicked
 		if (cs == newCS) {
 			// deselect control state
-			cs = ControlState.Deselected;
-		} else if (newCS == ControlState.Move) {
+			cs = ItemSelected.Deselected;
+		} else if (newCS == ItemSelected.Move) {
 			// switch to move state
-			cs = ControlState.Move;
-		} else if (newCS == ControlState.Attack) {
-			// switch to attack state
-			cs = ControlState.Attack;
+			cs = ItemSelected.Move;
+		} else if (newCS == ItemSelected.Item1) {
+			// switch to item 1
+			cs = ItemSelected.Item1;
+			unitPathfinding.DrawTilesInRange();
+		} else if (newCS == ItemSelected.Item2) {
+			// switch to item 2
+			cs = ItemSelected.Item2;
+			unitPathfinding.DrawTilesInRange();
 		}
+		unitPathfinding.DrawPossibleMovements();
 	}
 
 	// I seperated this class for easy viewing
@@ -119,7 +124,7 @@ public class GameManager : MonoBehaviour {
 			selectedUnit.GetComponent<UnitPathfinding>().TakeMovement();
 		}
 		characterClass.FinishTurn(); // update character stats
-		selectedUnit.GetComponent<UnitPathfinding>().DrawOutlines();
+		selectedUnit.GetComponent<UnitPathfinding>().DrawPossibleMovements();
 
 		// resolve NPC actions
 		for (int i = 0; i < otherCharacters.Count; i++) {
@@ -130,6 +135,6 @@ public class GameManager : MonoBehaviour {
 	void Update() {
 		if (Input.GetKeyDown("e")) {
 			FinishTurn();
-		}
+		} 
 	}
 }

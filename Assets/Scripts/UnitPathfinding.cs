@@ -66,7 +66,8 @@ public class UnitPathfinding : MonoBehaviour {
 		createdMovementOutlines = new List<GameObject>();
 		createdRangeOutlines = new List<GameObject>();
 
-		DrawOutlines();
+		DrawPossibleMovements();
+		DrawFogOfWar();
 	}
 
 	public void DestroyOutlines(List<GameObject> outlines) {
@@ -233,13 +234,41 @@ public class UnitPathfinding : MonoBehaviour {
 
 		// calculate which tiles are in range, then draw the outlines on the screen
 		List<int[]> tilePosInMovementRange = CalculatePossibleMovements(targetX, targetY, gameManager.characterClass.AP);
-		createdMovementOutlines = InstantiateOrientedOutlines(gameManager.tilePossibleMovementOutlinePrefabs, tilePosInMovementRange, 0.011f);
+		createdMovementOutlines = InstantiateOrientedOutlines(gameManager.tilePossibleMovementOutlinePrefabs, tilePosInMovementRange, 0.01f);
 	}
 
 	// Algorithm to check which points lie on a line
 	// WIP
-	public static List<int[]> BresenhamsAlgorithm(int x1, int y1, int x2, int y2) {
+	public static List<int[]> BresenhamsAlgorithm(int x, int y, int x2, int y2) {
 		List<int[]> result = new List<int[]>();
+		int w = x2 - x;
+		int h = y2 - y;
+		int dx1 = 0, dy1 = 0, dx2 = 0, dy2 = 0;
+		if (w < 0) dx1 = -1; else if (w > 0) dx1 = 1;
+		if (h < 0) dy1 = -1; else if (h > 0) dy1 = 1;
+		if (w < 0) dx2 = -1; else if (w > 0) dx2 = 1;
+		int longest = Mathf.Abs(w);
+		int shortest = Mathf.Abs(h);
+		if (!(longest > shortest)) {
+			longest = Mathf.Abs(h);
+			shortest = Mathf.Abs(w);
+			if (h < 0) dy2 = -1; else if (h > 0) dy2 = 1;
+			dx2 = 0;
+		}
+		int numerator = longest >> 1;
+		for (int i = 0; i <= longest; i++) {
+			int[] temp = { x, y };
+            result.Add(temp);
+			numerator += shortest;
+			if (!(numerator < longest)) {
+				numerator -= longest;
+				x += dx1;
+				y += dy1;
+			} else {
+				x += dx2;
+				y += dy2;
+			}
+		}
 		return result;
 	}
 
@@ -250,7 +279,7 @@ public class UnitPathfinding : MonoBehaviour {
 		// radius = range
 		for (int x = centerX - radius; x < centerX + radius; x++) {
 			for (int y = centerY - radius; y < centerY + radius; y++) {
-				float distance = Mathf.Sqrt(Mathf.Pow((x - centerX), 2) + Mathf.Pow((y - centerY), 2));
+				float distance = Mathf.Sqrt(Mathf.Pow((x - centerX), 2) + Mathf.Pow((y - centerY), 2)) + 0.5f;
 				if (distance <= radius) {
 					// current tile is within radius
 					// now, check if there's line of sight to the player
@@ -259,18 +288,19 @@ public class UnitPathfinding : MonoBehaviour {
 					// check whether it blocks vision. If it does, then break; and go to the
 					// next tile. If none of the tiles on that line break vision, then the current
 					// tile is added to the list of tiles in range.
-
-					// WIP
-
-					/*
+					bool flag = false;
 					List<int[]> temp = BresenhamsAlgorithm(centerX, centerY, x, y);
-					foreach(int[] i in temp) {
-						if (!map.tileTypes[map.tiles[i[0], i[1]]].blocksVision) {
-							break;
-                        }
-                    }*/
+					foreach (int[] i in temp) {
 
-					returnValues.Add(new int[] { x, y });
+						int tileType = map.tiles[i[0], i[1]];
+						if (map.tileTypes[tileType].blocksVision) {
+							flag = true;
+                        }
+                    }
+
+					if (!flag) {
+						returnValues.Add(new int[] { x, y });
+					}
 				}
 			}
 		}
@@ -283,7 +313,7 @@ public class UnitPathfinding : MonoBehaviour {
 		DestroyOutlines(createdRangeOutlines);
 
 		List<int[]> tilePosInAttackRange = CalculateTilesInRange(targetX, targetY, gameManager.characterClass.attackRange);
-		createdRangeOutlines = InstantiateOrientedOutlines(gameManager.rangeOutlinePrefabs, tilePosInAttackRange, 0.01f);
+		createdRangeOutlines = InstantiateOrientedOutlines(gameManager.rangeOutlinePrefabs, tilePosInAttackRange, 0.011f);
 	}
 
 	// Hide the tiles that the player is too far away to see
@@ -324,7 +354,7 @@ public class UnitPathfinding : MonoBehaviour {
 	}
 
 	// Helper function to create animated line to end target
-	private GameObject CreateAnimatedLine(Vector3 start, Vector3 end, float delay, bool last) {
+	private GameObject CreateVisualPathfindingLine(Vector3 start, Vector3 end, float delay, bool last) {
 		// Create a line and its particle system effects
 		GameObject line = Instantiate(gameManager.linePrefab, start, Quaternion.identity);
 
@@ -367,7 +397,7 @@ public class UnitPathfinding : MonoBehaviour {
 	}
 
 	// Helper function to destroy animated line and tile selection outline
-	private void DestroyAnimatedLine() {
+	private void DestroyVisualPathfindingLine() {
 		// Destroy old pathfinding visual lines
 		for (int i = 0; i < createdLines.Count; i++) {
 			Destroy(createdLines[i]);
@@ -379,7 +409,7 @@ public class UnitPathfinding : MonoBehaviour {
 
 	public void PathToLocation(int x, int y, GameObject tileGameObject) {
 		// This method encompasses everything that happens when you click a tile
-		DestroyAnimatedLine();
+		DestroyVisualPathfindingLine();
 
 		if (map.UnitCanEnterTile(x, y) == false) {
 			return;
@@ -409,16 +439,9 @@ public class UnitPathfinding : MonoBehaviour {
 			if (i == currentPath.Count - 2) {
 				last = true;
 			}
-			createdLines.Add(CreateAnimatedLine(start, end, startDelayCount, last));
+			createdLines.Add(CreateVisualPathfindingLine(start, end, startDelayCount, last));
 			startDelayCount += 0.25f;
 		}
-	}
-
-	// Draws outlines based on current control state
-	public void DrawOutlines() {
-		DrawPossibleMovements();
-		DrawTilesInRange();
-		DrawFogOfWar();
 	}
 
 	// This method will keep moving the character in the path they have chosen
@@ -428,6 +451,17 @@ public class UnitPathfinding : MonoBehaviour {
 		while (currentPath != null && gameManager.characterClass.AP - map.CostToEnterTile(currentPath[1].x, currentPath[1].y) >= 0) {
 			AdvancePathing();
 		}
-		DrawOutlines();
+
+		// Update outlines
+		DrawPossibleMovements();
+
+		// If you're moving along your path with an item selected, the tiles in range will update
+		// each time you move
+		if (gameManager.cs == ItemSelected.Item1 || gameManager.cs == ItemSelected.Item2) {
+			DrawTilesInRange();
+        }
+
+		// update fog of war every time you move
+		DrawFogOfWar();
 	}
 }

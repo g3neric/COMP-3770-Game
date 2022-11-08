@@ -11,16 +11,19 @@ public class UIManager : MonoBehaviour {
     public GameObject gameManagerObject;
     [HideInInspector] public GameManager gameManager;
 
-    private ControlState csAttack = ControlState.Attack;
-    private ControlState csMove = ControlState.Move;
-
     // UI objects
     public TextMeshProUGUI movementText;
     public TextMeshProUGUI turnCountText;
 
+    // toolbarButtons[0] = move state
+    // toolbarButtons[1] = item 1
+    // toolbarButtons[2] = item 2
+    public Button[] toolbarButtons = new Button[3];
+
+    public Button selectedToolbarButton = null;
+
     public Button buttonNextTurn;
-    public Button buttonMoveState;
-    public Button buttonAttackState;
+
 
     private void Awake() {
         gameManager = gameManagerObject.GetComponent<GameManager>();
@@ -29,31 +32,55 @@ public class UIManager : MonoBehaviour {
         buttonNextTurn.GetComponent<Button>().onClick.AddListener(delegate { gameManager.FinishTurn(); });
 
         // Initiate move state button
-        buttonMoveState.GetComponent<Button>().onClick.AddListener(delegate { gameManager.SetControlState(csMove); });
+        toolbarButtons[0].GetComponent<Button>().onClick.AddListener(delegate { ToolbarButtonSelected(0); });
 
-        // Initiate attack state button
-        buttonAttackState.GetComponent<Button>().onClick.AddListener(delegate { gameManager.SetControlState(csAttack); });
+        // Initiate item buttons
+        toolbarButtons[1].GetComponent<Button>().onClick.AddListener(delegate { ToolbarButtonSelected(1); });
+        toolbarButtons[2].GetComponent<Button>().onClick.AddListener(delegate { ToolbarButtonSelected(2); });
     }
     void Update() {
+        // update counts on the screen
         movementText.text = "AP left: " + gameManager.characterClass.AP;
         turnCountText.text = "Turn " + gameManager.turnCount;
 
-        RectTransform buttonAttackStateTransform = buttonAttackState.GetComponent<RectTransform>();
-        RectTransform buttonMoveStateTransform = buttonMoveState.GetComponent<RectTransform>();
-
-        // set both to default
-        Vector3 pos = buttonAttackStateTransform.position;
-        buttonAttackStateTransform.position = new Vector3(pos.x, 5, pos.z);
-        pos = buttonMoveStateTransform.position;
-        buttonMoveStateTransform.position = new Vector3(pos.x, 5, pos.z);
-        if (gameManager.cs == ControlState.Attack) {
-            // raise attack button a bit
-            pos = buttonAttackStateTransform.position;
-            buttonAttackStateTransform.position = new Vector3(pos.x, 25, pos.z);
-        } else if (gameManager.cs == ControlState.Move) {
-            // raise move button a bit
-            pos = buttonMoveStateTransform.position;
-            buttonMoveStateTransform.position = new Vector3(pos.x, 25, pos.z);
+        // button controls for the toolbar
+        if (Input.GetKeyDown("1")) {
+            ToolbarButtonSelected(0);
+        } else if (Input.GetKeyDown("2")) {
+            ToolbarButtonSelected(1);
+        } else if (Input.GetKeyDown("3")) {
+            ToolbarButtonSelected(2);
         }
+    }
+
+    // handle selection of toolbar item
+    public void ToolbarButtonSelected(int selectedButtonIndex) {
+        // change control state in game manager
+        if (selectedButtonIndex == 0) {
+            gameManager.SetItemSelected(ItemSelected.Move);
+        } else if (selectedButtonIndex == 1) {
+            gameManager.SetItemSelected(ItemSelected.Item1);
+        } else if (selectedButtonIndex == 2) {
+            gameManager.SetItemSelected(ItemSelected.Item2);
+        }
+
+        Vector3 pos;
+        // return all to default position
+        for (int i = 0; i < toolbarButtons.Length; i++) {
+            pos = toolbarButtons[i].GetComponent<RectTransform>().position;
+            toolbarButtons[i].GetComponent<RectTransform>().position = new Vector3(pos.x, 5, pos.z);
+        }
+
+        
+        if (toolbarButtons[selectedButtonIndex] != selectedToolbarButton) {
+            // new button selected
+            pos = toolbarButtons[selectedButtonIndex].GetComponent<RectTransform>().position;
+            toolbarButtons[selectedButtonIndex].GetComponent<RectTransform>().position = new Vector3(pos.x, 25, pos.z);
+            selectedToolbarButton = toolbarButtons[selectedButtonIndex];
+        } else {
+            // same button selected (deselect)
+            selectedToolbarButton = null;
+        }
+        
     }
 }

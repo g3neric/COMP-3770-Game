@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+public enum ControlState { Move, Attack, Deselected };
+
 public class GameManager : MonoBehaviour {
 
 	// I KNOW THIS IS A LIL MESSY I'LL CLEAN IT UP LATER
@@ -13,6 +15,8 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector] public GameObject selectedUnit; // currently selected unit
 
 	[HideInInspector] public int turnCount = 1;
+
+	public ControlState cs = ControlState.Deselected;
 
 	// Prefabs
 	[Space]
@@ -23,11 +27,12 @@ public class GameManager : MonoBehaviour {
 	public GameObject tileOutlinePrefab;
 	public GameObject tileHoverOutlinePrefab;
 	public GameObject[] tilePossibleMovementOutlinePrefabs;
+	public GameObject[] rangeOutlinePrefabs;
 	// scene object references
 	[Space]
 	[Header("Scene object references")]
 	[Space]
-	public Button button;
+	
 	public GameObject Camera; // camera
 	public GameObject tileMapController; // can't reference just components so i have to reference the game object first >:(
 	[HideInInspector] public TileMap tileMap;
@@ -36,10 +41,14 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector] public Character characterClass = new Character(); // player character
 	[HideInInspector] public List<Character> otherCharacters; // NPCs
 
-	// This is only temporarily a Start() function.
-	// Later on, this method will be called when a
-	// new game is started from the main menu.
+	UnitPathfinding unitPathfinding;
+
 	void Start() {
+		InitiateGameSession();
+	}
+
+	// This function is called when a new game is created
+	public void InitiateGameSession() {
 		// initiate controller variables 
 		tileMap = tileMapController.GetComponent<TileMap>();
 		tileMap.gameManager = this;
@@ -52,12 +61,22 @@ public class GameManager : MonoBehaviour {
 
 		// Create and spawn the player's character
 		CreatePlayerCharacter();
+	}
 
-		// Temporary dev stuff
-		// These will be controlled by the class the player chooses later on
-		characterClass.AP = 6;
-		characterClass.maxAP = 6;
-		characterClass.viewRange = 15;
+	public void SetControlState(ControlState newCS) {
+		// refresh outlines
+
+		// check which state was clicked
+		if (cs == newCS) {
+			// deselect control state
+			cs = ControlState.Deselected;
+		} else if (newCS == ControlState.Move) {
+			// switch to move state
+			cs = ControlState.Move;
+		} else if (newCS == ControlState.Attack) {
+			// switch to attack state
+			cs = ControlState.Attack;
+		}
 	}
 
 	// I seperated this class for easy viewing
@@ -70,9 +89,16 @@ public class GameManager : MonoBehaviour {
 		selectedUnit = Instantiate(characterClass.characterPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity);
 
 		// Give the player's character a pathfinding script
-		UnitPathfinding unitPathfinding = selectedUnit.AddComponent<UnitPathfinding>();
+		unitPathfinding = selectedUnit.AddComponent<UnitPathfinding>();
 		unitPathfinding.gameManager = this;
 		unitPathfinding.map = tileMap;
+
+		// Temporary dev stuff
+		// These will be controlled by the class the player chooses later on
+		characterClass.AP = 6;
+		characterClass.maxAP = 6;
+		characterClass.viewRange = 15;
+		characterClass.attackRange = 5;
 
 		// Check if chosen position is walkable
 		int tempX = Mathf.FloorToInt(tileMap.mapSize / 2);
@@ -83,9 +109,6 @@ public class GameManager : MonoBehaviour {
 			tempY += 1;
 		}
 		unitPathfinding.SpawnPlayer(tempX, tempY);
-
-		// Initiate next turn button
-		button.GetComponent<Button>().onClick.AddListener(delegate { FinishTurn(); });
 	}
 
 	// player ended their turn; on to the next
@@ -96,7 +119,7 @@ public class GameManager : MonoBehaviour {
 			selectedUnit.GetComponent<UnitPathfinding>().TakeMovement();
 		}
 		characterClass.FinishTurn(); // update character stats
-		selectedUnit.GetComponent<UnitPathfinding>().DrawPossibleMovements();
+		selectedUnit.GetComponent<UnitPathfinding>().DrawOutlines();
 
 		// resolve NPC actions
 		for (int i = 0; i < otherCharacters.Count; i++) {

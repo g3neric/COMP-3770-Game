@@ -22,6 +22,7 @@ public class UnitPathfinding : MonoBehaviour {
 	[HideInInspector] public GameObject tileOutline;
 	[HideInInspector] public GameObject tileHoverOutline;
 	[HideInInspector] public List<GameObject> createdMovementOutlines;
+	[HideInInspector] public List<GameObject> createdRangeOutlines;
 	[HideInInspector] public List<GameObject> enabledTiles; // for fog of war
 
 	// Our pathfinding info.  Null if we have no destination ordered.
@@ -29,7 +30,7 @@ public class UnitPathfinding : MonoBehaviour {
 
 	private GameObject tilePlayerIsOn; // game object of player's current tile
 
-    void Start() {
+	void Start() {
 		// Instantiate tile outlines
 		// There's only two of these so we can just move them around the scene
 		tileOutline = Instantiate(gameManager.tileOutlinePrefab, new Vector3(-100f, -100f, -100f), Quaternion.identity);
@@ -57,49 +58,30 @@ public class UnitPathfinding : MonoBehaviour {
 	}
 
 	public void SpawnPlayer(int x, int y) {
-		targetX = x; 
+		targetX = x;
 		targetY = y;
 		transform.position = map.TileCoordToWorldCoord(targetX, targetY);
 
 		// Draw possible movements right when you spawn
 		createdMovementOutlines = new List<GameObject>();
-		
-		DrawPossibleMovements();
-		DrawFogOfWar();
+		createdRangeOutlines = new List<GameObject>();
+
+		DrawOutlines();
 	}
 
-	// Outline the tiles that the player has enough AP to move to
-	// This function is a little messy at the bottom with all the if statements
-	// and hard coded values, but whatever IDK how to optimize it more than this
-	public void DrawPossibleMovements() {
-		// you can only move up to AP units away from your current position
-		int AP = gameManager.characterClass.AP;
-
-		// Clear out the old outlines and delete them
-		for (int i = 0; i < createdMovementOutlines.Count; i++) {
-			Destroy(createdMovementOutlines[i]);
+	public void DestroyOutlines(List<GameObject> outlines) {
+		for (int i = 0; i < outlines.Count; i++) {
+			Destroy(outlines[i]);
 		}
-		createdMovementOutlines.Clear();
+		outlines.Clear();
+	}
 
-		// all the tiles in movement range, stored as their [x, y] coordinates on grid
-		List<int[]> tilePosInMovementRange = new List<int[]>();
-
-		// iterate over each tile in range of the player
-		for (int x = targetX - AP; x <= targetX + AP; x++) {
-			for (int y = targetY - AP; y <= targetY + AP; y++) {
-				// check if there's a path to current tile from the player's current position
-				if (map.BreadthFirstSearch(map.fullMapGraph[targetX, targetY], map.fullMapGraph[x, y], AP) != null) {
-					// Put the current tile position in list
-					int[] temp = new int[2];
-					temp[0] = x;
-					temp[1] = y;
-					tilePosInMovementRange.Add(temp);
-				}
-			}
-        }
-
-		// instiate possible movement outlines
-		foreach (int[] i in tilePosInMovementRange) {
+	// Instantiate tile outlines that need to be oriented correctly
+	// yOffset lets you put some outlines overtop others (precedence)
+	public List<GameObject> InstantiateOrientedOutlines(GameObject[] outlinePrefabs, List<int[]> tilesInRange, float yOffset) {
+		List<GameObject> createdOutlines = new List<GameObject>();
+		// insantiate possible movement outlines
+		foreach (int[] i in tilesInRange) {
 			// determine which neighbours are also in movement range
 			int[] temp = new int[2];
 
@@ -108,7 +90,7 @@ public class UnitPathfinding : MonoBehaviour {
 
 			// check if neighbours are also in the list of possible movements
 
-			foreach (int[] j in tilePosInMovementRange) {
+			foreach (int[] j in tilesInRange) {
 				// above neighbour
 				if (j[0] == i[0] && j[1] == i[1] + 1) {
 					neighbourValues[0] = true;
@@ -139,7 +121,7 @@ public class UnitPathfinding : MonoBehaviour {
 			// if it doesn't, then we dont instantiate it
 			if (tempSum <= 3 && tempSum > 0) {
 				// position of outline
-				Vector3 pos = new Vector3(i[0], 0.01f, i[1]);
+				Vector3 pos = new Vector3(i[0], yOffset, i[1]);
 				// rotation of outline
 				float yRotation = 0f;
 				// default
@@ -147,7 +129,7 @@ public class UnitPathfinding : MonoBehaviour {
 
 				if (tempSum == 3) {
 					// 3 neighbours in list
-					prefab = gameManager.tilePossibleMovementOutlinePrefabs[0];
+					prefab = outlinePrefabs[0];
 
 					if (!neighbourValues[0]) {
 						// no neighbour above
@@ -164,7 +146,7 @@ public class UnitPathfinding : MonoBehaviour {
 					}
 				} else if (tempSum == 2) {
 					// 2 neighbours in list
-					prefab = gameManager.tilePossibleMovementOutlinePrefabs[1];
+					prefab = outlinePrefabs[1];
 
 					// shape: |_
 					if (!neighbourValues[0] && !neighbourValues[1]) {
@@ -180,19 +162,19 @@ public class UnitPathfinding : MonoBehaviour {
 						// no neighbour below and to left
 						yRotation = 90f;
 
-					// shape: | |
+						// shape: | |
 					} else if (!neighbourValues[1] && !neighbourValues[2]) {
 						// no neighbour right and left
 						yRotation = 90f;
-						prefab = gameManager.tilePossibleMovementOutlinePrefabs[3];
+						prefab = outlinePrefabs[3];
 					} else if (!neighbourValues[0] && !neighbourValues[3]) {
 						// no neighbour above and below
 						yRotation = 180f;
-						prefab = gameManager.tilePossibleMovementOutlinePrefabs[3];
+						prefab = outlinePrefabs[3];
 					}
 				} else if (tempSum == 1) {
 					// 1 neighbour in list
-					prefab = gameManager.tilePossibleMovementOutlinePrefabs[2];
+					prefab = outlinePrefabs[2];
 
 					if (neighbourValues[0]) {
 						// no neighbour above
@@ -213,12 +195,99 @@ public class UnitPathfinding : MonoBehaviour {
 				// rotate outline
 				tempObj.transform.Rotate(0f, yRotation, 0f, Space.World);
 				// add outline to list of all created outlines
-				createdMovementOutlines.Add(tempObj);
+				createdOutlines.Add(tempObj);
 			}
 		}
-    }
+		return createdOutlines;
+	}
+
+	// Returns all tiles you can move to with AP action points as a list
+	public List<int[]> CalculatePossibleMovements(int centerX, int centerY, int AP) {
+		List<int[]> returnValues = new List<int[]>();
+		// iterate over each tile in range of the player
+		for (int x = centerX - AP; x <= centerX + AP; x++) {
+			for (int y = centerY - AP; y <= centerY + AP; y++) {
+				// check if there's a path to current tile from the player's current position
+				if (map.BreadthFirstSearch(map.fullMapGraph[centerX, centerY], map.fullMapGraph[x, y], AP) != null) {
+					// Put the current tile position in list
+					int[] temp = new int[2];
+					temp[0] = x;
+					temp[1] = y;
+					returnValues.Add(temp);
+				}
+			}
+		}
+
+		return returnValues;
+	}
+
+	// Outline the tiles that the player has enough AP to move to
+	// This function is a little messy at the bottom with all the if statements
+	// and hard coded values, but whatever IDK how to optimize it more than this
+	public void DrawPossibleMovements() {
+		// you can only move up to AP units away from your current position
+		int AP = gameManager.characterClass.AP;
+
+		// Clear out the old outlines and delete them
+		DestroyOutlines(createdMovementOutlines);
+
+		// calculate which tiles are in range, then draw the outlines on the screen
+		List<int[]> tilePosInMovementRange = CalculatePossibleMovements(targetX, targetY, gameManager.characterClass.AP);
+		createdMovementOutlines = InstantiateOrientedOutlines(gameManager.tilePossibleMovementOutlinePrefabs, tilePosInMovementRange, 0.011f);
+	}
+
+	// Algorithm to check which points lie on a line
+	// WIP
+	public static List<int[]> BresenhamsAlgorithm(int x1, int y1, int x2, int y2) {
+		List<int[]> result = new List<int[]>();
+		return result;
+	}
+
+	// Calculate which tiles are in attack range
+	public List<int[]> CalculateTilesInRange(int centerX, int centerY, int radius) {
+		List<int[]> returnValues = new List<int[]>();
+		// Iterate over all tiles within range
+		// radius = range
+		for (int x = centerX - radius; x < centerX + radius; x++) {
+			for (int y = centerY - radius; y < centerY + radius; y++) {
+				float distance = Mathf.Sqrt(Mathf.Pow((x - centerX), 2) + Mathf.Pow((y - centerY), 2));
+				if (distance <= radius) {
+					// current tile is within radius
+					// now, check if there's line of sight to the player
+
+					// Draw a line to the center, and for every tile that lies on that line,
+					// check whether it blocks vision. If it does, then break; and go to the
+					// next tile. If none of the tiles on that line break vision, then the current
+					// tile is added to the list of tiles in range.
+
+					// WIP
+
+					/*
+					List<int[]> temp = BresenhamsAlgorithm(centerX, centerY, x, y);
+					foreach(int[] i in temp) {
+						if (!map.tileTypes[map.tiles[i[0], i[1]]].blocksVision) {
+							break;
+                        }
+                    }*/
+
+					returnValues.Add(new int[] { x, y });
+				}
+			}
+		}
+		return returnValues;
+	}
+
+	// Draw tile outlines showing the player how far they can attack or shoot
+	public void DrawTilesInRange() {
+		// Clear out the old outlines and delete them
+		DestroyOutlines(createdRangeOutlines);
+
+		List<int[]> tilePosInAttackRange = CalculateTilesInRange(targetX, targetY, gameManager.characterClass.attackRange);
+		createdRangeOutlines = InstantiateOrientedOutlines(gameManager.rangeOutlinePrefabs, tilePosInAttackRange, 0.01f);
+	}
 
 	// Hide the tiles that the player is too far away to see
+	// WIP
 	public void DrawFogOfWar() {
 		return;
 	}
@@ -345,6 +414,13 @@ public class UnitPathfinding : MonoBehaviour {
 		}
 	}
 
+	// Draws outlines based on current control state
+	public void DrawOutlines() {
+		DrawPossibleMovements();
+		DrawTilesInRange();
+		DrawFogOfWar();
+	}
+
 	// This method will keep moving the character in the path they have chosen
 	// until they run out of movement points
 	public void TakeMovement() {
@@ -352,8 +428,6 @@ public class UnitPathfinding : MonoBehaviour {
 		while (currentPath != null && gameManager.characterClass.AP - map.CostToEnterTile(currentPath[1].x, currentPath[1].y) >= 0) {
 			AdvancePathing();
 		}
-		
-		DrawPossibleMovements();
-		DrawFogOfWar();
+		DrawOutlines();
 	}
 }

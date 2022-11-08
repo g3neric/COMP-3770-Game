@@ -24,15 +24,19 @@ public class ClickableTile : MonoBehaviour {
 	void OnMouseUp() {
 		unitPathfinding = gameManager.selectedUnit.GetComponent<UnitPathfinding>();
 		if (!EventSystem.current.IsPointerOverGameObject()) {
-			if (currentCharacterOnTile == null) {
-				// nobody on tile right now
-				currentCharacterOnTile = gameManager.selectedUnit;
+			if (gameManager.cs == ControlState.Move) {
+				// move state
 
-				unitPathfinding.PathToLocation(x, y, gameObject);
-				unitPathfinding.TakeMovement();
-			} else if (currentCharacterOnTile.tag == "enemy") {
-				// do something - attack?
-            }
+				if (currentCharacterOnTile == null) {
+					// nobody on tile right now
+					currentCharacterOnTile = gameManager.selectedUnit;
+
+					unitPathfinding.PathToLocation(x, y, gameObject);
+					unitPathfinding.TakeMovement();
+				}
+			} else if (gameManager.cs == ControlState.Attack) {
+				// attack state
+			}
 		}
 	}
 
@@ -40,7 +44,7 @@ public class ClickableTile : MonoBehaviour {
     void OnMouseEnter() {
 		unitPathfinding = gameManager.selectedUnit.GetComponent<UnitPathfinding>();
 		if (!EventSystem.current.IsPointerOverGameObject() && !completed) {
-			unitPathfinding.tileHoverOutline.transform.position = transform.position + new Vector3(0, 0.011f, 0);
+			unitPathfinding.tileHoverOutline.transform.position = transform.position + new Vector3(0, 0.012f, 0);
 			completed = true;
 		}
     }

@@ -110,7 +110,7 @@ public class GameManager : MonoBehaviour {
 		// These will be controlled by the class the player chooses later on
 		characterClass.AP = 6;
 		characterClass.maxAP = 6;
-		characterClass.viewRange = 13;
+		characterClass.viewRange = 15;
 		characterClass.attackRange = 7;
 
 		// Check if chosen position is walkable

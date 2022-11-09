@@ -32,12 +32,13 @@ public class CameraController : MonoBehaviour {
 
     // zoom
     private float zoomLevel;
+    public float maxZoom;
     private float ZoomLevel {
         get {
             return zoomLevel;
         }
         set {
-            zoomLevel = Mathf.Clamp(value, 0f, 5f);
+            zoomLevel = Mathf.Clamp(value, 0f, maxZoom);
         }
     }
 

@@ -64,9 +64,12 @@ public class ClickableTile : MonoBehaviour {
 	// When tile is viewable by a camera, then set its children to active
 	void OnBecameVisible() {
 		// Set all children to active
-		foreach (Transform child in transform) {
-			child.gameObject.SetActive(true);
+		if (transform.gameObject.GetComponent<MeshRenderer>().material != gameManager.fogOfWarOutlineMaterial) {
+			foreach (Transform child in transform) {
+				child.gameObject.SetActive(true);
+			}
 		}
+		
 		// Set mesh renderer to active
 		//gameObject.GetComponent<MeshRenderer>().enabled = true;
 	}

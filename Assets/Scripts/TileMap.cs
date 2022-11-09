@@ -34,6 +34,8 @@ public class TileMap : MonoBehaviour {
 
 	// List of tile types, represented by integers
 	public int[,] tiles;
+
+	// List of the tile's game objects
 	public GameObject[,] tilesObjects;
 
 	// Private variables
@@ -81,6 +83,9 @@ public class TileMap : MonoBehaviour {
 		// part of the perlin noise map that we use each time. In order to do this we offset
 		// the x and y values by different (random) amounts each time we generate our tilemap
 		float mapSeed = Random.Range(1, 100);
+
+		// Inverse biome size variable so that it makes more sense
+		biomeSize = 25 - biomeSize;
 
 		// iterate over every tile
 		for (int x = 0; x < mapSize; x++) {
@@ -178,7 +183,29 @@ public class TileMap : MonoBehaviour {
 				ct.gameManager = gameManager;
 				ct.x = x;
 				ct.y = y;
+
+				ChangeTileToFog(x, y);
 			}
+		}
+	}
+
+	public void ChangeTileToFog(int x, int y) {
+		// change material to fog
+		tilesObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = gameManager.fogOfWarOutlineMaterial;
+
+		// disable all children
+		foreach (Transform child in tilesObjects[x, y].transform) {
+			child.gameObject.SetActive(false);
+		}
+	}
+
+	public void RevertTileToDefault(int x, int y) {
+		// revert material
+		tilesObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = tileTypes[tiles[x, y]].tilePrefab.GetComponent<MeshRenderer>().sharedMaterial;
+
+		// enable all children
+		foreach (Transform child in tilesObjects[x, y].transform) {
+			child.gameObject.SetActive(true);
 		}
 	}
 

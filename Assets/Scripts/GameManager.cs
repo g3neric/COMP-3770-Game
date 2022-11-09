@@ -27,6 +27,10 @@ public class GameManager : MonoBehaviour {
 	public GameObject tileHoverOutlinePrefab;
 	public GameObject[] tilePossibleMovementOutlinePrefabs;
 	public GameObject[] rangeOutlinePrefabs;
+
+	// fog of war outline
+	public Material fogOfWarOutlineMaterial;
+
 	// scene object references
 	[Space]
 	[Header("Scene object references")]
@@ -102,8 +106,8 @@ public class GameManager : MonoBehaviour {
 		// These will be controlled by the class the player chooses later on
 		characterClass.AP = 6;
 		characterClass.maxAP = 6;
-		characterClass.viewRange = 15;
-		characterClass.attackRange = 5;
+		characterClass.viewRange = 30;
+		characterClass.attackRange = 7;
 
 		// Check if chosen position is walkable
 		int tempX = Mathf.FloorToInt(tileMap.mapSize / 2);
@@ -125,6 +129,7 @@ public class GameManager : MonoBehaviour {
 		}
 		characterClass.FinishTurn(); // update character stats
 		selectedUnit.GetComponent<UnitPathfinding>().DrawPossibleMovements();
+		selectedUnit.GetComponent<UnitPathfinding>().DrawFogOfWar();
 
 		// resolve NPC actions
 		for (int i = 0; i < otherCharacters.Count; i++) {

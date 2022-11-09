@@ -23,7 +23,7 @@ public class UnitPathfinding : MonoBehaviour {
 	[HideInInspector] public GameObject tileHoverOutline;
 	[HideInInspector] public List<GameObject> createdMovementOutlines;
 	[HideInInspector] public List<GameObject> createdRangeOutlines;
-	[HideInInspector] public List<GameObject> enabledTiles; // for fog of war
+	[HideInInspector] public List<int[]> viewableTiles; // for fog of war
 
 	// Our pathfinding info.  Null if we have no destination ordered.
 	public List<Node> currentPath = null;
@@ -35,10 +35,7 @@ public class UnitPathfinding : MonoBehaviour {
 		// There's only two of these so we can just move them around the scene
 		tileOutline = Instantiate(gameManager.tileOutlinePrefab, new Vector3(-100f, -100f, -100f), Quaternion.identity);
 		tileHoverOutline = Instantiate(gameManager.tileHoverOutlinePrefab, new Vector3(-100f, -100f, -100f), Quaternion.identity);
-
-		// Initialize list for the line segments
-		createdLines = new List<GameObject>();
-		enabledTiles = new List<GameObject>();
+		
 	}
 	void FixedUpdate() {
 		// Smoothly animate towards the correct map tile.
@@ -62,10 +59,13 @@ public class UnitPathfinding : MonoBehaviour {
 		targetY = y;
 		transform.position = map.TileCoordToWorldCoord(targetX, targetY);
 
-		// Draw possible movements right when you spawn
+		// create the lists
 		createdMovementOutlines = new List<GameObject>();
 		createdRangeOutlines = new List<GameObject>();
+		createdLines = new List<GameObject>();
+		viewableTiles = new List<int[]>();
 
+		// Draw possible movements and fog of war right when you spawn
 		DrawPossibleMovements();
 		DrawFogOfWar();
 	}
@@ -273,7 +273,7 @@ public class UnitPathfinding : MonoBehaviour {
 	}
 
 	// Calculate which tiles are in attack range
-	public List<int[]> CalculateTilesInRange(int centerX, int centerY, int radius) {
+	public List<int[]> CalculateTilesInRange(int centerX, int centerY, int radius, bool includeFrontier) {
 		List<int[]> returnValues = new List<int[]>();
 		// Iterate over all tiles within range
 		// radius = range
@@ -285,19 +285,23 @@ public class UnitPathfinding : MonoBehaviour {
 					// now, check if there's line of sight to the player
 
 					// Draw a line to the center, and for every tile that lies on that line,
-					// check whether it blocks vision. If it does, then break; and go to the
-					// next tile. If none of the tiles on that line break vision, then the current
-					// tile is added to the list of tiles in range.
+					// check whether it blocks vision.
 					bool flag = false;
 					List<int[]> temp = BresenhamsAlgorithm(centerX, centerY, x, y);
-					foreach (int[] i in temp) {
-
-						int tileType = map.tiles[i[0], i[1]];
-						if (map.tileTypes[tileType].blocksVision) {
-							flag = true;
-                        }
+					for (int i = 0; i < temp.Count; i++) {
+						int type = map.tiles[temp[i][0], temp[i][1]];
+						if (includeFrontier) {
+							if (map.tileTypes[type].blocksVision && i != (temp.Count - 1)) {
+								// current tile blocks vision, therefore dont add (x, y) to list of viewable tiles
+								flag = true;
+							}
+						} else {
+							if (map.tileTypes[type].blocksVision) {
+								// current tile blocks vision, therefore dont add (x, y) to list of viewable tiles
+								flag = true;
+							}
+						}
                     }
-
 					if (!flag) {
 						returnValues.Add(new int[] { x, y });
 					}
@@ -312,14 +316,27 @@ public class UnitPathfinding : MonoBehaviour {
 		// Clear out the old outlines and delete them
 		DestroyOutlines(createdRangeOutlines);
 
-		List<int[]> tilePosInAttackRange = CalculateTilesInRange(targetX, targetY, gameManager.characterClass.attackRange);
+		List<int[]> tilePosInAttackRange = CalculateTilesInRange(targetX, targetY, gameManager.characterClass.attackRange, false);
 		createdRangeOutlines = InstantiateOrientedOutlines(gameManager.rangeOutlinePrefabs, tilePosInAttackRange, 0.011f);
 	}
 
 	// Hide the tiles that the player is too far away to see
-	// WIP
+
+
 	public void DrawFogOfWar() {
-		return;
+		// reset tiles previously in sight to fog and clear the list
+		foreach (int[] i in viewableTiles) {
+			map.ChangeTileToFog(i[0], i[1]);
+        }
+		viewableTiles.Clear();
+
+		// calculate tiles with line of sight and within view range
+		viewableTiles = CalculateTilesInRange(targetX, targetY, gameManager.characterClass.viewRange, true);
+
+		foreach (int[] tile in viewableTiles) {
+			map.RevertTileToDefault(tile[0], tile[1]);
+		}
+		int viewRange = gameManager.characterClass.viewRange;
 	}
 
 	// Advances our pathfinding progress by one tile.
@@ -450,6 +467,7 @@ public class UnitPathfinding : MonoBehaviour {
 		// Make sure to wrap-up any outstanding movement left over.
 		while (currentPath != null && gameManager.characterClass.AP - map.CostToEnterTile(currentPath[1].x, currentPath[1].y) >= 0) {
 			AdvancePathing();
+			DrawFogOfWar();
 		}
 
 		// Update outlines

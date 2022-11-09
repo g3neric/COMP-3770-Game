@@ -48,9 +48,15 @@ public class CameraController : MonoBehaviour {
     private Vector2 MouseDragStartPos;
     private bool HasRightMouseDown;
     private Vector2 LastFrameMousePos;
+    private bool snappedToUnit;
 
-    private void SnapToUnit () {
-        ObjectCamTarget.transform.position = gameManager.selectedUnit.transform.position;
+    public void ToggleSnapToUnit () {
+        if (snappedToUnit) {
+            snappedToUnit = false;
+        } else if (!snappedToUnit) {
+            ObjectCamTarget.transform.position = gameManager.selectedUnit.transform.position;
+            snappedToUnit = true;
+        }
     }
 
     void Start() {
@@ -78,23 +84,32 @@ public class CameraController : MonoBehaviour {
         // target movement
         ObjectCamTarget.transform.rotation = Quaternion.Euler(0, CamTrans.localEulerAngles.y, 0);
 
-        // backward
-        if (Input.GetAxisRaw("Vertical") < -0.2f) {
-            ObjectCamTargetRigidbody.AddRelativeForce(Vector3.back * CamTargetSpeed);
-        }
-        // forward
-        else if (Input.GetAxisRaw("Vertical") > 0.2f) {
-            ObjectCamTargetRigidbody.AddRelativeForce(Vector3.forward * CamTargetSpeed);
+        // toggle camera snap to unit
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            ToggleSnapToUnit();
         }
 
-        // right
-        if (Input.GetAxisRaw("Horizontal") > 0.2f){
-            ObjectCamTargetRigidbody.AddRelativeForce(Vector3.right * CamTargetSpeed);
+        if (snappedToUnit) {
+            ObjectCamTarget.transform.position = gameManager.selectedUnit.transform.position;
+        } else {
+            // backward
+            if (Input.GetAxisRaw("Vertical") < -0.2f) {
+                ObjectCamTargetRigidbody.AddRelativeForce(Vector3.back * CamTargetSpeed);
+            }
+            // forward
+            else if (Input.GetAxisRaw("Vertical") > 0.2f) {
+                ObjectCamTargetRigidbody.AddRelativeForce(Vector3.forward * CamTargetSpeed);
+            }
+
+            // right
+            if (Input.GetAxisRaw("Horizontal") > 0.2f) {
+                ObjectCamTargetRigidbody.AddRelativeForce(Vector3.right * CamTargetSpeed);
+            }
+            // left
+            else if (Input.GetAxisRaw("Horizontal") < -0.2f) {
+                ObjectCamTargetRigidbody.AddRelativeForce(Vector3.left * CamTargetSpeed);
+            };
         }
-        // left
-        else if (Input.GetAxisRaw("Horizontal") < -0.2f) {
-            ObjectCamTargetRigidbody.AddRelativeForce(Vector3.left * CamTargetSpeed);
-        };
 
         // enforce speed limit
         if (ObjectCamTargetRigidbody.velocity.magnitude > ObjectCamTargetMaxSpeed) {
@@ -123,9 +138,8 @@ public class CameraController : MonoBehaviour {
             HasRightMouseDown = false;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space)) {
-            SnapToUnit();
-        }
+        
+
 
         if (Input.GetAxis("Mouse ScrollWheel") < 0f) {
             ZoomLevel += zoomSpeed;

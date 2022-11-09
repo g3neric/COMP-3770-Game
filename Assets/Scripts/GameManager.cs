@@ -64,6 +64,8 @@ public class GameManager : MonoBehaviour {
 
 		// Create and spawn the player's character
 		CreatePlayerCharacter();
+
+		Camera.GetComponent<CameraController>().ToggleSnapToUnit();
 	}
 
 	public void SetItemSelected(ItemSelected newCS) {
@@ -106,7 +108,7 @@ public class GameManager : MonoBehaviour {
 		// These will be controlled by the class the player chooses later on
 		characterClass.AP = 6;
 		characterClass.maxAP = 6;
-		characterClass.viewRange = 30;
+		characterClass.viewRange = 13;
 		characterClass.attackRange = 7;
 
 		// Check if chosen position is walkable

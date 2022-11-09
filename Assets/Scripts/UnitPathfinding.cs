@@ -475,7 +475,7 @@ public class UnitPathfinding : MonoBehaviour {
 
 		// If you're moving along your path with an item selected, the tiles in range will update
 		// each time you move
-		if (gameManager.cs == ItemSelected.Item1 || gameManager.cs == ItemSelected.Item2) {
+		if (gameManager.cs == ControlState.Item1 || gameManager.cs == ControlState.Item2) {
 			DrawTilesInRange();
         }
 

@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum ItemSelected { Move, Item1, Item2, Deselected };
+public enum ControlState { Move, Item1, Item2, Deselected };
 
 public class GameManager : MonoBehaviour {
 
@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviour {
 
 	[HideInInspector] public int turnCount = 1;
 
-	public ItemSelected cs = ItemSelected.Deselected;
+	[HideInInspector] public ControlState cs = ControlState.Deselected;
 
 	// Prefabs
 	[Space]
@@ -44,7 +44,9 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector] public Character characterClass = new Character(); // player character
 	[HideInInspector] public List<Character> otherCharacters; // NPCs
 
-	UnitPathfinding unitPathfinding;
+	[HideInInspector] public bool pauseMenuEnabled;
+
+	[HideInInspector] UnitPathfinding unitPathfinding;
 
 	void Start() {
 		InitiateGameSession();
@@ -68,23 +70,23 @@ public class GameManager : MonoBehaviour {
 		Camera.GetComponent<CameraController>().ToggleSnapToUnit();
 	}
 
-	public void SetItemSelected(ItemSelected newCS) {
+	public void SetControlState(ControlState newCS) {
 		unitPathfinding.DestroyOutlines(unitPathfinding.createdRangeOutlines);
 		unitPathfinding.DestroyOutlines(unitPathfinding.createdMovementOutlines);
 		// check which state was clicked
 		if (cs == newCS) {
 			// deselect control state
-			cs = ItemSelected.Deselected;
-		} else if (newCS == ItemSelected.Move) {
+			cs = ControlState.Deselected;
+		} else if (newCS == ControlState.Move) {
 			// switch to move state
-			cs = ItemSelected.Move;
-		} else if (newCS == ItemSelected.Item1) {
+			cs = ControlState.Move;
+		} else if (newCS == ControlState.Item1) {
 			// switch to item 1
-			cs = ItemSelected.Item1;
+			cs = ControlState.Item1;
 			unitPathfinding.DrawTilesInRange();
-		} else if (newCS == ItemSelected.Item2) {
+		} else if (newCS == ControlState.Item2) {
 			// switch to item 2
-			cs = ItemSelected.Item2;
+			cs = ControlState.Item2;
 			unitPathfinding.DrawTilesInRange();
 		}
 		unitPathfinding.DrawPossibleMovements();

@@ -24,7 +24,7 @@ public class ClickableTile : MonoBehaviour {
 	void OnMouseUp() {
 		unitPathfinding = gameManager.selectedUnit.GetComponent<UnitPathfinding>();
 		if (!EventSystem.current.IsPointerOverGameObject()) {
-			if (gameManager.cs == ItemSelected.Move) {
+			if (gameManager.cs == ControlState.Move) {
 				// move state
 
 				if (currentCharacterOnTile == null) {
@@ -61,6 +61,11 @@ public class ClickableTile : MonoBehaviour {
 	// including the scene view camera. When in the editor, you have to point the scene
 	// view camera AWAY from the tilemap for these two to work!
 
+	// NOTE: may not need these for optimization when fog of war is being used,
+	// but we'll see.
+
+
+	/*
 	// When tile is viewable by a camera, then set its children to active
 	void OnBecameVisible() {
 		// Set all children to active
@@ -82,6 +87,6 @@ public class ClickableTile : MonoBehaviour {
 		}
 		// Set mesh renderer to inactive
 		//gameObject.GetComponent<MeshRenderer>().enabled = false;
-	}
+	}*/
 }
 

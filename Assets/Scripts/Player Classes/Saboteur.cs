@@ -3,10 +3,12 @@
 
 public class Saboteur : Character {
     public Saboteur() {
-        this.maxAP = 3;
-        this.maxHP = 45;
-        this.attackRange = 6; // tiles
-        this.viewRange = 10;
-        this.luckMultiplier = 1f;
+        className = "Saboteur";
+        maxAP = 6;
+        AP = maxAP;
+        maxHP = 45;
+        attackRange = 6; // tiles
+        viewRange = 10;
+        luckMultiplier = 1f;
     }
 }

@@ -32,8 +32,7 @@ public class ClickableTile : MonoBehaviour {
 					currentCharacterOnTile = gameManager.selectedUnit;
 
 					unitPathfinding.PathToLocation(x, y, gameObject);
-					unitPathfinding.TakeMovement();
-				}
+				} 
 			}
 		}
 	}

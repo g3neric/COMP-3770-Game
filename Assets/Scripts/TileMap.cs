@@ -38,10 +38,19 @@ public class TileMap : MonoBehaviour {
 	// List of the tile's game objects
 	public GameObject[,] tilesObjects;
 
-	// Private variables
+	// graph of map for pathfinding
 	[HideInInspector] public Node[,] fullMapGraph;
-	
-	public void InitiateTileMap() {
+
+	// all tiles currently viewable to player
+	// for fog of war
+	[HideInInspector] public List<int[]> viewableTiles;
+
+	// initiate assethandler reference
+	private AssetHandler assetHandler;
+
+    public void InitiateTileMap() {
+		assetHandler = GameObject.Find("AssetHandler").GetComponent<AssetHandler>();
+
 		// Initiate the map and pathfinding
 		GenerateMap(); // generate map
 		fullMapGraph = GeneratePathfindingGraph(mapSize, 0); // pathfinding
@@ -52,8 +61,9 @@ public class TileMap : MonoBehaviour {
 	public void GenerateMap() {
 		tiles = new int[mapSize, mapSize]; // all of the tile types
 		tilesObjects = new GameObject[mapSize, mapSize]; // all gameobjects of tiles
+		viewableTiles = new List<int[]>(); // instantiate viewable tiles for fog of war
 
-		// Test if you messed up the frequency attributes in the editor
+		// Test if someone messed up the frequency attributes in the editor >:(
 		// Must add up to 100%.
 		int sum = 0;
 		for (int x = 0; x < numOfRandomlyGeneratedTiles; x++) {
@@ -178,6 +188,7 @@ public class TileMap : MonoBehaviour {
 					currentTile.transform.Rotate(0f, 90f * phase, 0f, Space.World);
 				}
 				
+				// add script to tile
 				ClickableTile ct = currentTile.AddComponent<ClickableTile>();
 				ct.map = this;
 				ct.gameManager = gameManager;
@@ -189,9 +200,20 @@ public class TileMap : MonoBehaviour {
 		}
 	}
 
+	// check if a given tile at (x, y) is viewable to the player
+	public bool IsTileVisibleToPlayer(int x, int y) {
+		// check each viewable tile, and if its the one given return true
+		for (int i = 0; i < viewableTiles.Count; i++) {
+			if (viewableTiles[i][0] == x && viewableTiles[i][1] == y) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public void ChangeTileToFog(int x, int y) {
 		// change material to fog
-		tilesObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = gameManager.fogOfWarOutlineMaterial;
+		tilesObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = assetHandler.fogOfWarOutlineMaterial;
 
 		// disable all children
 		foreach (Transform child in tilesObjects[x, y].transform) {
@@ -228,7 +250,7 @@ public class TileMap : MonoBehaviour {
 	}
 
 	// Generates a graph of size rangeX by rangeY, starting at (offsetX, offsetY)
-	public Node[,] GeneratePathfindingGraph(int range, int offset) {
+	public static Node[,] GeneratePathfindingGraph(int range, int offset) {
 		// Initialize the array
 		Node[,] graph = new Node[range, range];
 
@@ -277,9 +299,9 @@ public class TileMap : MonoBehaviour {
 	}
 
 	// Convert 2D tile (x, y) grid to 3D (x, 0, z) world coords
-	public Vector3 TileCoordToWorldCoord(int x, int y) {
+	public static Vector3 TileCoordToWorldCoord(int x, int y, float yOffset) {
 		// 0.5 unit offset so that the unit pathfinds to the middle of the square
-		return new Vector3(x, 0f, y);
+		return new Vector3(x, yOffset, y);
 	}
 
 	// Optimized for drawing possible movements
@@ -403,6 +425,239 @@ public class TileMap : MonoBehaviour {
 		currentPath.Reverse();
 
 		return currentPath;
+	}
+
+	// Returns all tiles you can move to with AP action points as a list
+	public List<int[]> CalculatePossibleMovements(int centerX, int centerY, int AP) {
+		List<int[]> returnValues = new List<int[]>();
+		// iterate over each tile in range of the player
+		for (int x = centerX - AP; x <= centerX + AP; x++) {
+			for (int y = centerY - AP; y <= centerY + AP; y++) {
+				// check if there's a path to current tile from the player's current position
+				// and if there's no character on the tile already
+				if (BreadthFirstSearch(fullMapGraph[centerX, centerY], fullMapGraph[x, y], AP) != null && 
+					tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile == null ||
+					tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile == gameManager.selectedUnit) {
+					// Put the current tile position in list
+					int[] temp = new int[2];
+					temp[0] = x;
+					temp[1] = y;
+					returnValues.Add(temp);
+				}
+			}
+		}
+		return returnValues;
+	}
+
+	// return all the grid squares that lie on a line
+	public static List<int[]> BresenhamsAlgorithm(int x, int y, int x2, int y2) {
+		List<int[]> result = new List<int[]>();
+		int w = x2 - x;
+		int h = y2 - y;
+		int dx1 = 0, dy1 = 0, dx2 = 0, dy2 = 0;
+		if (w < 0) dx1 = -1; else if (w > 0) dx1 = 1;
+		if (h < 0) dy1 = -1; else if (h > 0) dy1 = 1;
+		if (w < 0) dx2 = -1; else if (w > 0) dx2 = 1;
+		int longest = Mathf.Abs(w);
+		int shortest = Mathf.Abs(h);
+		if (!(longest > shortest)) {
+			longest = Mathf.Abs(h);
+			shortest = Mathf.Abs(w);
+			if (h < 0) dy2 = -1; else if (h > 0) dy2 = 1;
+			dx2 = 0;
+		}
+		int numerator = longest >> 1;
+		for (int i = 0; i <= longest; i++) {
+			int[] temp = { x, y };
+			result.Add(temp);
+			numerator += shortest;
+			if (!(numerator < longest)) {
+				numerator -= longest;
+				x += dx1;
+				y += dy1;
+			} else {
+				x += dx2;
+				y += dy2;
+			}
+		}
+		return result;
+	}
+
+	// Calculate which tiles are in attack range
+	public List<int[]> CalculateTilesInRange(int centerX, int centerY, int radius, bool includeFrontier) {
+		List<int[]> returnValues = new List<int[]>();
+		// Iterate over all tiles within range
+		// radius = range
+		for (int x = centerX - radius; x < centerX + radius; x++) {
+			for (int y = centerY - radius; y < centerY + radius; y++) {
+				float distance = Mathf.Sqrt(Mathf.Pow((x - centerX), 2) + Mathf.Pow((y - centerY), 2)) + 0.5f;
+				if (distance <= radius) {
+					// current tile is within radius
+					// now, check if there's line of sight to the player
+
+					// Draw a line to the center, and for every tile that lies on that line,
+					// check whether it blocks vision.
+					bool flag = false;
+
+					List<int[]> result = BresenhamsAlgorithm(centerX, centerY, x, y);
+
+					// iterate over each tile that lies on the line
+					for (int i = 0; i < result.Count; i++) {
+						int type = tiles[result[i][0], result[i][1]];
+						// check if we're including the tile that is blocking the vision
+						if (includeFrontier) {
+							if (tileTypes[type].blocksVision && i != (result.Count - 1)) {
+								// current tile blocks vision, therefore dont add (x, y) to list of viewable tiles
+								flag = true;
+							}
+						} else {
+							if (tileTypes[type].blocksVision) {
+								// current tile blocks vision, therefore dont add (x, y) to list of viewable tiles
+								flag = true;
+							}
+						}
+					}
+					if (!flag) {
+						returnValues.Add(new int[] { x, y });
+					}
+				}
+			}
+		}
+		return returnValues;
+	}
+
+	// Instantiate tile outlines that need to be oriented correctly
+	// yOffset lets you put some outlines overtop others (precedence)
+	// there's alot of if statements in here consider yourself warned
+	public static List<GameObject> InstantiateOrientedOutlines(GameObject[] outlinePrefabs, List<int[]> tilesInRange, float yOffset) {
+		List<GameObject> createdOutlines = new List<GameObject>();
+		// insantiate possible movement outlines
+		foreach (int[] i in tilesInRange) {
+			// determine which neighbours are also in movement range
+			int[] temp = new int[2];
+
+			// [0] = above, [1] = right, [2] = left, [3] = below
+			bool[] neighbourValues = new bool[4];
+
+			// check if neighbours are also in the list of possible movements
+
+			foreach (int[] j in tilesInRange) {
+				// above neighbour
+				if (j[0] == i[0] && j[1] == i[1] + 1) {
+					neighbourValues[0] = true;
+				}
+				// right neighbour
+				if (j[0] == i[0] + 1 && j[1] == i[1]) {
+					neighbourValues[1] = true;
+				}
+				// left neighbour
+				if (j[0] == i[0] - 1 && j[1] == i[1]) {
+					neighbourValues[2] = true;
+				}
+				// below neighbour
+				if (j[0] == i[0] && j[1] == i[1] - 1) {
+					neighbourValues[3] = true;
+				}
+			}
+
+			// count how many neighbours are in movement list
+			int tempSum = 0;
+			for (int j = 0; j < 4; j++) {
+				if (neighbourValues[j]) {
+					tempSum++;
+				}
+			}
+
+			// instantiate outline - make sure current tile has between 1 and 3 neighbours in list.
+			// if it doesn't, then we dont instantiate it
+			if (tempSum <= 3 && tempSum > 0) {
+				// position of outline
+				Vector3 pos = new Vector3(i[0], yOffset, i[1]);
+				// rotation of outline
+				float yRotation = 0f;
+				// default
+				GameObject prefab = null;
+
+				if (tempSum == 3) {
+					// 3 neighbours in list
+					prefab = outlinePrefabs[0];
+
+					if (!neighbourValues[0]) {
+						// no neighbour above
+						yRotation = 180f;
+					} else if (!neighbourValues[1]) {
+						// no neighbour right
+						yRotation = 270f;
+					} else if (!neighbourValues[2]) {
+						// no neighbour left
+						yRotation = 90f;
+					} else if (!neighbourValues[3]) {
+						// no neighbour below
+						yRotation = 0f;
+					}
+				} else if (tempSum == 2) {
+					// 2 neighbours in list
+					prefab = outlinePrefabs[1];
+
+					// shape: |_
+					if (!neighbourValues[0] && !neighbourValues[1]) {
+						// no neighbour above and to right
+						yRotation = 270f;
+					} else if (!neighbourValues[0] && !neighbourValues[2]) {
+						// no neighbour above and to left
+						yRotation = 180f;
+					} else if (!neighbourValues[3] && !neighbourValues[1]) {
+						// no neighbour below and to right
+						yRotation = 0f;
+					} else if (!neighbourValues[3] && !neighbourValues[2]) {
+						// no neighbour below and to left
+						yRotation = 90f;
+
+						// shape: | |
+					} else if (!neighbourValues[1] && !neighbourValues[2]) {
+						// no neighbour right and left
+						yRotation = 90f;
+						prefab = outlinePrefabs[3];
+					} else if (!neighbourValues[0] && !neighbourValues[3]) {
+						// no neighbour above and below
+						yRotation = 180f;
+						prefab = outlinePrefabs[3];
+					}
+				} else if (tempSum == 1) {
+					// 1 neighbour in list
+					prefab = outlinePrefabs[2];
+
+					if (neighbourValues[0]) {
+						// no neighbour above
+						yRotation = 360f;
+					} else if (neighbourValues[1]) {
+						// no neighbour right
+						yRotation = 90f;
+					} else if (neighbourValues[2]) {
+						// no neighbour left
+						yRotation = 270f;
+					} else if (neighbourValues[3]) {
+						// no neighbour below
+						yRotation = 180f;
+					}
+				}
+				// instantiate outline
+				GameObject tempObj = Instantiate(prefab, pos, Quaternion.identity);
+				// rotate outline
+				tempObj.transform.Rotate(0f, yRotation, 0f, Space.World);
+				// add outline to list of all created outlines
+				createdOutlines.Add(tempObj);
+			}
+		}
+		return createdOutlines;
+	}
+
+	// destroy all outlines in given list
+	public static void DestroyOutlines(List<GameObject> outlines) {
+		for (int i = 0; i < outlines.Count; i++) {
+			Destroy(outlines[i]);
+		}
+		outlines.Clear();
 	}
 
 	// Passthrough helper function

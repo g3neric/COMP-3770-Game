@@ -10,25 +10,25 @@ public class Character {
     // character model
     public GameObject characterPrefab;
 
-    [HideInInspector] public string name;
+    public string className;
 
     // base stats - all classes will differ
     // health
-    [HideInInspector] public int HP;
-    [HideInInspector] public int maxHP;
+    public int HP;
+    public int maxHP;
 
     // action points
-    [HideInInspector] public int AP;
-    [HideInInspector] public int maxAP;
+    public int AP;
+    public int maxAP;
 
     // other base stats
-    [HideInInspector] public int attackRange; // for combat
-    [HideInInspector] public int viewRange; // for fog of war
-    [HideInInspector] public float luckMultiplier; // used by joker class
+    public int attackRange; // for combat
+    public int viewRange; // for fog of war
+    public float luckMultiplier; // used by joker class
 
     // variable stats - all units start with 0
-    [HideInInspector] public int gold;
-    [HideInInspector] public int killCount;
+    public int gold;
+    public int killCount;
 
     public Character() {
         this.killCount = 0;

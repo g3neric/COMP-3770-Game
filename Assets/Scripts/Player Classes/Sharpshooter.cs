@@ -3,10 +3,12 @@
 
 public class Sharpshooter : Character {
     public Sharpshooter() {
-        this.maxAP = 3;
-        this.maxHP = 30;
-        this.attackRange = 10; // tiles
-        this.viewRange = 10;
-        this.luckMultiplier = 1f;
+        className = "Sharpshooter";
+        maxAP = 7;
+        AP = maxAP;
+        maxHP = 30;
+        attackRange = 10; // tiles
+        viewRange = 10;
+        luckMultiplier = 1f;
     }
 }

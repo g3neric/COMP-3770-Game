@@ -10,7 +10,6 @@ using TMPro;
 public enum PauseMenuState { Default, Controls, Settings };
 
 public class UIManager : MonoBehaviour {
-    public GameObject gameManagerObject;
     [HideInInspector] public GameManager gameManager;
 
     [HideInInspector] public PauseMenuState currentPMState = PauseMenuState.Default;
@@ -18,6 +17,7 @@ public class UIManager : MonoBehaviour {
     // UI objects
     public TextMeshProUGUI movementText;
     public TextMeshProUGUI turnCountText;
+    public TextMeshProUGUI classNameText;
 
     // toolbarButtons[0] = move state
     // toolbarButtons[1] = item 1
@@ -44,7 +44,7 @@ public class UIManager : MonoBehaviour {
     public Button buttonNextTurn;
 
     private void Awake() {
-        gameManager = gameManagerObject.GetComponent<GameManager>();
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
 
         // Initiate next turn button
         buttonNextTurn.GetComponent<Button>().onClick.AddListener(delegate { gameManager.FinishTurn(); });
@@ -68,9 +68,10 @@ public class UIManager : MonoBehaviour {
         settingsMenuReturnButton.GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Default); });
     }
     void Update() {
-        // update counts on the screen
+        // update text on the screen
         movementText.text = "AP left: " + gameManager.characterClass.AP;
         turnCountText.text = "Turn " + gameManager.turnCount;
+        classNameText.text = "Class: " + gameManager.characterClass.className;
 
         // button controls for the toolbar
         if (Input.GetKeyDown("1")) {

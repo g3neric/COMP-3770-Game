@@ -3,10 +3,12 @@
 
 public class Grunt : Character {
     public Grunt() {
-        this.maxAP = 4;
-        this.maxHP = 40;
-        this.attackRange = 4; // tiles
-        this.viewRange = 10;
-        this.luckMultiplier = 1f;
+        className = "Grunt";
+        maxAP = 5;
+        AP = maxAP;
+        maxHP = 40;
+        attackRange = 4; // tiles
+        viewRange = 10;
+        luckMultiplier = 1f;
     }
 }

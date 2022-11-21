@@ -7,7 +7,6 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour {
     // link to game manager
-    public GameObject gameManagerObject;
     private GameManager gameManager;
 
     Camera m_MainCamera;
@@ -63,7 +62,7 @@ public class CameraController : MonoBehaviour {
 
     void Start() {
         // initiate link to game manager
-        gameManager = gameManagerObject.GetComponent<GameManager>();
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
 
         m_MainCamera = Camera.main;
         

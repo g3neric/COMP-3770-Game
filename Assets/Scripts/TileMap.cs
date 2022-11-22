@@ -233,19 +233,20 @@ public class TileMap : MonoBehaviour {
 
 	public bool UnitCanEnterTile(int x, int y) {
 		// check if tiletype is walkable
-		return tileTypes[tiles[x, y]].isWalkable;
+		if (tileTypes[tiles[x, y]].isWalkable && 
+			tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile == null) {
+			return true;
+        } else {
+			return false;
+        }
 	}
 
-	public int CostToEnterTile(int targetX, int targetY) {
-		TileType tt = tileTypes[ tiles[targetX,targetY] ];
-
-		if (UnitCanEnterTile(targetX, targetY) == false) {
+	public int CostToEnterTile(int x, int y) {
+		if (UnitCanEnterTile(x, y) == false) {
 			// unit cannot enter tile, so return big number
-			return mapSize;
+			return mapSize * 10;
 		}
-
-		int cost = tt.movementCost;
-
+		int cost = tileTypes[tiles[x, y]].movementCost;
 		return cost;
 	}
 
@@ -661,10 +662,7 @@ public class TileMap : MonoBehaviour {
 	}
 
 	// Passthrough helper function
-	public void GeneratePathTo(int sourceX, int sourceY, int destX, int destY) {
-		// Clear out our unit's old path.
-		gameManager.selectedUnit.GetComponent<UnitPathfinding>().currentPath = null;
-		// Update current path
-		gameManager.selectedUnit.GetComponent<UnitPathfinding>().currentPath = DijkstraPath(sourceX, sourceY, destX, destY, fullMapGraph);
+	public List<Node> GeneratePathTo(int sourceX, int sourceY, int destX, int destY) {
+		return DijkstraPath(sourceX, sourceY, destX, destY, fullMapGraph);
 	}
 }

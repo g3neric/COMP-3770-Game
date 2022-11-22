@@ -12,8 +12,8 @@ public class UnitPathfinding : MonoBehaviour {
 	// the world-space coordinates, because our map might be scaled
 	// or offset or something of that nature.  Also, during movement
 	// animations, we are going to be somewhere in between tiles.
-	[HideInInspector] public int targetX;
-	[HideInInspector] public int targetY;
+	[HideInInspector] public int currentX;
+	[HideInInspector] public int currentY;
 
 	public TileMap map;
 
@@ -26,28 +26,16 @@ public class UnitPathfinding : MonoBehaviour {
 	
 
 	// Our pathfinding info.  Null if we have no destination ordered.
-	public List<Node> currentPath = null;
-
-	private GameObject tilePlayerIsOn; // game object of player's current tile
+	public List<Node> currentPath;
 
 	// reference to asset handler
 	private AssetHandler assetHandler;
 
 	private void FixedUpdate() {
-		// Smoothly animate towards the correct map tile.
-		if (currentPath != null) {
-			int currNode = 0;
-
-			// Initialize (x, y) values of all nodes in currentPath using linked list
-			while (currNode < currentPath.Count - 1) {
-				Vector3 start = TileMap.TileCoordToWorldCoord(currentPath[currNode].x, currentPath[currNode].y, 0.125f) + new Vector3(0, 0, 0);
-				Vector3 end = TileMap.TileCoordToWorldCoord(currentPath[currNode + 1].x, currentPath[currNode + 1].y, 0.125f) + new Vector3(0, 0, 0);
-
-				currNode++;
-			}
-		}
-
-		transform.position = Vector3.Lerp(transform.position, TileMap.TileCoordToWorldCoord(targetX, targetY, 0.125f), 10f * Time.fixedDeltaTime);
+		transform.position = Vector3.Lerp(transform.position, TileMap.TileCoordToWorldCoord(currentX, currentY, 0.125f), 10f * Time.fixedDeltaTime);
+		// idk what im doing tbh
+		gameManager.characterClass.currentX = currentX;
+		gameManager.characterClass.currentY = currentY;
 	}
 
 	public void SpawnPlayer(int x, int y) {
@@ -58,16 +46,22 @@ public class UnitPathfinding : MonoBehaviour {
 		tileOutline = Instantiate(assetHandler.tileOutlinePrefab, new Vector3(-100f, -100f, -100f), Quaternion.identity);
 		tileHoverOutline = Instantiate(assetHandler.tileHoverOutlinePrefab, new Vector3(-100f, -100f, -100f), Quaternion.identity);
 
-		targetX = x;
-		targetY = y;
-		transform.position = TileMap.TileCoordToWorldCoord(targetX, targetY, 0.125f);
+		// instantiate reference to current path
+		currentPath = gameManager.characterClass.currentPath;
+
+		// instantiate reference to target
+		currentX = gameManager.characterClass.currentX;
+		currentY = gameManager.characterClass.currentY;
+
+		currentX = x;
+		currentY = y;
+		transform.position = TileMap.TileCoordToWorldCoord(currentX, currentY, 0.125f);
 
 		// create the lists
 		createdMovementOutlines = new List<GameObject>();
 		createdRangeOutlines = new List<GameObject>();
 		createdLines = new List<GameObject>();
 		
-
 		// set reference to unit in the tile's script
 		map.tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile = gameObject;
 
@@ -76,29 +70,26 @@ public class UnitPathfinding : MonoBehaviour {
 		DrawFogOfWar();
 	}
 
-
 	// Outline the tiles that the player has enough AP to move to
 	// This function is a little messy at the bottom with all the if statements
 	// and hard coded values, but whatever IDK how to optimize it more than this
 	public void DrawPossibleMovements() {
 		// you can only move up to AP units away from your current position
-		int AP = gameManager.characterClass.AP;
 
 		// Clear out the old outlines and delete them
 		TileMap.DestroyOutlines(createdMovementOutlines);
 
 		// calculate which tiles are in range, then draw the outlines on the screen
-		List<int[]> tilePosInMovementRange = map.CalculatePossibleMovements(targetX, targetY, gameManager.characterClass.AP);
+		List<int[]> tilePosInMovementRange = map.CalculatePossibleMovements(currentX, currentY, gameManager.characterClass.AP);
 		createdMovementOutlines = TileMap.InstantiateOrientedOutlines(assetHandler.tilePossibleMovementOutlinePrefabs, tilePosInMovementRange, 0.01f);
 	}
-
 
 	// Draw tile outlines showing the player how far they can attack or shoot
 	public void DrawTilesInRange() {
 		// Clear out the old outlines and delete them
 		TileMap.DestroyOutlines(createdRangeOutlines);
 
-		List<int[]> tilePosInAttackRange = map.CalculateTilesInRange(targetX, targetY, gameManager.characterClass.attackRange, false);
+		List<int[]> tilePosInAttackRange = map.CalculateTilesInRange(currentX, currentY, gameManager.characterClass.attackRange, false);
 		createdRangeOutlines = TileMap.InstantiateOrientedOutlines(assetHandler.rangeOutlinePrefabs, tilePosInAttackRange, 0.011f);
 	}
 
@@ -112,7 +103,7 @@ public class UnitPathfinding : MonoBehaviour {
 		map.viewableTiles.Clear();
 
 		// calculate tiles with line of sight and within view range
-		map.viewableTiles = map.CalculateTilesInRange(targetX, targetY, gameManager.characterClass.viewRange, true);
+		map.viewableTiles = map.CalculateTilesInRange(currentX, currentY, gameManager.characterClass.viewRange, true);
 
 		foreach (int[] tile in map.viewableTiles) {
 			map.RevertTileToDefault(tile[0], tile[1]);
@@ -122,19 +113,25 @@ public class UnitPathfinding : MonoBehaviour {
 	// Advances our pathfinding progress by one tile.
 	private void AdvancePathing() {
 		if(currentPath == null || gameManager.characterClass.AP <= 0 ) {
+			// no path or no ap; therefore something went wrong and return
 			return;
 		}
 
+		// Get cost from current tile to next tile
+		gameManager.characterClass.AP -= map.CostToEnterTile(currentPath[1].x, currentPath[1].y);
+
+		// set current tile's current character to null
+		map.tilesObjects[currentPath[0].x, currentPath[0].y].GetComponent<ClickableTile>().currentCharacterOnTile = null;
+		// set next tile's current character to us
+		map.tilesObjects[currentPath[1].x, currentPath[1].y].GetComponent<ClickableTile>().currentCharacterOnTile = gameObject;
+
 		// Teleport us to our correct "current" position, in case we
 		// haven't finished the animation yet.
-		transform.position = TileMap.TileCoordToWorldCoord(targetX, targetY, 0.125f);
-
-		// Get cost from current tile to next tile
-		gameManager.characterClass.AP -= map.CostToEnterTile(currentPath[1].x, currentPath[1].y );
+		transform.position = TileMap.TileCoordToWorldCoord(currentX, currentY, 0.125f);
 
 		// Move us to the next tile in the sequence
-		targetX = currentPath[1].x;
-		targetY = currentPath[1].y;
+		currentX = currentPath[1].x;
+		currentY = currentPath[1].y;
 		
 		// Remove the old animated line
 		Destroy(createdLines[0]);
@@ -148,8 +145,6 @@ public class UnitPathfinding : MonoBehaviour {
 			// So let's just clear our pathfinding info.
 			currentPath = null;
 		}
-
-		
 	}
 	
 	// Helper function to create animated line to end target
@@ -195,29 +190,23 @@ public class UnitPathfinding : MonoBehaviour {
 		return line; // will be added to a list in the calling function
 	}
 
-	public void PathToLocation(int x, int y, GameObject tileGameObject) {
-		if (!map.UnitCanEnterTile(x, y)) {
+	// This method encompasses everything that happens when you click a tile
+	// the main function of this method is to create a new currentPath, and then initiate
+	// movement as far as possible along that new currentPath's towards its end destination
+	public void PathToLocation(int x, int y) {
+		if (!map.UnitCanEnterTile(x, y) || (currentX == x && currentY == y)) {
 			return;
 		}
 
-		// This method encompasses everything that happens when you click a tile
 		TileMap.DestroyOutlines(createdLines);
 		tileOutline.transform.position = new Vector3(-100f, -100f, -100f);
-
-		if (tilePlayerIsOn != null) {
-			// player is moving from another tile, so reset the old tile
-			tilePlayerIsOn.GetComponent<ClickableTile>().currentCharacterOnTile = null;
-		}
-
-		// keep track of the tile the player is moving to
-		tilePlayerIsOn = tileGameObject;
 
 		// Move outline to new end target
 		tileOutline.transform.position = TileMap.TileCoordToWorldCoord(x, y, 0f) - new Vector3(0, -0.01f, 0);
 
-		// [targetX, targetY] is the current position of the unit
-		// [x, y] is the target position, which was just clicked on
-		map.GeneratePathTo(targetX, targetY, x, y); // generate path
+		// [currentX, currentY] is the current position of the unit
+		// [x, y] is the new target position, which was just clicked on
+		currentPath = map.GeneratePathTo(currentX, currentY, x, y); // generate path
 
 		// Draw animated line to end destination
 		float startDelayCount = 0;
@@ -241,7 +230,8 @@ public class UnitPathfinding : MonoBehaviour {
 	// until they run out of movement points
 	public void TakeMovement() {
 		// Make sure to wrap-up any outstanding movement left over.
-		while (currentPath != null && gameManager.characterClass.AP - map.CostToEnterTile(currentPath[1].x, currentPath[1].y) >= 0) {
+		while (currentPath != null && 
+			   gameManager.characterClass.AP - map.CostToEnterTile(currentPath[1].x, currentPath[1].y) >= 0) {
 			AdvancePathing();
 			DrawFogOfWar();
 		}
@@ -259,6 +249,6 @@ public class UnitPathfinding : MonoBehaviour {
 		DrawFogOfWar();
 
 		// update enemy visibilty every time you move
-		gameManager.enemySpawnManager.UpdateEnemiesVisibility();
+		gameManager.enemyManager.UpdateEnemiesVisibility();
 	}
 }

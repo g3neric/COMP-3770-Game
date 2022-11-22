@@ -2,6 +2,7 @@
 // All rights belong to creator
 
 using UnityEngine;
+using System.Collections.Generic;
 [System.Serializable]
 
 // All player classes and enemies will be 
@@ -30,17 +31,26 @@ public class Character {
     public int gold;
     public int killCount;
 
+    // current pathfinding path
+    public List<Node> currentPath = null;
+
+    // target position (x, y)
+    public int currentX;
+    public int currentY;
+
+    // constructor
     public Character() {
-        this.killCount = 0;
-        this.gold = 0;
+        killCount = 0;
+        gold = 0;
     }
 
     public void FinishTurn() {
-        if (this.HP > this.maxHP) {
-            this.HP = this.maxHP;
-        } else if (this.HP <= 0) {
+        AP = maxAP; // refresh AP
+        if (HP > maxHP) {
+            HP = maxHP;
+        } else if (HP <= 0) {
             // Call to death/end game function will go here
+            return;
         }
-        AP = maxAP;
     }
 }

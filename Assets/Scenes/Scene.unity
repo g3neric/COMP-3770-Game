@@ -947,7 +947,7 @@ GameObject:
   - component: {fileID: 377794742}
   - component: {fileID: 377794741}
   m_Layer: 0
-  m_Name: EnemySpawnManager
+  m_Name: EnemyManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5116,10 +5116,11 @@ MonoBehaviour:
     luckMultiplier: 0
     gold: 0
     killCount: 0
-  otherCharacters: []
+    targetX: 0
+    targetY: 0
   pauseMenuEnabled: 0
   unitPathfinding: {fileID: 0}
-  enemySpawnManager: {fileID: 0}
+  enemyManager: {fileID: 0}
 --- !u!4 &1985101245
 Transform:
   m_ObjectHideFlags: 0

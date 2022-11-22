@@ -38,18 +38,17 @@ public class GameManager : MonoBehaviour {
 
 	// character class containing all the character's stats
 	[HideInInspector] public Character characterClass; // player character
-	[HideInInspector] public List<Character> otherCharacters; // NPCs
 
 	[HideInInspector] public bool pauseMenuEnabled;
 
 	[HideInInspector] public UnitPathfinding unitPathfinding;
-	[HideInInspector] public EnemySpawnManager enemySpawnManager;
+	[HideInInspector] public EnemyManager enemyManager;
 
 	void Start() {
 		// initiate manager script references
 		tileMap = tileMapController.GetComponent<TileMap>();
 		tileMap.gameManager = this;
-		enemySpawnManager = GameObject.Find("EnemySpawnManager").GetComponent<EnemySpawnManager>();
+		enemyManager = GameObject.Find("EnemyManager").GetComponent<EnemyManager>();
 
 		// reference to asset handler
 		assetHandler = GameObject.Find("AssetHandler").GetComponent<AssetHandler>();
@@ -70,12 +69,14 @@ public class GameManager : MonoBehaviour {
 
 		Camera.GetComponent<CameraController>().ToggleSnapToUnit();
 
-		enemySpawnManager.unitPathfinding = unitPathfinding;
+		enemyManager.unitPathfinding = unitPathfinding;
 
-		for (int i = 0; i < 50; i++) {
-			enemySpawnManager.SpawnEnemy(0);
+		// spawn enemies
+		
+		for (int i = 0; i < 10; i++) {
+			enemyManager.SpawnEnemy(0);
 		}
-		enemySpawnManager.UpdateEnemiesVisibility();
+		enemyManager.UpdateEnemiesVisibility();
 	}
 
 	public void SetControlState(ControlState newCS) {
@@ -127,24 +128,25 @@ public class GameManager : MonoBehaviour {
 	// player ended their turn; on to the next
 	// ALWAYS reference this version of the method, as it calls all the others!
 	public void FinishTurn() {
-		// update enemy visibility
-		enemySpawnManager.UpdateEnemiesVisibility();
+		// finish up current turn
 		// resolve the player's actions
 		if (characterClass.AP > 0) {
 			selectedUnit.GetComponent<UnitPathfinding>().TakeMovement();
 		}
 		characterClass.FinishTurn(); // update character stats
+
+		// enemy turns
+
+		enemyManager.ResolveAllEnemyTurns();
+		enemyManager.UpdateEnemiesVisibility();
+
+		// initiate new turn
+		turnCount++;
 		selectedUnit.GetComponent<UnitPathfinding>().DrawPossibleMovements();
 		selectedUnit.GetComponent<UnitPathfinding>().DrawFogOfWar();
+		unitPathfinding.DrawPossibleMovements(); // update possible movements at start of new turn
 
-		// resolve NPC actions
-		for (int i = 0; i < otherCharacters.Count; i++) {
-			// complete NPC actions here
-        }
-
-		
-		turnCount++;
-    }
+	}
 	void Update() {
 		if (Input.GetKeyDown("e")) {
 			FinishTurn();

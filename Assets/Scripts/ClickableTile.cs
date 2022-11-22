@@ -26,13 +26,7 @@ public class ClickableTile : MonoBehaviour {
 		if (!EventSystem.current.IsPointerOverGameObject()) {
 			if (gameManager.cs == ControlState.Move) {
 				// move state
-
-				if (currentCharacterOnTile == null) {
-					// nobody on tile right now
-					currentCharacterOnTile = gameManager.selectedUnit;
-
-					unitPathfinding.PathToLocation(x, y, gameObject);
-				} 
+				unitPathfinding.PathToLocation(x, y);
 			}
 		}
 	}

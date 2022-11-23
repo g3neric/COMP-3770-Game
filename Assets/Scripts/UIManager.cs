@@ -44,11 +44,9 @@ public class UIManager : MonoBehaviour {
 
     // log variables
     public GameObject messageLog;
-    [HideInInspector] public List<GameObject> LogMessageList = new List<GameObject>();
-    [HideInInspector] public List<int> LogMessageTimes = new List<int>(); // how long each message has been alive
-    [HideInInspector] public List<int> LogMessageTurnTimes = new List<int>(); // the turn in which each message was created
-    [HideInInspector] public const int messageLife = 30; // in seconds
-    [HideInInspector] public const int maxMessages = 9;
+    [HideInInspector] public List<Message> LogMessageList = new List<Message>();
+    public const int maxMessages = 9;
+    public const int messageLife = 30; // in seconds
 
     public Button buttonNextTurn;
 
@@ -77,6 +75,7 @@ public class UIManager : MonoBehaviour {
         // Initiate settings menu button
         settingsMenuReturnButton.GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Default); });
     }
+
     void LateUpdate() {
         // update text on the screen
         movementText.text = "AP left: " + gameManager.characterClass.AP;
@@ -98,9 +97,10 @@ public class UIManager : MonoBehaviour {
         }
 
         // delete old messages
+        
         if (LogMessageList.Count > maxMessages) {
             // delete last message
-            Destroy(LogMessageList[0]); // delete game object
+            Destroy(LogMessageList[0].messageObject); // delete game object
             LogMessageList.RemoveAt(0); // remove from list
         }
         
@@ -127,15 +127,17 @@ public class UIManager : MonoBehaviour {
 
     private void FixedUpdate() {
         // update message times
-        if (LogMessageTimes.Count != 0 && LogMessageList.Count != 0) {
-            for (int i = 0; i < LogMessageTimes.Count; i++) {
-                if (LogMessageTimes[i] >= messageLife * 50 && LogMessageTurnTimes[i] < gameManager.turnCount - 1) { // fixed time step is 0.02, so each timing will be increased by one 50 times a second
+        if (LogMessageList.Count != 0) {
+            for (int i = 0; i < LogMessageList.Count; i++) {
+                if (LogMessageList[i].messageTime >= messageLife * 50 &&
+                    LogMessageList[i].messageTurnTime < gameManager.turnCount - 1) { // fixed time step is 0.02, so each timing will be increased by one 50 times a second
                     // message has been alive too long, so destroy it
-                    LogMessageTimes.RemoveAt(i);
-                    Destroy(LogMessageList[i]);
+                    
+                    LogMessageList.RemoveAt(i);
+                    Destroy(LogMessageList[i].messageObject);
                     LogMessageList.RemoveAt(i);
                 } else {
-                    LogMessageTimes[i] += 1;
+                    LogMessageList[i].messageTime += 1;
                 }
             }
         }
@@ -155,9 +157,12 @@ public class UIManager : MonoBehaviour {
         }
     }
 
+    // exit the game completely
     public void CloseGame() {
         Application.Quit();
     }
+
+    // switch to different panel in the pause menu
     public void SwitchPauseMenuPanel(PauseMenuState newState) {
         // make sure pause menu is enabled before doing anything
         if (gameManager.pauseMenuEnabled) {
@@ -182,13 +187,19 @@ public class UIManager : MonoBehaviour {
         }
     }
 
+    // create new message
     public void SendMessageToLog(string message) {
         string text = "[" + gameManager.turnCount + "] " + message;
-        GameObject newMessage = Instantiate(messagePrefab, GameObject.Find("Content").transform);
-        newMessage.GetComponent<TextMeshProUGUI>().text = text;
-        LogMessageList.Add(newMessage); // add to list
-        LogMessageTimes.Add(0); // set time to 0
-        LogMessageTurnTimes.Add(gameManager.turnCount); // record which turn the message was created in
+
+        // create the message's object
+        GameObject messageObject = Instantiate(messagePrefab, GameObject.Find("Content").transform);
+        // set message's text
+        messageObject.GetComponent<TextMeshProUGUI>().text = text;
+
+        // create new message
+        Message newMessage = new Message(gameManager.turnCount, messageObject);
+        
+        LogMessageList.Add(newMessage); // add new message to list
     }
 
     // handle selection of toolbar items

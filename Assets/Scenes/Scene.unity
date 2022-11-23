@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 0.748
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.7620737, g: 0.5895189, b: 0.45242912, a: 0.748}
+  m_IndirectSpecularColor: {r: 0.76208436, g: 0.58952427, b: 0.45243, a: 0.748}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -5213,7 +5213,12 @@ MonoBehaviour:
   movementText: {fileID: 1362685378}
   turnCountText: {fileID: 391116719}
   classNameText: {fileID: 949717829}
+  enemyNameTagPrefab: {fileID: 6592745172855056931, guid: 5f614f815a7124e4eb6615ecab1510d9, type: 3}
+  enemyHealthBarPrefab: {fileID: 0}
   messagePrefab: {fileID: 8962195595000770953, guid: 8b813960049673e4695abe65c045e66e, type: 3}
+  enemyHealthBars:
+  - {fileID: 0}
+  enemyNameTags: []
   toolbarButtons:
   - {fileID: 68752167}
   - {fileID: 1857054899}
@@ -5230,9 +5235,6 @@ MonoBehaviour:
   settingsMenu: {fileID: 263654337}
   selectedToolbarButton: {fileID: 0}
   messageLog: {fileID: 1935693434}
-  LogMessageList: []
-  LogMessageTimes: 
-  LogMessageTurnTimes: 
   buttonNextTurn: {fileID: 574976830}
 --- !u!4 &1935886844
 Transform:
@@ -5412,6 +5414,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa55a73ea4801324c9021a73dd4e16d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  uiManager: {fileID: 0}
+  unitPathfinding: {fileID: 0}
+  enemyManager: {fileID: 0}
   selectedUnit: {fileID: 0}
   turnCount: 1
   cs: 2
@@ -5434,8 +5439,6 @@ MonoBehaviour:
     currentX: 0
     currentY: 0
   pauseMenuEnabled: 0
-  unitPathfinding: {fileID: 0}
-  enemyManager: {fileID: 0}
 --- !u!4 &1985101245
 Transform:
   m_ObjectHideFlags: 0

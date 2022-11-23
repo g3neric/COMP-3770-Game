@@ -38,7 +38,14 @@ public class EnemyManager : MonoBehaviour {
         foreach (GameObject curEnemyObject in enemyGameObjects) {
             int enemyIndex = enemyGameObjects.IndexOf(curEnemyObject);
             if (map.IsTileVisibleToPlayer(Mathf.RoundToInt(curEnemyObject.transform.position.x), Mathf.RoundToInt(curEnemyObject.transform.position.z))) {
+                // enemy is visible
+                // update mesh visibility
                 curEnemyObject.GetComponent<MeshRenderer>().enabled = true;
+
+                // update nametag visibility
+                gameManager.uiManager.SetVisibilityOfEnemyNameTag(enemyIndex, true);
+
+                // update health bar visibility
 
                 // send message to log that enemy has been spotted if it hasn't already been sent
                 if (!spottedEnemies.Contains(enemyIndex)) {
@@ -46,7 +53,15 @@ public class EnemyManager : MonoBehaviour {
                     spottedEnemies.Add(enemyIndex);
                 }
             } else {
+                // enemy is not visible
+                // update mesh visibility
                 curEnemyObject.GetComponent<MeshRenderer>().enabled = false;
+
+                // update nametag visibility
+                gameManager.uiManager.SetVisibilityOfEnemyNameTag(enemyIndex, false);
+
+                // update health bar visibility
+
                 // remove enemy from list of spotted enemies
                 spottedEnemies.Remove(enemyIndex);
             }
@@ -66,7 +81,6 @@ public class EnemyManager : MonoBehaviour {
                     // spawn enemy at (x, y)
                     // instantiate enemy
                     GameObject enemyObject = Instantiate(enemyPrefabs[enemyPrefabIndex], TileMap.TileCoordToWorldCoord(x, y, 0.125f), Quaternion.identity);
-                    
 
                     // set reference to enemy in the tile its on
                     map.tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile = enemyObject;
@@ -118,6 +132,9 @@ public class EnemyManager : MonoBehaviour {
                     // name the object with it's index
                     // you would think the add function above would return the index, but it doesn't. whatever.
                     enemyObject.name = "Enemy ("  + enemyGameObjects.IndexOf(enemyObject) + ") " + enemyCharacter.className;
+
+                    // create name tag
+                    gameManager.uiManager.CreateEnemyNameTag(enemyCharacter);
 
                     return; // enemy has been created, stop the method now
                 }

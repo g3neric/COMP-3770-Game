@@ -14,7 +14,9 @@ public class GameManager : MonoBehaviour {
 
 	// link to asset handler
 	private AssetHandler assetHandler;
-	private UIManager uiManager;
+	[HideInInspector] public UIManager uiManager;
+	[HideInInspector] public UnitPathfinding unitPathfinding;
+	[HideInInspector] public EnemyManager enemyManager;
 
 	public GameObject selectedUnit; // currently selected unit
 
@@ -44,8 +46,7 @@ public class GameManager : MonoBehaviour {
 	// misc
 	[HideInInspector] public bool pauseMenuEnabled;
 
-	[HideInInspector] public UnitPathfinding unitPathfinding;
-	[HideInInspector] public EnemyManager enemyManager;
+	
 
 	void Start() {
 		// initiate manager script references

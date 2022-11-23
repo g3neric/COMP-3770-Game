@@ -18,7 +18,13 @@ public class UIManager : MonoBehaviour {
     public TextMeshProUGUI movementText;
     public TextMeshProUGUI turnCountText;
     public TextMeshProUGUI classNameText;
+    public GameObject enemyNameTagPrefab;
+    public GameObject enemyHealthBarPrefab;
     public GameObject messagePrefab;
+
+    // enemy health bars
+    [HideInInspector] public List<GameObject> enemyHealthBars = new List<GameObject>();
+    [HideInInspector] public List<GameObject> enemyNameTags = new List<GameObject>();
 
     // toolbarButtons[0] = move state
     // toolbarButtons[1] = item 1
@@ -123,8 +129,43 @@ public class UIManager : MonoBehaviour {
                 contentHolder.GetChild(i).GetComponent<TextMeshProUGUI>().color = newColor;
             }
         }
+
+        // update positions of enemy UI objects
+        for (int i = 0; i < enemyNameTags.Count; i++) {
+            // name tag
+            // update position
+            Vector3 enemyPos = gameManager.enemyManager.enemyGameObjects[i].transform.position;
+            enemyPos += new Vector3(0, 0.5f, 0); // make name tag appear above enemy
+            Vector2 newPos = Camera.main.WorldToScreenPoint(enemyPos);
+            enemyNameTags[i].transform.position = newPos;
+        }
     }
 
+    // enemy UI objects
+    public void CreateEnemyNameTag(Character enemyCharacter) {
+        GameObject newNameTag = Instantiate(enemyNameTagPrefab, GameObject.Find("UI Overlay").transform);
+        enemyNameTags.Add(newNameTag);
+
+        // set text
+        newNameTag.GetComponent<TextMeshProUGUI>().text = enemyCharacter.className;
+    }
+
+    public void SetVisibilityOfEnemyNameTag(int enemyIndex, bool state) {
+        Color32 newColor;
+        if (state) {
+            // make name tag fully visible
+            newColor = new Color32(255, 0, 0, 255);
+            enemyNameTags[enemyIndex].GetComponent<TextMeshProUGUI>().color = newColor;
+        } else {
+            // make name tag fully transparent
+            newColor = new Color32(255, 0, 0, 0);
+            enemyNameTags[enemyIndex].GetComponent<TextMeshProUGUI>().color = newColor;
+        }
+        
+    }
+
+    // fixed update for consistent time keeping
+    // fixed time step is 0.02, so this is run 50 times every second
     private void FixedUpdate() {
         // update message times
         if (LogMessageList.Count != 0) {

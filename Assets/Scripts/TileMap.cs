@@ -178,7 +178,7 @@ public class TileMap : MonoBehaviour {
 		for (int x = 0; x < mapSize; x++) {
 			for (int y = 0; y < mapSize; y++) {
 				TileType tt = tileTypes[tiles[x, y]];
-				GameObject currentTile = Instantiate(tileTypes[tiles[x, y]].tilePrefab, new Vector3(x, 0f, y), Quaternion.identity);
+				GameObject currentTile = Instantiate(tileTypes[tiles[x, y]].tilePrefab, new Vector3(x, 0f, y), Quaternion.identity, GameObject.Find("TileContainer").transform);
 				tilesObjects[x, y] = currentTile;
 
 				// Randomly rotate tile a little so there's not as much reptition
@@ -240,6 +240,14 @@ public class TileMap : MonoBehaviour {
 			return false;
         }
 	}
+
+	// calculate distance between two points on the grid
+	public static float DistanceBetweenTiles(int x, int y, int x2, int y2) {
+		float c1 = Mathf.Pow(x2 - x, 2);
+		float c2 = Mathf.Pow(y2 - y, 2);
+		float c = Mathf.Sqrt(c1 + c2);
+		return c;
+    }
 
 	public int CostToEnterTile(int x, int y) {
 		if (UnitCanEnterTile(x, y) == false) {
@@ -643,7 +651,7 @@ public class TileMap : MonoBehaviour {
 					}
 				}
 				// instantiate outline
-				GameObject tempObj = Instantiate(prefab, pos, Quaternion.identity);
+				GameObject tempObj = Instantiate(prefab, pos, Quaternion.identity, GameObject.Find("TileContainer").transform);
 				// rotate outline
 				tempObj.transform.Rotate(0f, yRotation, 0f, Space.World);
 				// add outline to list of all created outlines

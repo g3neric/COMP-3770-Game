@@ -14,10 +14,11 @@ public class UIManager : MonoBehaviour {
 
     [HideInInspector] public PauseMenuState currentPMState = PauseMenuState.Default;
 
-    // UI objects
+    // UI text objects
     public TextMeshProUGUI movementText;
     public TextMeshProUGUI turnCountText;
     public TextMeshProUGUI classNameText;
+    public GameObject messagePrefab;
 
     // toolbarButtons[0] = move state
     // toolbarButtons[1] = item 1
@@ -41,9 +42,17 @@ public class UIManager : MonoBehaviour {
     // currently selected item
     [HideInInspector] public Button selectedToolbarButton = null;
 
+    // log variables
+    public GameObject messageLog;
+    [HideInInspector] public List<GameObject> LogMessageList = new List<GameObject>();
+    [HideInInspector] public List<int> LogMessageTimes = new List<int>(); // how long each message has been alive
+    [HideInInspector] public List<int> LogMessageTurnTimes = new List<int>(); // the turn in which each message was created
+    [HideInInspector] public const int messageLife = 30; // in seconds
+    [HideInInspector] public const int maxMessages = 9;
+
     public Button buttonNextTurn;
 
-    private void Awake() {
+    private void Start() {
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
 
         // Initiate next turn button
@@ -60,6 +69,7 @@ public class UIManager : MonoBehaviour {
         pauseMenuButtons[0].GetComponent<Button>().onClick.AddListener(delegate { TogglePauseMenu(); });
         pauseMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Controls); });
         pauseMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Settings); });
+        pauseMenuButtons[3].GetComponent<Button>().onClick.AddListener(delegate { CloseGame(); }); // for now, just close the game
 
         // Initiate control menu button
         controlMenuReturnButton.GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Default); });
@@ -67,7 +77,7 @@ public class UIManager : MonoBehaviour {
         // Initiate settings menu button
         settingsMenuReturnButton.GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Default); });
     }
-    void Update() {
+    void LateUpdate() {
         // update text on the screen
         movementText.text = "AP left: " + gameManager.characterClass.AP;
         turnCountText.text = "Turn " + gameManager.turnCount;
@@ -86,6 +96,49 @@ public class UIManager : MonoBehaviour {
         if (Input.GetKeyDown("escape")) {
             TogglePauseMenu();
         }
+
+        // delete old messages
+        if (LogMessageList.Count > maxMessages) {
+            // delete last message
+            Destroy(LogMessageList[0]); // delete game object
+            LogMessageList.RemoveAt(0); // remove from list
+        }
+        
+        // control transparency of background
+        if (LogMessageList.Count == 0) {
+            // no messages in log, therefore disable the background
+            messageLog.GetComponent<Image>().enabled = false;
+        } else {
+            // there are messages in the log, so enable the background
+            messageLog.GetComponent<Image>().enabled = true;
+        }
+
+        // control transpareny of old messages
+        if (LogMessageList.Count > 3) {
+            Transform contentHolder = messageLog.transform.GetChild(0).GetChild(0);
+            for (int i = 0; i < LogMessageList.Count - 3; i++) {
+                // log > viewport > content > child[i] is the desired text object
+                int newAlpha = Mathf.RoundToInt(255 - ((maxMessages - 3 - i) * 20));
+                Color32 newColor = new Color32(255, 255, 255, (byte)newAlpha);
+                contentHolder.GetChild(i).GetComponent<TextMeshProUGUI>().color = newColor;
+            }
+        }
+    }
+
+    private void FixedUpdate() {
+        // update message times
+        if (LogMessageTimes.Count != 0 && LogMessageList.Count != 0) {
+            for (int i = 0; i < LogMessageTimes.Count; i++) {
+                if (LogMessageTimes[i] >= messageLife * 50 && LogMessageTurnTimes[i] < gameManager.turnCount - 1) { // fixed time step is 0.02, so each timing will be increased by one 50 times a second
+                    // message has been alive too long, so destroy it
+                    LogMessageTimes.RemoveAt(i);
+                    Destroy(LogMessageList[i]);
+                    LogMessageList.RemoveAt(i);
+                } else {
+                    LogMessageTimes[i] += 1;
+                }
+            }
+        }
     }
 
     // Toggle pause menu
@@ -102,6 +155,9 @@ public class UIManager : MonoBehaviour {
         }
     }
 
+    public void CloseGame() {
+        Application.Quit();
+    }
     public void SwitchPauseMenuPanel(PauseMenuState newState) {
         // make sure pause menu is enabled before doing anything
         if (gameManager.pauseMenuEnabled) {
@@ -124,6 +180,15 @@ public class UIManager : MonoBehaviour {
             }
             currentPMState = newState;
         }
+    }
+
+    public void SendMessageToLog(string message) {
+        string text = "[" + gameManager.turnCount + "] " + message;
+        GameObject newMessage = Instantiate(messagePrefab, GameObject.Find("Content").transform);
+        newMessage.GetComponent<TextMeshProUGUI>().text = text;
+        LogMessageList.Add(newMessage); // add to list
+        LogMessageTimes.Add(0); // set time to 0
+        LogMessageTurnTimes.Add(gameManager.turnCount); // record which turn the message was created in
     }
 
     // handle selection of toolbar items

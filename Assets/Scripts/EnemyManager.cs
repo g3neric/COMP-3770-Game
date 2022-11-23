@@ -24,6 +24,9 @@ public class EnemyManager : MonoBehaviour {
     // list of enemy objects
     [HideInInspector] public List<Character> enemyList = new List<Character>();
 
+    // indexes of spotted enemies
+    [HideInInspector] public List<int> spottedEnemies = new List<int>();
+
     private void Start() {
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         map = tileMapControllerObject.GetComponent<TileMap>();
@@ -32,11 +35,20 @@ public class EnemyManager : MonoBehaviour {
     // update enemie's visibility
     public void UpdateEnemiesVisibility() {
         // toggle enemy viewable
-        foreach (GameObject i in enemyGameObjects) {
-            if (map.IsTileVisibleToPlayer(Mathf.RoundToInt(i.transform.position.x), Mathf.RoundToInt(i.transform.position.z))) {
-                i.GetComponent<MeshRenderer>().enabled = true;
+        foreach (GameObject curEnemyObject in enemyGameObjects) {
+            int enemyIndex = enemyGameObjects.IndexOf(curEnemyObject);
+            if (map.IsTileVisibleToPlayer(Mathf.RoundToInt(curEnemyObject.transform.position.x), Mathf.RoundToInt(curEnemyObject.transform.position.z))) {
+                curEnemyObject.GetComponent<MeshRenderer>().enabled = true;
+
+                // send message to log that enemy has been spotted if it hasn't already been sent
+                if (!spottedEnemies.Contains(enemyIndex)) {
+                    gameManager.SendMessageToLog("Spotted enemy " + enemyList[enemyIndex].className + ".");
+                    spottedEnemies.Add(enemyIndex);
+                }
             } else {
-                i.GetComponent<MeshRenderer>().enabled = false;
+                curEnemyObject.GetComponent<MeshRenderer>().enabled = false;
+                // remove enemy from list of spotted enemies
+                spottedEnemies.Remove(enemyIndex);
             }
         }
     }
@@ -54,12 +66,47 @@ public class EnemyManager : MonoBehaviour {
                     // spawn enemy at (x, y)
                     // instantiate enemy
                     GameObject enemyObject = Instantiate(enemyPrefabs[enemyPrefabIndex], TileMap.TileCoordToWorldCoord(x, y, 0.125f), Quaternion.identity);
+                    
 
                     // set reference to enemy in the tile its on
                     map.tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile = enemyObject;
 
                     // create enemy character
-                    Character enemyCharacter = new Tank(); // temporarily all tanks
+                    Character enemyCharacter = null; // temporarily all tanks
+
+                    // randomly choose one of the 8 classes
+                    // it's a shame i have to do it this way but it's the only way :(
+                    int randomClass = Random.Range(1, 8);
+                    switch(randomClass) {
+                        case 1:
+                            enemyCharacter = new Engineer();
+                            break;
+                        case 2:
+                            enemyCharacter = new Grunt();
+                            break;
+                        case 3:
+                            enemyCharacter = new Joker();
+                            break;
+                        case 4:
+                            enemyCharacter = new Saboteur();
+                            break;
+                        case 5:
+                            enemyCharacter = new Scout();
+                            break;
+                        case 6:
+                            enemyCharacter = new Sharpshooter();
+                            break;
+                        case 7:
+                            enemyCharacter = new Surgeon();
+                            break;
+                        case 8:
+                            enemyCharacter = new Tank();
+                            break;
+                        default:
+                            print("error selecting enemy class");
+                            break;
+                    }
+
                     // update target variables
                     enemyCharacter.currentX = x;
                     enemyCharacter.currentY = y;
@@ -67,6 +114,10 @@ public class EnemyManager : MonoBehaviour {
                     // add enemy to lists
                     enemyList.Add(enemyCharacter);
                     enemyGameObjects.Add(enemyObject);
+
+                    // name the object with it's index
+                    // you would think the add function above would return the index, but it doesn't. whatever.
+                    enemyObject.name = "Enemy ("  + enemyGameObjects.IndexOf(enemyObject) + ") " + enemyCharacter.className;
 
                     return; // enemy has been created, stop the method now
                 }
@@ -81,27 +132,71 @@ public class EnemyManager : MonoBehaviour {
         }
     }
 
+    // check if player is in range. if they are, return their (x, y) location
+    private int[] IsPlayerInRange(Character curEnemy, int range) {
+        // calculate all tiles in range
+        List<int[]> tilesInRange = map.CalculateTilesInRange(curEnemy.currentX, curEnemy.currentY, range, false);
+
+        // check each tile to see if the player is in range
+        for (int i = 0; i < tilesInRange.Count; i++) {
+            ClickableTile curTile = map.tilesObjects[tilesInRange[i][0], tilesInRange[i][1]].GetComponent<ClickableTile>();
+            
+            // check if the current tile has someone on it, if it's not the tile we're standing on, and if it's a player
+            if (curTile.currentCharacterOnTile != null &&
+                tilesInRange[i][0] != curEnemy.currentX &&
+                tilesInRange[i][1] != curEnemy.currentY &&
+                curTile.currentCharacterOnTile.tag == "Player") {
+                // player is in range
+                return new int[] { tilesInRange[i][0], tilesInRange[i][1]};
+            }
+        }
+        return null;
+    }
+
     // calculate enemy's movement for one turn
     private void ResolveEnemyTurn(int enemyIndex) {
         Character curEnemy = enemyList[enemyIndex];
         GameObject curEnemyObject = enemyGameObjects[enemyIndex];
 
-        // create path if enemy doesnt have one
-        if (curEnemy.currentPath == null) {
-            // no path right now, so lets pick a point to path to
-            // generate initital random point
-            int x = 0;
-            int y = 0;
+        // check if player is in view range, if so move towards them. if not, move randomly
+        int[] playerCoordIfInRange = IsPlayerInRange(curEnemy, curEnemy.viewRange);
+        if (playerCoordIfInRange != null) {
+            // player is in VIEW range
+            print("player in view range of enemy " + enemyIndex + ". moving to within attack range at x: " + playerCoordIfInRange[0] + " y: " + playerCoordIfInRange[1]);
 
-            // generate end path destinations until one is valid
-            // destination cannot be current tile
-            while (!map.UnitCanEnterTile(x, y) || (curEnemy.currentX == x && curEnemy.currentY == y)) {
-                // pick new point and try again
-                x = Mathf.Clamp(curEnemy.currentX + Random.Range(-5, 6), map.oceanSize, map.mapSize - map.oceanSize);
-                y = Mathf.Clamp(curEnemy.currentY + Random.Range(-5, 6), map.oceanSize, map.mapSize - map.oceanSize);
+            // calculate distance between enemy and player
+            // default path is straight to the player
+            int pathX = playerCoordIfInRange[0];
+            int pathY = playerCoordIfInRange[1];
+            float dist = TileMap.DistanceBetweenTiles(curEnemy.currentX, curEnemy.currentY, playerCoordIfInRange[0], playerCoordIfInRange[1]);
+
+            // return a vector2 that is (attackRange - 1) units away from the player in the direction of the player
+            Vector2 start = new Vector2(curEnemy.currentX, curEnemy.currentY);
+            Vector2 end = new Vector2(playerCoordIfInRange[0], playerCoordIfInRange[1]);
+            Vector2 directionVector = start - end;
+            Vector2 result = ((curEnemy.attackRange - 1) * (Vector2)Vector3.Normalize(directionVector)) + end; // have to cast to vector2
+
+            // path to chosen location
+            PathEnemyToLocation(Mathf.RoundToInt(result.x), Mathf.RoundToInt(result.y), curEnemy, curEnemyObject); ;
+
+        } else {
+            // move towards current path. if no current path, pick random point nearby to patrol to
+            if (curEnemy.currentPath == null) {
+                // no path right now, so lets pick a point to path to
+                // generate initital random point
+                int x = 0;
+                int y = 0;
+
+                // generate end path destinations until one is valid
+                // destination cannot be current tile
+                while (!map.UnitCanEnterTile(x, y) || (curEnemy.currentX == x && curEnemy.currentY == y)) {
+                    // pick new point and try again
+                    x = Mathf.Clamp(curEnemy.currentX + Random.Range(-5, 6), map.oceanSize, map.mapSize - map.oceanSize);
+                    y = Mathf.Clamp(curEnemy.currentY + Random.Range(-5, 6), map.oceanSize, map.mapSize - map.oceanSize);
+                }
+                // create path to location
+                PathEnemyToLocation(x, y, curEnemy, curEnemyObject);
             }
-            // create path to location
-            PathEnemyToLocation(x, y, curEnemy, curEnemyObject);
         }
 
         // take movement until out of AP
@@ -146,7 +241,7 @@ public class EnemyManager : MonoBehaviour {
     }
 
     private void PathEnemyToLocation(int x, int y, Character enemy, GameObject enemyObject) {
-        if (!map.UnitCanEnterTile(x, y) || (enemy.currentX == x && enemy.currentY == y)) {
+        if (!map.tileTypes[map.tiles[x, y]].isWalkable || (enemy.currentX == x && enemy.currentY == y)) {
             return;
         }
 
@@ -158,17 +253,19 @@ public class EnemyManager : MonoBehaviour {
     // wrap up any outstanding movement in the current path.
     private void TakeEnemyMovement(Character enemy, GameObject enemyObject) {
         // check if movement is blocked by someone or something new
-        if (!map.UnitCanEnterTile(enemy.currentPath[1].x, enemy.currentPath[1].y)) {
-            // there's somebody on the next tile we're trying to move to!
-            // therefore set path to null for now
-            print("there's somebody on the tile i'm tryna move to wtf");
-            enemy.currentPath = null;
-            return;
-        }
+        if (enemy.currentPath != null) {
+            if (enemy.currentPath.Count > 0 && !map.UnitCanEnterTile(enemy.currentPath[1].x, enemy.currentPath[1].y)) {
+                // there's somebody on the next tile we're trying to move to!
+                // therefore set path to null for now
+                print("there's somebody on the tile i'm tryna move to wtf");
+                enemy.currentPath = null;
+                return;
+            }
 
-        while (enemy.currentPath != null &&
-               enemy.AP - map.CostToEnterTile(enemy.currentPath[1].x, enemy.currentPath[1].y) >= 0) {
-            AdvanceEnemyPathing(enemy, enemyObject);
+            while (enemy.currentPath != null &&
+                   enemy.AP - map.CostToEnterTile(enemy.currentPath[1].x, enemy.currentPath[1].y) >= 0) {
+                AdvanceEnemyPathing(enemy, enemyObject);
+            }
         }
     }
 }

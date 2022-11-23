@@ -43,8 +43,8 @@ public class UnitPathfinding : MonoBehaviour {
 		assetHandler = GameObject.Find("AssetHandler").GetComponent<AssetHandler>();
 		// Instantiate tile outlines
 		// There's only two of these so we can just move them around the scene
-		tileOutline = Instantiate(assetHandler.tileOutlinePrefab, new Vector3(-100f, -100f, -100f), Quaternion.identity);
-		tileHoverOutline = Instantiate(assetHandler.tileHoverOutlinePrefab, new Vector3(-100f, -100f, -100f), Quaternion.identity);
+		tileOutline = Instantiate(assetHandler.tileOutlinePrefab, new Vector3(-100f, -100f, -100f), Quaternion.identity, GameObject.Find("TileContainer").transform);
+		tileHoverOutline = Instantiate(assetHandler.tileHoverOutlinePrefab, new Vector3(-100f, -100f, -100f), Quaternion.identity, GameObject.Find("TileContainer").transform);
 
 		// instantiate reference to current path
 		currentPath = gameManager.characterClass.currentPath;
@@ -150,7 +150,7 @@ public class UnitPathfinding : MonoBehaviour {
 	// Helper function to create animated line to end target
 	private GameObject CreateVisualPathfindingLine(Vector3 start, Vector3 end, float delay, bool last) {
 		// Create a line and its particle system effects
-		GameObject line = Instantiate(assetHandler.linePrefab, start, Quaternion.identity);
+		GameObject line = Instantiate(assetHandler.linePrefab, start, Quaternion.identity, GameObject.Find("TileContainer").transform);
 
 		// Rotate towards next position in path
 		line.transform.LookAt(end);
@@ -229,12 +229,24 @@ public class UnitPathfinding : MonoBehaviour {
 	// This method will keep moving the character in the path they have chosen
 	// until they run out of movement points
 	public void TakeMovement() {
-		// Make sure to wrap-up any outstanding movement left over.
-		while (currentPath != null && 
-			   gameManager.characterClass.AP - map.CostToEnterTile(currentPath[1].x, currentPath[1].y) >= 0) {
-			AdvancePathing();
-			DrawFogOfWar();
+		if (currentPath != null) {
+			// check if movement is blocked by someone or something new
+			if (currentPath.Count > 0 && !map.UnitCanEnterTile(currentPath[1].x, currentPath[1].y)) {
+				// there's somebody on the next tile we're trying to move to!
+				// therefore set path to null for now
+				print("there's somebody on the tile i'm tryna move to wtf");
+				currentPath = null;
+				return;
+			}
+
+			// Make sure to wrap-up any outstanding movement left over.
+			while (currentPath != null &&
+				   gameManager.characterClass.AP - map.CostToEnterTile(currentPath[1].x, currentPath[1].y) >= 0) {
+				AdvancePathing();
+				DrawFogOfWar();
+			}
 		}
+		
 
 		// Update outlines
 		DrawPossibleMovements();

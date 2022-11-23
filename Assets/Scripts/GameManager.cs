@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour {
 
 	// link to asset handler
 	private AssetHandler assetHandler;
+	private UIManager uiManager;
 
 	public GameObject selectedUnit; // currently selected unit
 
@@ -36,9 +37,11 @@ public class GameManager : MonoBehaviour {
 	public GameObject tileMapController; // can't reference just components so i have to reference the game object first >:(
 	[HideInInspector] public TileMap tileMap;
 
-	// character class containing all the character's stats
+
+	// the class the player has chosen
 	[HideInInspector] public Character characterClass; // player character
 
+	// misc
 	[HideInInspector] public bool pauseMenuEnabled;
 
 	[HideInInspector] public UnitPathfinding unitPathfinding;
@@ -49,6 +52,7 @@ public class GameManager : MonoBehaviour {
 		tileMap = tileMapController.GetComponent<TileMap>();
 		tileMap.gameManager = this;
 		enemyManager = GameObject.Find("EnemyManager").GetComponent<EnemyManager>();
+		uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
 
 		// reference to asset handler
 		assetHandler = GameObject.Find("AssetHandler").GetComponent<AssetHandler>();
@@ -108,6 +112,7 @@ public class GameManager : MonoBehaviour {
 
 		// Create the player's unit model
 		selectedUnit = Instantiate(assetHandler.ScoutPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity);
+		selectedUnit.tag = "Player";
 
 		// Give the player's character a pathfinding script
 		unitPathfinding = selectedUnit.AddComponent<UnitPathfinding>();
@@ -147,9 +152,17 @@ public class GameManager : MonoBehaviour {
 		unitPathfinding.DrawPossibleMovements(); // update possible movements at start of new turn
 
 	}
+
 	void Update() {
 		if (Input.GetKeyDown("e")) {
 			FinishTurn();
-		} 
+		} else if (Input.GetKeyDown("r")) {
+			SendMessageToLog("test message " + Random.Range(0, 1000));
+        }
+	}
+
+	// passthrough function
+	public void SendMessageToLog(string message) {
+		uiManager.SendMessageToLog(message);
 	}
 }

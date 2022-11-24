@@ -3,7 +3,7 @@
 
 using UnityEngine;
 using System.Collections.Generic;
-public class UnitPathfinding : MonoBehaviour {
+public class PlayerManager : MonoBehaviour {
 	// link to game manager
 	[HideInInspector] public GameManager gameManager;
 
@@ -65,6 +65,12 @@ public class UnitPathfinding : MonoBehaviour {
 		// set reference to unit in the tile's script
 		map.tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile = gameObject;
 
+		// set tag
+		gameObject.tag = "Player";
+
+		// set name
+		gameObject.name = "Player Model";
+
 		// Draw possible movements and fog of war right when you spawn
 		DrawPossibleMovements();
 		DrawFogOfWar();
@@ -89,7 +95,11 @@ public class UnitPathfinding : MonoBehaviour {
 		// Clear out the old outlines and delete them
 		TileMap.DestroyOutlines(createdRangeOutlines);
 
-		List<int[]> tilePosInAttackRange = map.CalculateTilesInRange(currentX, currentY, gameManager.characterClass.attackRange, false);
+		// calculate which tiles are in range
+		int range = gameManager.characterClass.currentItems[gameManager.characterClass.selectedItemIndex].range;
+		List<int[]> tilePosInAttackRange = map.CalculateTilesInRange(currentX, currentY, range, false);
+
+		// create new outlines
 		createdRangeOutlines = TileMap.InstantiateOrientedOutlines(assetHandler.rangeOutlinePrefabs, tilePosInAttackRange, 0.011f);
 	}
 

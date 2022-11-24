@@ -17,13 +17,13 @@ public class Character {
     // health
     public int HP;
     public int maxHP;
+    public int healRate;
 
     // action points
     public int AP;
     public int maxAP;
 
     // other base stats
-    public int attackRange; // for combat
     public int viewRange; // for fog of war
     public float luckMultiplier; // used by joker class
 
@@ -38,21 +38,56 @@ public class Character {
     public int currentX;
     public int currentY;
 
+    // the items the player is holding
+    [HideInInspector] public List<Item> currentItems = new List<Item>();
+    [HideInInspector] public int selectedItemIndex; // 0 for item 1, 1 for item 2
+
+    // state of death
+    public bool dead;
 
     // constructor
     public Character() {
         killCount = 0;
         gold = 0;
+        dead = false;
+    }
+
+    public void TakeDamage(int amount) {
+        HP -= amount;
+        if (HP <= 0) {
+            // die
+            HP = 0;
+            Death();
+        }
     }
 
     public void FinishTurn() {
         AP = maxAP; // refresh AP
+        HP += healRate; // heal a little bit
+
+        // clamp view range to the highest attack range you have
+        // therefore you can't shoot farther than you can see
+        // gonna have to do this when weapon is picked up!
+        if (currentItems[0] != null) {
+            if (currentItems[0].range > viewRange) {
+                currentItems[0].range = viewRange;
+            }
+        } else if (currentItems[1] != null) {
+            if (currentItems[1].range > viewRange) {
+                currentItems[0].range = viewRange;
+            }
+        }
+
+        // these are mostly failsafes
         if (HP > maxHP) {
             HP = maxHP;
         } else if (HP <= 0) {
-            // Call to death/end game function will go here
-            return;
+            Death();
         }
+    }
+
+    public void Death() {
+        dead = true;
     }
 }
 
@@ -60,11 +95,12 @@ public class Grunt : Character {
     public Grunt() {
         className = "Grunt";
         maxAP = 5;
-        AP = maxAP;
         maxHP = 40;
-        attackRange = 4; // tiles
+        healRate = 3;
         viewRange = 10;
         luckMultiplier = 1f;
+        HP = maxHP;
+        AP = maxAP;
     }
 }
 
@@ -72,11 +108,12 @@ public class Engineer : Character {
     public Engineer() {
         className = "Engineer";
         maxAP = 6;
-        AP = maxAP;
         maxHP = 45;
-        attackRange = 6; // tiles
+        healRate = 3;
         viewRange = 10;
         luckMultiplier = 1f;
+        HP = maxHP;
+        AP = maxAP;
     }
 }
 
@@ -84,11 +121,12 @@ public class Joker : Character {
     public Joker() {
         className = "Joker";
         maxAP = 6;
-        AP = maxAP;
         maxHP = 35;
-        attackRange = 4; // tiles
+        healRate = 3;
         viewRange = 10;
         luckMultiplier = 1.5f;
+        HP = maxHP;
+        AP = maxAP;
     }
 }
 
@@ -96,11 +134,12 @@ public class Saboteur : Character {
     public Saboteur() {
         className = "Saboteur";
         maxAP = 6;
-        AP = maxAP;
         maxHP = 45;
-        attackRange = 6; // tiles
+        healRate = 3;
         viewRange = 10;
         luckMultiplier = 1f;
+        HP = maxHP;
+        AP = maxAP;
     }
 }
 
@@ -108,11 +147,12 @@ public class Scout : Character {
     public Scout() {
         className = "Scout";
         maxAP = 8;
-        AP = maxAP;
         maxHP = 45;
-        attackRange = 4; // tiles
+        healRate = 3;
         viewRange = 10;
         luckMultiplier = 1f;
+        HP = maxHP;
+        AP = maxAP;
     }
 }
 
@@ -120,11 +160,12 @@ public class Sharpshooter : Character {
     public Sharpshooter() {
         className = "Sharpshooter";
         maxAP = 7;
-        AP = maxAP;
         maxHP = 30;
-        attackRange = 10; // tiles
+        healRate = 3;
         viewRange = 10;
         luckMultiplier = 1f;
+        HP = maxHP;
+        AP = maxAP;
     }
 }
 
@@ -132,11 +173,12 @@ public class Surgeon : Character {
     public Surgeon() {
         className = "Surgeon";
         maxAP = 6;
-        AP = maxAP;
         maxHP = 70;
-        attackRange = 2; // tiles
+        healRate = 7;
         viewRange = 10;
         luckMultiplier = 1f;
+        HP = maxHP;
+        AP = maxAP;
     }
 }
 
@@ -144,10 +186,11 @@ public class Tank : Character {
     public Tank() {
         className = "Tank";
         maxAP = 6;
-        AP = maxAP;
         maxHP = 80;
-        attackRange = 4; // tiles
+        healRate = 2;
         viewRange = 10;
         luckMultiplier = 1f;
+        HP = maxHP;
+        AP = maxAP;
     }
 }

@@ -30,6 +30,12 @@ public class AssetHandler : MonoBehaviour {
     // fog of war material
     public Material fogOfWarOutlineMaterial;
 
+    [Space]
+    [Header("Cursors")]
+    public Texture2D defaultCursorTexture;
+    public Texture2D moveCursorTexture;
+    public Texture2D attackCursorTexture;
+
     void Start() {
         DontDestroyOnLoad(gameObject);
     }

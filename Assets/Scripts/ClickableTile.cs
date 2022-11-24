@@ -11,7 +11,7 @@ public class ClickableTile : MonoBehaviour {
 	[HideInInspector] public int type;
 	[HideInInspector] public TileMap map;
 	[HideInInspector] public GameManager gameManager;
-	[HideInInspector] private UnitPathfinding unitPathfinding;
+	[HideInInspector] private PlayerManager playerManager;
 
 	// This variable contains a reference to the game object of the current
 	// character - player or enemy - on the tile.
@@ -20,32 +20,40 @@ public class ClickableTile : MonoBehaviour {
 	// Check whether the hover outline has already been moved to this tile
 	bool completed = false;
 
-	// When mouse is released, calculate the tile being clicked
-	void OnMouseUp() {
-		unitPathfinding = gameManager.selectedUnit.GetComponent<UnitPathfinding>();
+    // When mouse is released, calculate the tile being clicked
+    void OnMouseUp() {
+		playerManager = gameManager.selectedUnit.GetComponent<PlayerManager>();
+		// check if UI object in the way
 		if (!EventSystem.current.IsPointerOverGameObject()) {
 			if (gameManager.cs == ControlState.Move) {
 				// move state
-				unitPathfinding.PathToLocation(x, y);
+				playerManager.PathToLocation(x, y);
+			} else {
+				// not move state, therefore attack state
+				if (currentCharacterOnTile != null) {
+					if (currentCharacterOnTile.tag == "Enemy") {
+						gameManager.AttackEnemy(currentCharacterOnTile);
+					}
+				}
 			}
 		}
 	}
 
 	// Move hover outline to current tile
     void OnMouseEnter() {
-		unitPathfinding = gameManager.selectedUnit.GetComponent<UnitPathfinding>();
+		playerManager = gameManager.selectedUnit.GetComponent<PlayerManager>();
 		if (!EventSystem.current.IsPointerOverGameObject() && !completed) {
-			unitPathfinding.tileHoverOutline.transform.position = transform.position + new Vector3(0, 0.012f, 0);
+			playerManager.tileHoverOutline.transform.position = transform.position + new Vector3(0, 0.012f, 0);
 			completed = true;
 		}
     }
 
 	// Banish hover outline to the void
     void OnMouseExit() {
-		unitPathfinding = gameManager.selectedUnit.GetComponent<UnitPathfinding>();
+		playerManager = gameManager.selectedUnit.GetComponent<PlayerManager>();
 		if (!EventSystem.current.IsPointerOverGameObject()) {
 			completed = false;
-			unitPathfinding.tileHoverOutline.transform.position = new Vector3(-100f, -100f, -100f);
+			playerManager.tileHoverOutline.transform.position = new Vector3(-100f, -100f, -100f);
 		}
 	}
 

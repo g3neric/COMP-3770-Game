@@ -13,7 +13,7 @@ public class EnemyManager : MonoBehaviour {
     // references set by game manager
     public GameObject tileMapControllerObject;
     [HideInInspector] public TileMap map;
-    [HideInInspector] public UnitPathfinding unitPathfinding;
+    [HideInInspector] public PlayerManager playerManager;
 
     // enemy prefabs
     public GameObject[] enemyPrefabs = new GameObject[1]; // 1 for now
@@ -32,6 +32,41 @@ public class EnemyManager : MonoBehaviour {
         map = tileMapControllerObject.GetComponent<TileMap>();
     }
 
+    private void FixedUpdate() {
+        // Check if any enemies have died
+        for (int i = 0; i < enemyList.Count; i++) {
+            if (enemyList[i].dead) {
+                CleanUpEnemy(i);
+            }
+        }
+    }
+
+    // remove enemy from the game
+    public void CleanUpEnemy(int enemyIndex) {
+        Character enemyCharacter = enemyList[enemyIndex];
+        GameObject enemyObject = enemyGameObjects[enemyIndex];
+
+       
+        // update the tile the enemy was on
+        map.tilesObjects[enemyCharacter.currentX, enemyCharacter.currentY].GetComponent<ClickableTile>().currentCharacterOnTile = null;
+
+        // destroy game object
+        Destroy(enemyGameObjects[enemyIndex]);
+
+        // remove from lists
+        enemyList.RemoveAt(enemyIndex);
+        enemyGameObjects.RemoveAt(enemyIndex);
+
+        // remove UI objects
+        gameManager.uiManager.RemoveEnemyUIObject(enemyIndex);
+
+        // send death message to log
+        gameManager.uiManager.SendMessageToLog("Killed enemy " + enemyCharacter.className + ".");
+
+        // update possible movements when enemy dies because you can now move to where they were
+        gameManager.playerManager.DrawPossibleMovements();
+    }
+
     // update enemie's visibility
     public void UpdateEnemiesVisibility() {
         // toggle enemy viewable
@@ -43,7 +78,7 @@ public class EnemyManager : MonoBehaviour {
                 curEnemyObject.GetComponent<MeshRenderer>().enabled = true;
 
                 // update nametag visibility
-                gameManager.uiManager.SetVisibilityOfEnemyNameTag(enemyIndex, true);
+                gameManager.uiManager.SetVisibilityOfEnemyUIObject(enemyIndex, true);
 
                 // update health bar visibility
 
@@ -58,7 +93,7 @@ public class EnemyManager : MonoBehaviour {
                 curEnemyObject.GetComponent<MeshRenderer>().enabled = false;
 
                 // update nametag visibility
-                gameManager.uiManager.SetVisibilityOfEnemyNameTag(enemyIndex, false);
+                gameManager.uiManager.SetVisibilityOfEnemyUIObject(enemyIndex, false);
 
                 // update health bar visibility
 
@@ -133,8 +168,23 @@ public class EnemyManager : MonoBehaviour {
                     // you would think the add function above would return the index, but it doesn't. whatever.
                     enemyObject.name = "Enemy ("  + enemyGameObjects.IndexOf(enemyObject) + ") " + enemyCharacter.className;
 
-                    // create name tag
-                    gameManager.uiManager.CreateEnemyNameTag(enemyCharacter);
+                    // set tag
+                    enemyObject.tag = "Enemy";
+
+                    // give enemies weapons
+                    if (enemyCharacter.className == "Sharpshooter") {
+                        // sniper for sharpshooter
+                        enemyCharacter.currentItems.Add(new SniperRifle());
+                    } else if (enemyCharacter.className == "Tank" || enemyCharacter.className == "Grunt") {
+                        // assault rifle
+                        enemyCharacter.currentItems.Add(new AssaultRifle());
+                    }
+                    enemyCharacter.currentItems.Add(new Pistol());
+
+                    enemyCharacter.selectedItemIndex = 0; // select primary for now
+
+                    // create UI objects
+                    gameManager.uiManager.CreateEnemyUIObjects(enemyCharacter);
 
                     return; // enemy has been created, stop the method now
                 }
@@ -178,25 +228,40 @@ public class EnemyManager : MonoBehaviour {
         // check if player is in view range, if so move towards them. if not, move randomly
         int[] playerCoordIfInRange = IsPlayerInRange(curEnemy, curEnemy.viewRange);
         if (playerCoordIfInRange != null) {
-            // player is in VIEW range
-            print("player in view range of enemy " + enemyIndex + ". moving to within attack range at x: " + playerCoordIfInRange[0] + " y: " + playerCoordIfInRange[1]);
-
+            // player is in view range
+            
             // calculate distance between enemy and player
-            // default path is straight to the player
-            int pathX = playerCoordIfInRange[0];
-            int pathY = playerCoordIfInRange[1];
             float dist = TileMap.DistanceBetweenTiles(curEnemy.currentX, curEnemy.currentY, playerCoordIfInRange[0], playerCoordIfInRange[1]);
+
+            // select appropriate weapon
+            /*
+            if (dist >= Mathf.Min(curEnemy.currentItems[0].range, curEnemy.currentItems[1].range) {
+
+            }
+            */
+
+            // check if enemy can attack player
+            if (IsPlayerInRange(curEnemy, curEnemy.currentItems[curEnemy.selectedItemIndex].range) != null) {
+                // player is in attack range, so lets check if we can attack them
+                while (curEnemy.AP - curEnemy.currentItems[curEnemy.selectedItemIndex].APcost >= 0) {
+                    gameManager.AttackPlayer(curEnemy);
+                }
+            }
+
+            print("player in view range of enemy " + enemyIndex + ". moving to within attack range at x: " + playerCoordIfInRange[0] + " y: " + playerCoordIfInRange[1]);
 
             // return a vector2 that is (attackRange - 1) units away from the player in the direction of the player
             Vector2 start = new Vector2(curEnemy.currentX, curEnemy.currentY);
             Vector2 end = new Vector2(playerCoordIfInRange[0], playerCoordIfInRange[1]);
             Vector2 directionVector = start - end;
-            Vector2 result = ((curEnemy.attackRange - 1) * (Vector2)Vector3.Normalize(directionVector)) + end; // have to cast to vector2
+            int attackRange = curEnemy.currentItems[curEnemy.selectedItemIndex].range;
+            Vector2 result = ((attackRange - 1) * (Vector2)Vector3.Normalize(directionVector)) + end; // have to cast to vector2
 
             // path to chosen location
-            PathEnemyToLocation(Mathf.RoundToInt(result.x), Mathf.RoundToInt(result.y), curEnemy, curEnemyObject); ;
+            PathEnemyToLocation(Mathf.RoundToInt(result.x), Mathf.RoundToInt(result.y), curEnemy, curEnemyObject);
 
         } else {
+            // wander
             // move towards current path. if no current path, pick random point nearby to patrol to
             if (curEnemy.currentPath == null) {
                 // no path right now, so lets pick a point to path to
@@ -216,7 +281,7 @@ public class EnemyManager : MonoBehaviour {
             }
         }
 
-        // take movement until out of AP
+        // move until out of ap
         TakeEnemyMovement(curEnemy, curEnemyObject);
 
         // update enemy stats at end of turn
@@ -274,14 +339,22 @@ public class EnemyManager : MonoBehaviour {
             if (enemy.currentPath.Count > 0 && !map.UnitCanEnterTile(enemy.currentPath[1].x, enemy.currentPath[1].y)) {
                 // there's somebody on the next tile we're trying to move to!
                 // therefore set path to null for now
-                print("there's somebody on the tile i'm tryna move to wtf");
                 enemy.currentPath = null;
                 return;
             }
 
             while (enemy.currentPath != null &&
                    enemy.AP - map.CostToEnterTile(enemy.currentPath[1].x, enemy.currentPath[1].y) >= 0) {
+                // check if player is in attack range
                 AdvanceEnemyPathing(enemy, enemyObject);
+
+                // after moving, check if player is now in range and if so then attack them
+                if (IsPlayerInRange(enemy, enemy.currentItems[enemy.selectedItemIndex].range) != null) {
+                    // player is in attack range, so lets check if we can attack them
+                    while (enemy.AP - enemy.currentItems[enemy.selectedItemIndex].APcost >= 0) {
+                        gameManager.AttackPlayer(enemy);
+                    }
+                }
             }
         }
     }

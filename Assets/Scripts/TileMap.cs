@@ -493,6 +493,7 @@ public class TileMap : MonoBehaviour {
 	}
 
 	// Calculate which tiles are in attack range
+	// Uses bresenham's line of sight algorithm to exlude results that are behind tiles which block vision
 	public List<int[]> CalculateTilesInRange(int centerX, int centerY, int radius, bool includeFrontier) {
 		List<int[]> returnValues = new List<int[]>();
 		// Iterate over all tiles within range
@@ -533,6 +534,21 @@ public class TileMap : MonoBehaviour {
 			}
 		}
 		return returnValues;
+	}
+
+	public bool IsTileInAttackRange(int x, int y, int x2, int y2, int range) {
+		// calculate all tiles in range
+		List<int[]> tilesInRange = CalculateTilesInRange(x2, y2, range, false);
+
+		// check each tile to see if the enemy is in range
+		for (int i = 0; i < tilesInRange.Count; i++) {
+			if (tilesInRange[i][0] == x && tilesInRange[i][1] == y) {
+				// given tile is in attack range
+				return true;
+			}
+        }
+		// given tile not found
+		return false;
 	}
 
 	// Instantiate tile outlines that need to be oriented correctly

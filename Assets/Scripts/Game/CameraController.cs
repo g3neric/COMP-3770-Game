@@ -4,10 +4,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class CameraController : MonoBehaviour {
     // link to game manager
-    private GameManager gameManager;
+    public GameManager gameManager;
 
     Camera m_MainCamera;
     private Transform CamTrans;
@@ -20,6 +21,10 @@ public class CameraController : MonoBehaviour {
     public float zoomSpeed;
     public float camTargetDrag; // affects how slide-y the camera feels - when you let go how much does it move
 
+    // zoom
+    private float zoomLevel;
+    public float maxZoom;
+
     private GameObject ObjectCamTarget;
     private Rigidbody ObjectCamTargetRigidbody;
     
@@ -29,9 +34,7 @@ public class CameraController : MonoBehaviour {
     // camera rotation around CamTargetTrans
     private float CamRotation;
 
-    // zoom
-    private float zoomLevel;
-    public float maxZoom;
+    
     private float ZoomLevel {
         get {
             return zoomLevel;
@@ -40,9 +43,6 @@ public class CameraController : MonoBehaviour {
             zoomLevel = Mathf.Clamp(value, 0f, maxZoom);
         }
     }
-
-    // camera location constraints
-    private int[] constraints = new int[2];
 
     // random junk
     private Vector2 MouseDragStartPos;
@@ -60,10 +60,7 @@ public class CameraController : MonoBehaviour {
         }
     }
 
-    void Start() {
-        // initiate link to game manager
-        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
-
+    public void InititateCamera() {
         m_MainCamera = Camera.main;
         
         // create empty game object cam target and add rigidbody
@@ -74,15 +71,10 @@ public class CameraController : MonoBehaviour {
         ObjectCamTarget.GetComponent<Rigidbody>().drag = camTargetDrag;
         CamTrans = m_MainCamera.gameObject.GetComponent<Transform>();
         ObjectCamTargetRigidbody = ObjectCamTarget.GetComponent<Rigidbody>();
-
-        // initiate constraints - square map so contraints are same in both directions
-        constraints[0] = 4; // minimum constraint
-        constraints[1] = gameManager.tileMap.mapSize - 4; // maximum constraint
-
     }
     void LateUpdate() {
         // check if game is paused before doing anything
-        if (!gameManager.pauseMenuEnabled) {
+        if (gameManager != null && !gameManager.pauseMenuEnabled) {
             // game is not paused
             CamTarget = ObjectCamTarget.transform.position; // saves alot of time 
                                                             // target movement

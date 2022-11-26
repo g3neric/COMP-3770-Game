@@ -38,7 +38,13 @@ public class PlayerManager : MonoBehaviour {
 		gameManager.characterClass.currentY = currentY;
 	}
 
-	public void SpawnPlayer(int x, int y) {
+    private void Update() {
+		if (gameManager != null && Input.GetKeyDown("e")) {
+			gameManager.FinishTurn();
+		}
+	}
+
+    public void SpawnPlayer(int x, int y) {
 		// instantiate reference to asset handler
 		assetHandler = GameObject.Find("AssetHandler").GetComponent<AssetHandler>();
 		// Instantiate tile outlines
@@ -244,7 +250,6 @@ public class PlayerManager : MonoBehaviour {
 			if (currentPath.Count > 0 && !map.UnitCanEnterTile(currentPath[1].x, currentPath[1].y)) {
 				// there's somebody on the next tile we're trying to move to!
 				// therefore set path to null for now
-				print("there's somebody on the tile i'm tryna move to wtf");
 				currentPath = null;
 				return;
 			}
@@ -256,7 +261,6 @@ public class PlayerManager : MonoBehaviour {
 				DrawFogOfWar();
 			}
 		}
-		
 
 		// Update outlines
 		DrawPossibleMovements();

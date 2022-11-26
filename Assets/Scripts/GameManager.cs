@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector] public UIManager uiManager;
 	[HideInInspector] public PlayerManager playerManager;
 	[HideInInspector] public EnemyManager enemyManager;
+	[HideInInspector] public CameraController camController;
 
 	public GameObject selectedUnit; // currently selected unit
 
@@ -35,10 +36,7 @@ public class GameManager : MonoBehaviour {
 	[Header("Scene object references")]
 	[Space]
 
-	public GameObject Camera; // camera
-	public GameObject tileMapController; // can't reference just components so i have to reference the game object first >:(
 	[HideInInspector] public TileMap tileMap;
-
 
 	// the class the player has chosen
 	[HideInInspector] public Character characterClass; // player character
@@ -47,40 +45,61 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector] public bool pauseMenuEnabled;
 
 	void Start() {
-		// initiate manager script references
-		tileMap = tileMapController.GetComponent<TileMap>();
-		tileMap.gameManager = this;
-		enemyManager = GameObject.Find("EnemyManager").GetComponent<EnemyManager>();
-		uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
-		assetHandler = GameObject.Find("AssetHandler").GetComponent<AssetHandler>();
-
-		// default cursor
-		Cursor.SetCursor(assetHandler.defaultCursorTexture, Vector2.zero, CursorMode.Auto);
-
-		InitiateGameSession();
-	}
-
-	// This function is called when a new game is created
-	public void InitiateGameSession() {
 		// Make this game object persistant throughout scenes
 		DontDestroyOnLoad(gameObject);
 
-		// Initiate all the tile map stuff
-		tileMap.InitiateTileMap();
+		assetHandler = GameObject.Find("AssetHandler").GetComponent<AssetHandler>();
 
+		Cursor.SetCursor(assetHandler.defaultCursorTexture, Vector2.zero, CursorMode.Auto);
+	}
+
+	public void StartNewGame() {
+		// we have to wait a sec for some reason
+		Invoke("InitiateGameSession", .1f);
+    }
+
+	// This function is called when a new game is created
+	public void InitiateGameSession() {
+		// initiate ui manager
+		uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
+		uiManager.gameManager = this;
+
+		// initiate enemy manager
+		enemyManager = GameObject.Find("EnemyManager").GetComponent<EnemyManager>();
+		enemyManager.gameManager = this;
+
+		// Initiate all the tile map stuff
+		tileMap = GameObject.Find("TileMapController").GetComponent<TileMap>();
+		tileMap.gameManager = this;
+		tileMap.InitiateTileMap();
+		
 		// Create and spawn the player's character
 		CreatePlayerCharacter();
-
-		Camera.GetComponent<CameraController>().ToggleSnapToUnit();
 
 		enemyManager.playerManager = playerManager;
 
 		// spawn enemies
-
 		for (int i = 0; i < 25; i++) {
 			enemyManager.SpawnEnemy(0);
 		}
 		enemyManager.UpdateEnemiesVisibility();
+
+		// create camera controller
+		camController = GameObject.Find("Main Camera").AddComponent<CameraController>();
+		camController.gameManager = this;
+		// set camera variables
+		camController.CamTargetSpeed = 7;
+		camController.CamTargetRadius = 3.7f;
+		camController.ObjectCamTargetMaxSpeed = 4;
+		camController.CamRotationSpeed = 40;
+		camController.zoomSpeed = 0.2f;
+		camController.camTargetDrag = 5;
+		camController.maxZoom = 5;
+
+		camController.InititateCamera();
+
+		// snap to unit
+		camController.ToggleSnapToUnit();
 	}
 
 	public void SetControlState(ControlState newCS) {
@@ -88,41 +107,33 @@ public class GameManager : MonoBehaviour {
 		TileMap.DestroyOutlines(playerManager.createdMovementOutlines);
 		// check which state was clicked
 		characterClass.selectedItemIndex = -1;
-		// default cursor
-		Cursor.SetCursor(assetHandler.defaultCursorTexture, Vector2.zero, CursorMode.Auto);
+		
 		if (cs == newCS) {
 			// deselect control state
 			cs = ControlState.Deselected;
 		} else if (newCS == ControlState.Move) {
 			// switch to move state
 			cs = ControlState.Move;
-
-			// update cursor to move cursor
-			Cursor.SetCursor(assetHandler.moveCursorTexture, new Vector2(assetHandler.moveCursorTexture.width/2, assetHandler.moveCursorTexture.height / 2), CursorMode.Auto);
 		} else if (newCS == ControlState.Item1) {
 			// switch to item 1
 			cs = ControlState.Item1;
 			characterClass.selectedItemIndex = 0;
 			playerManager.DrawTilesInRange();
 
-			// update cursor to attack cursor
-			Cursor.SetCursor(assetHandler.attackCursorTexture, Vector2.zero, CursorMode.Auto);
+			
 		} else if (newCS == ControlState.Item2) {
 			// switch to item 2
 			cs = ControlState.Item2;
 			characterClass.selectedItemIndex = 1;
 			playerManager.DrawTilesInRange();
-
-			// update cursor to attack cursor
-			Cursor.SetCursor(assetHandler.attackCursorTexture, Vector2.zero, CursorMode.Auto);
 		}
 		playerManager.DrawPossibleMovements();
 	}
 
-	// I seperated this class for easy viewing
-	public void CreatePlayerCharacter() {
+    // I seperated this class for easy viewing
+    public void CreatePlayerCharacter() {
 		// create player character
-		characterClass = new Scout();
+		characterClass = new Sharpshooter();
 
 		// Create the player's unit model
 		selectedUnit = Instantiate(assetHandler.ScoutPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity);
@@ -165,7 +176,7 @@ public class GameManager : MonoBehaviour {
 
 		// player has died
 		if (characterClass.dead) {
-			CloseGame();
+			uiManager.ReturnToMainMenu();
         }
 
 		// initiate new turn
@@ -199,7 +210,6 @@ public class GameManager : MonoBehaviour {
 			if (characterClass.AP - characterClass.currentItems[selectedItemIndex].APcost >= 0) {
 				// use item 1
 				damageAmount = characterClass.currentItems[selectedItemIndex].damage;
-				enemyCharacter.TakeDamage(damageAmount);
 				characterClass.AP -= characterClass.currentItems[selectedItemIndex].APcost;
 			} else {
 				// not enough AP
@@ -212,8 +222,22 @@ public class GameManager : MonoBehaviour {
 			return;
 		}
 
-		string message = "Dealt " + damageAmount + " damage to enemy " + enemyManager.enemyList[enemyIndex].className + ".";
+		// base message
+		string message = "";
+
+		// crit?
+		int critChance = Random.Range(0, 100);
+		if (critChance < 25 * characterClass.luckMultiplier) {
+			damageAmount += Random.Range(1, 10);
+			message = "Crit! ";
+		}
+		message = message + "Dealt " + damageAmount + " damage to enemy " + enemyManager.enemyList[enemyIndex].className + ".";
+		// deal damage
+		enemyCharacter.TakeDamage(damageAmount);
+
+		// send message to log
 		uiManager.SendMessageToLog(message);
+
 		// update possible movements because you use AP when you attack
 		playerManager.DrawPossibleMovements();
 	}
@@ -224,27 +248,42 @@ public class GameManager : MonoBehaviour {
 		int damageAmount = enemyCharacter.currentItems[itemIndex].damage;
 		// check if enough AP 
 		if (enemyCharacter.AP - enemyCharacter.currentItems[itemIndex].APcost >= 0) {
-			characterClass.TakeDamage(damageAmount);
+			// subtract ap cost of current weapon
 			enemyCharacter.AP -= enemyCharacter.currentItems[itemIndex].APcost;
 
-			string message = "Enemy " + enemyCharacter.className + " has dealt " + damageAmount + " damage to you.";
+			string message = "";
+
+			// crit?
+			int critChance = Random.Range(0, 100);
+			if (critChance < 25 * characterClass.luckMultiplier) {
+				damageAmount += Random.Range(1, 10);
+				message = "Crit! ";
+			} 
+			message = message + "Enemy " + enemyCharacter.className + " has dealt " + damageAmount + " damage to you.";
+			// deal damage
+			characterClass.TakeDamage(damageAmount);
+
+			// send message to log
 			uiManager.SendMessageToLog(message);
 		}
 	}
 
 	void Update() {
-		if (Input.GetKeyDown("e")) {
-			FinishTurn();
+		// update cursor based on game state
+		if (cs == ControlState.Move) {
+			// update cursor to move cursor
+			Cursor.SetCursor(assetHandler.moveCursorTexture, new Vector2(assetHandler.moveCursorTexture.width / 2, assetHandler.moveCursorTexture.height / 2), CursorMode.Auto);
+		} else if (cs == ControlState.Item1 || cs == ControlState.Item2) {
+			// update cursor to attack cursor
+			Cursor.SetCursor(assetHandler.attackCursorTexture, Vector2.zero, CursorMode.Auto);
+		} else {
+			// default cursor
+			Cursor.SetCursor(assetHandler.defaultCursorTexture, Vector2.zero, CursorMode.Auto);
 		}
 	}
 
 	// passthrough function
 	public void SendMessageToLog(string message) {
 		uiManager.SendMessageToLog(message);
-	}
-
-	// exit the game completely
-	public void CloseGame() {
-		Application.Quit();
 	}
 }

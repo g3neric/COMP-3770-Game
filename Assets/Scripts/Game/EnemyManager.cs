@@ -8,7 +8,7 @@ using UnityEngine.Assertions;
 
 public class EnemyManager : MonoBehaviour {
     // link to game manager
-    [HideInInspector] private GameManager gameManager;
+    [HideInInspector] public GameManager gameManager;
 
     // references set by game manager
     public GameObject tileMapControllerObject;
@@ -28,7 +28,6 @@ public class EnemyManager : MonoBehaviour {
     [HideInInspector] public List<int> spottedEnemies = new List<int>();
 
     private void Start() {
-        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         map = tileMapControllerObject.GetComponent<TileMap>();
     }
 
@@ -247,8 +246,6 @@ public class EnemyManager : MonoBehaviour {
                     gameManager.AttackPlayer(curEnemy);
                 }
             }
-
-            print("player in view range of enemy " + enemyIndex + ". moving to within attack range at x: " + playerCoordIfInRange[0] + " y: " + playerCoordIfInRange[1]);
 
             // return a vector2 that is (attackRange - 1) units away from the player in the direction of the player
             Vector2 start = new Vector2(curEnemy.currentX, curEnemy.currentY);

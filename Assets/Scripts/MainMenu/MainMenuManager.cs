@@ -24,12 +24,16 @@ public class MainMenuManager : MonoBehaviour {
 
     public Button startNewGameButton;
 
+    // all the tabs - these are canvases
     public GameObject mainMenu;
     public GameObject newGameMenu;
     public GameObject loadGameMenu;
     public GameObject controlsMenu;
     public GameObject settingsMenu;
 
+    // dropdowns in start game
+    public GameObject classDropdown;
+    public GameObject difficultyDropdown;
 
     private void Start() {
         // initiate main menu
@@ -85,11 +89,32 @@ public class MainMenuManager : MonoBehaviour {
     // coroutine because we have to wait a little bit before calling InitiateGameSession()
     private void StartNewGame() {
         SceneManager.LoadScene("Game");
+
+        // set difficulty
+        switch(difficultyDropdown.GetComponent<TMP_Dropdown>().value) {
+            case 0:
+                gameManager.difficulty = DifficultyState.Ez;
+                break;
+            case 1:
+                gameManager.difficulty = DifficultyState.Mid;
+                break;
+            case 2:
+                gameManager.difficulty = DifficultyState.Impossible;
+                break;
+        }
+
+        // this is the easiest way to do this
+        gameManager.characterClassInt = classDropdown.GetComponent<TMP_Dropdown>().value;
+
         gameManager.StartNewGame();
     }
 
     // exit the game completely
     public void CloseGame() {
-        Application.Quit();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+         Application.Quit();
+#endif
     }
 }

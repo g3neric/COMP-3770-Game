@@ -50,6 +50,7 @@ public class Character {
         killCount = 0;
         gold = 0;
         dead = false;
+        selectedItemIndex = 0;
     }
 
     public void TakeDamage(int amount) {
@@ -64,19 +65,6 @@ public class Character {
     public void FinishTurn() {
         AP = maxAP; // refresh AP
         HP += healRate; // heal a little bit
-
-        // clamp view range to the highest attack range you have
-        // therefore you can't shoot farther than you can see
-        // gonna have to do this when weapon is picked up!
-        if (currentItems[0] != null) {
-            if (currentItems[0].range > viewRange) {
-                currentItems[0].range = viewRange;
-            }
-        } else if (currentItems[1] != null) {
-            if (currentItems[1].range > viewRange) {
-                currentItems[0].range = viewRange;
-            }
-        }
 
         // these are mostly failsafes
         if (HP > maxHP) {
@@ -94,78 +82,86 @@ public class Character {
 public class Grunt : Character {
     public Grunt() {
         className = "Grunt";
-        maxAP = 5;
+        maxAP = 7;
         maxHP = 40;
         healRate = 3;
         viewRange = 10;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
+        currentItems.Add(new AssaultRifle());
+        currentItems.Add(new Pistol());
     }
 }
 
 public class Engineer : Character {
     public Engineer() {
         className = "Engineer";
-        maxAP = 6;
+        maxAP = 7;
         maxHP = 45;
         healRate = 3;
         viewRange = 10;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
+        currentItems.Add(new Pistol());
     }
 }
 
 public class Joker : Character {
     public Joker() {
         className = "Joker";
-        maxAP = 6;
+        maxAP = 7;
         maxHP = 35;
         healRate = 3;
         viewRange = 10;
-        luckMultiplier = 1.5f;
+        luckMultiplier = 3f;
         HP = maxHP;
         AP = maxAP;
+        currentItems.Add(new Pistol());
     }
 }
 
 public class Saboteur : Character {
     public Saboteur() {
         className = "Saboteur";
-        maxAP = 6;
+        maxAP = 7;
         maxHP = 45;
         healRate = 3;
         viewRange = 10;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
+        currentItems.Add(new Pistol());
     }
 }
 
 public class Scout : Character {
     public Scout() {
         className = "Scout";
-        maxAP = 8;
+        maxAP = 9;
         maxHP = 45;
         healRate = 3;
         viewRange = 10;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
+        currentItems.Add(new Pistol());
     }
 }
 
 public class Sharpshooter : Character {
     public Sharpshooter() {
         className = "Sharpshooter";
-        maxAP = 7;
+        maxAP = 6;
         maxHP = 30;
         healRate = 3;
         viewRange = 10;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
+        currentItems.Add(new SniperRifle());
+        currentItems.Add(new Pistol());
     }
 }
 
@@ -179,18 +175,21 @@ public class Surgeon : Character {
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
+        currentItems.Add(new Pistol());
     }
 }
 
 public class Tank : Character {
     public Tank() {
         className = "Tank";
-        maxAP = 6;
+        maxAP = 7;
         maxHP = 80;
         healRate = 2;
         viewRange = 10;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
+        currentItems.Add(new AssaultRifle());
+        currentItems.Add(new Pistol());
     }
 }

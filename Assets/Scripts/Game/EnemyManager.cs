@@ -159,6 +159,17 @@ public class EnemyManager : MonoBehaviour {
                     enemyCharacter.currentX = x;
                     enemyCharacter.currentY = y;
 
+                    switch(gameManager.difficulty) {
+                        case DifficultyState.Ez:
+                            enemyCharacter.HP -= 10;
+                            enemyCharacter.maxAP -= 1;
+                            break;
+                        case DifficultyState.Impossible:
+                            enemyCharacter.HP += 15;
+                            enemyCharacter.maxAP += 1;
+                            break;
+                    }
+
                     // add enemy to lists
                     enemyList.Add(enemyCharacter);
                     enemyGameObjects.Add(enemyObject);
@@ -169,18 +180,6 @@ public class EnemyManager : MonoBehaviour {
 
                     // set tag
                     enemyObject.tag = "Enemy";
-
-                    // give enemies weapons
-                    if (enemyCharacter.className == "Sharpshooter") {
-                        // sniper for sharpshooter
-                        enemyCharacter.currentItems.Add(new SniperRifle());
-                    } else if (enemyCharacter.className == "Tank" || enemyCharacter.className == "Grunt") {
-                        // assault rifle
-                        enemyCharacter.currentItems.Add(new AssaultRifle());
-                    }
-                    enemyCharacter.currentItems.Add(new Pistol());
-
-                    enemyCharacter.selectedItemIndex = 0; // select primary for now
 
                     // create UI objects
                     gameManager.uiManager.CreateEnemyUIObjects(enemyCharacter);

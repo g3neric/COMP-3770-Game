@@ -41,16 +41,17 @@ public class GameManager : MonoBehaviour {
 	// the class the player has chosen
 	[HideInInspector] public Character characterClass; // player character
 
+	// set by main menu manager
+	[HideInInspector] public int characterClassInt;
+
 	// misc
 	[HideInInspector] public bool pauseMenuEnabled;
 
 	void Start() {
 		// Make this game object persistant throughout scenes
 		DontDestroyOnLoad(gameObject);
-
+		cs = ControlState.Deselected;
 		assetHandler = GameObject.Find("AssetHandler").GetComponent<AssetHandler>();
-
-		Cursor.SetCursor(assetHandler.defaultCursorTexture, Vector2.zero, CursorMode.Auto);
 	}
 
 	public void StartNewGame() {
@@ -106,37 +107,73 @@ public class GameManager : MonoBehaviour {
 		TileMap.DestroyOutlines(playerManager.createdRangeOutlines);
 		TileMap.DestroyOutlines(playerManager.createdMovementOutlines);
 		// check which state was clicked
-		characterClass.selectedItemIndex = -1;
 		
-		if (cs == newCS) {
+		if (cs == newCS || newCS == ControlState.Deselected) {
 			// deselect control state
 			cs = ControlState.Deselected;
 		} else if (newCS == ControlState.Move) {
 			// switch to move state
 			cs = ControlState.Move;
+			playerManager.DrawPossibleMovements();
 		} else if (newCS == ControlState.Item1) {
 			// switch to item 1
 			cs = ControlState.Item1;
 			characterClass.selectedItemIndex = 0;
 			playerManager.DrawTilesInRange();
+			playerManager.DrawPossibleMovements();
 
-			
 		} else if (newCS == ControlState.Item2) {
 			// switch to item 2
 			cs = ControlState.Item2;
 			characterClass.selectedItemIndex = 1;
 			playerManager.DrawTilesInRange();
+			playerManager.DrawPossibleMovements();
 		}
-		playerManager.DrawPossibleMovements();
 	}
 
     // I seperated this class for easy viewing
     public void CreatePlayerCharacter() {
-		// create player character
-		characterClass = new Sharpshooter();
+		GameObject prefab = null;
+		switch (characterClassInt) {
+			case 0:
+				characterClass = new Grunt();
+				prefab = assetHandler.GruntPrefab;
+				break;
+			case 1:
+				characterClass = new Engineer();
+				prefab = assetHandler.EngineerPrefab;
+				break;
+			case 2:
+				characterClass = new Joker();
+				prefab = assetHandler.JokerPrefab;
+				break;
+			case 3:
+				characterClass = new Saboteur();
+				prefab = assetHandler.SaboteurPrefab;
+				break;
+			case 4:
+				characterClass = new Scout();
+				prefab = assetHandler.ScoutPrefab;
+				break;
+			case 5:
+				characterClass = new Sharpshooter();
+				prefab = assetHandler.SharpshooterPrefab;
+				break;
+			case 6:
+				characterClass = new Surgeon();
+				prefab = assetHandler.SurgeonPrefab;
+				break;
+			case 7:
+				characterClass = new Tank();
+				prefab = assetHandler.TankPrefab;
+				break;
+			default:
+				print("error selecting class");
+				return;
+		}
 
 		// Create the player's unit model
-		selectedUnit = Instantiate(assetHandler.ScoutPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity);
+		selectedUnit = Instantiate(prefab, new Vector3(0f, 0f, 0f), Quaternion.identity);
 		selectedUnit.tag = "Player";
 
 		// Give the player's character a pathfinding script
@@ -153,10 +190,6 @@ public class GameManager : MonoBehaviour {
 			tempY += 1;
 		}
 		playerManager.SpawnPlayer(tempX, tempY);
-
-		// give player weapons for now
-		characterClass.currentItems.Add(new AssaultRifle());
-		characterClass.currentItems.Add(new SniperRifle());
 	}
 
 	// player ended their turn; on to the next
@@ -170,13 +203,13 @@ public class GameManager : MonoBehaviour {
 		characterClass.FinishTurn(); // update character stats
 
 		// enemy turns
-
 		enemyManager.ResolveAllEnemyTurns();
 		enemyManager.UpdateEnemiesVisibility();
 
-		// player has died
-		if (characterClass.dead) {
-			uiManager.ReturnToMainMenu();
+		// 5% chance to spawn new enemy each turn
+		int spawnRandom = Random.Range(0, 100);
+		if (spawnRandom < 5) {
+			enemyManager.SpawnEnemy(0);
         }
 
 		// initiate new turn
@@ -226,14 +259,22 @@ public class GameManager : MonoBehaviour {
 		string message = "";
 
 		// crit?
+		// 4% chance for crazy crit, 25% for regular crit
+		// joker is 16% for crazy crit, 75% for regular crit
 		int critChance = Random.Range(0, 100);
-		if (critChance < 25 * characterClass.luckMultiplier) {
+		if (critChance < 4 * characterClass.luckMultiplier) {
+			damageAmount += Random.Range(10, 30);
+			message = "Crazy crit! ";
+        } else if (critChance < 25 * characterClass.luckMultiplier) {
 			damageAmount += Random.Range(1, 10);
 			message = "Crit! ";
 		}
 		message = message + "Dealt " + damageAmount + " damage to enemy " + enemyManager.enemyList[enemyIndex].className + ".";
 		// deal damage
 		enemyCharacter.TakeDamage(damageAmount);
+		if (enemyCharacter.dead) {
+			characterClass.killCount++;
+        }
 
 		// send message to log
 		uiManager.SendMessageToLog(message);
@@ -254,14 +295,22 @@ public class GameManager : MonoBehaviour {
 			string message = "";
 
 			// crit?
+			// 4% chance for crazy crit, 25% for regular crit
+			// joker is 16% for crazy crit, 75% for regular crit
 			int critChance = Random.Range(0, 100);
-			if (critChance < 25 * characterClass.luckMultiplier) {
+			if (critChance < 5 * characterClass.luckMultiplier) {
+				damageAmount += Random.Range(10, 30);
+				message = "Crazy crit! ";
+			} else if (critChance < 25 * characterClass.luckMultiplier) {
 				damageAmount += Random.Range(1, 10);
 				message = "Crit! ";
-			} 
+			}
 			message = message + "Enemy " + enemyCharacter.className + " has dealt " + damageAmount + " damage to you.";
 			// deal damage
 			characterClass.TakeDamage(damageAmount);
+			if (characterClass.dead) {
+				uiManager.GameOverMenu(damageAmount, enemyCharacter);
+            }
 
 			// send message to log
 			uiManager.SendMessageToLog(message);
@@ -269,6 +318,7 @@ public class GameManager : MonoBehaviour {
 	}
 
 	void Update() {
+		
 		// update cursor based on game state
 		if (cs == ControlState.Move) {
 			// update cursor to move cursor

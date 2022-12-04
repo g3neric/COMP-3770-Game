@@ -45,10 +45,13 @@ public class UIManager : MonoBehaviour {
     public Button controlMenuReturnButton;
     public Button settingsMenuReturnButton;
 
+    public Button gameOverMenuButton;
+
     // menus
     public GameObject pauseMenu;
     public GameObject controlsMenu;
     public GameObject settingsMenu;
+    public GameObject gameOverMenu;
 
     // log variables
     public GameObject messageLog;
@@ -58,7 +61,15 @@ public class UIManager : MonoBehaviour {
 
     public Button buttonNextTurn;
 
+    private ControlState previousCS;
+
     private void Start() {
+        // default all menus to inactive
+        gameOverMenu.SetActive(false);
+        pauseMenu.SetActive(false);
+        settingsMenu.SetActive(false);
+        controlsMenu.SetActive(false);
+
         // Initiate next turn button
         buttonNextTurn.GetComponent<Button>().onClick.AddListener(delegate { gameManager.FinishTurn(); });
 
@@ -74,6 +85,7 @@ public class UIManager : MonoBehaviour {
         pauseMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Controls); });
         pauseMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Settings); });
         pauseMenuButtons[3].GetComponent<Button>().onClick.AddListener(delegate { ReturnToMainMenu(); });
+        gameOverMenuButton.GetComponent<Button>().onClick.AddListener(delegate { ReturnToMainMenu(); });
 
         // Initiate control menu button
         controlMenuReturnButton.GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Default); });
@@ -102,8 +114,15 @@ public class UIManager : MonoBehaviour {
             classNameText.text = "Class: " + gameManager.characterClass.className;
 
             // update toolbar item names for now
-            toolbarButtons[1].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = gameManager.characterClass.currentItems[0].name;
-            toolbarButtons[2].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = gameManager.characterClass.currentItems[1].name;
+            if (gameManager.characterClass.currentItems.Count == 1) {
+                toolbarButtons[1].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = gameManager.characterClass.currentItems[0].name;
+                toolbarButtons[2].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = "";
+            }
+
+            if (gameManager.characterClass.currentItems.Count == 2) {
+                toolbarButtons[1].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = gameManager.characterClass.currentItems[0].name;
+                toolbarButtons[2].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = gameManager.characterClass.currentItems[1].name;
+            }
 
             // button controls for the toolbar
             if (Input.GetKeyDown("1")) {
@@ -216,10 +235,12 @@ public class UIManager : MonoBehaviour {
             controlsMenu.SetActive(false); 
             settingsMenu.SetActive(false);
             gameManager.pauseMenuEnabled = false;
-
+            gameManager.SetControlState(previousCS);
         } else if (!gameManager.pauseMenuEnabled) {
             pauseMenu.SetActive(true);
             gameManager.pauseMenuEnabled = true;
+            previousCS = gameManager.cs;
+            gameManager.SetControlState(ControlState.Deselected);
         }
     }
 
@@ -269,9 +290,17 @@ public class UIManager : MonoBehaviour {
         if (selectedButtonIndex == 0) {
             gameManager.SetControlState(ControlState.Move);
         } else if (selectedButtonIndex == 1) {
-            gameManager.SetControlState(ControlState.Item1);
+            if (gameManager.characterClass.currentItems.Count >= 1) {
+                gameManager.SetControlState(ControlState.Item1);
+            } else {
+                gameManager.SetControlState(ControlState.Deselected);
+            }
         } else if (selectedButtonIndex == 2) {
-            gameManager.SetControlState(ControlState.Item2);
+            if (gameManager.characterClass.currentItems.Count >= 2) {
+                gameManager.SetControlState(ControlState.Item2);
+            } else {
+                gameManager.SetControlState(ControlState.Deselected);
+            }
         }
 
         Vector3 pos;
@@ -290,10 +319,26 @@ public class UIManager : MonoBehaviour {
             // same button selected (deselect)
             selectedToolbarButton = null;
         }
-        
+    }
+
+    public void GameOverMenu(int damageAmount, Character enemyCharacter) {
+        gameOverMenu.SetActive(true);
+        gameManager.pauseMenuEnabled = true;
+        gameManager.SetControlState(ControlState.Deselected);
+        string text = "Enemy " + enemyCharacter.className + " killed you with a " + damageAmount +
+                      "\ndamage shot. GG.\n";
+
+        if (gameManager.characterClass.killCount == 1) {
+            text = text + "\nYou killed 1 enemy.";
+        } else {
+            text = text + "\nYou killed " + gameManager.characterClass.killCount + " enemies.";
+        }
+                      
+        gameOverMenu.transform.GetChild(1).GetChild(1).gameObject.GetComponent<TextMeshProUGUI>().text = text;
     }
 
     public void ReturnToMainMenu() {
+        gameManager.SetControlState(ControlState.Deselected);
         SceneManager.LoadScene("MainMenu");
     }
 }

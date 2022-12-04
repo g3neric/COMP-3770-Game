@@ -19,8 +19,8 @@ public class AssaultRifle : Item {
     // constructor
     public AssaultRifle() {
         name = "Assault Rifle";
-        damage = 15;
-        APcost = 4;
+        damage = 12;
+        APcost = 5;
         range = 7;
     }
 }
@@ -31,7 +31,7 @@ public class SniperRifle : Item {
         name = "Sniper Rifle";
         damage = 20;
         APcost = 6;
-        range = 10;
+        range = 9;
     }
 }
 
@@ -39,7 +39,7 @@ public class Pistol : Item {
     // constructor
     public Pistol() {
         name = "Pistol";
-        damage = 5;
+        damage = 7;
         APcost = 3;
         range = 5;
     }

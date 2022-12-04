@@ -77,8 +77,7 @@ public class PlayerManager : MonoBehaviour {
 		// set name
 		gameObject.name = "Player Model";
 
-		// Draw possible movements and fog of war right when you spawn
-		DrawPossibleMovements();
+		// Draw fog of war right when you spawn
 		DrawFogOfWar();
 	}
 

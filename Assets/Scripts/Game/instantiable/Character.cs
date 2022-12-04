@@ -78,7 +78,7 @@ public class Character {
         dead = true;
     }
 }
-
+[System.Serializable]
 public class Grunt : Character {
     public Grunt() {
         className = "Grunt";
@@ -93,7 +93,7 @@ public class Grunt : Character {
         currentItems.Add(new Pistol());
     }
 }
-
+[System.Serializable]
 public class Engineer : Character {
     public Engineer() {
         className = "Engineer";
@@ -105,9 +105,10 @@ public class Engineer : Character {
         HP = maxHP;
         AP = maxAP;
         currentItems.Add(new Pistol());
+
     }
 }
-
+[System.Serializable]
 public class Joker : Character {
     public Joker() {
         className = "Joker";
@@ -121,7 +122,7 @@ public class Joker : Character {
         currentItems.Add(new Pistol());
     }
 }
-
+[System.Serializable]
 public class Saboteur : Character {
     public Saboteur() {
         className = "Saboteur";
@@ -135,7 +136,7 @@ public class Saboteur : Character {
         currentItems.Add(new Pistol());
     }
 }
-
+[System.Serializable]
 public class Scout : Character {
     public Scout() {
         className = "Scout";
@@ -149,7 +150,7 @@ public class Scout : Character {
         currentItems.Add(new Pistol());
     }
 }
-
+[System.Serializable]
 public class Sharpshooter : Character {
     public Sharpshooter() {
         className = "Sharpshooter";
@@ -164,7 +165,7 @@ public class Sharpshooter : Character {
         currentItems.Add(new Pistol());
     }
 }
-
+[System.Serializable]
 public class Surgeon : Character {
     public Surgeon() {
         className = "Surgeon";
@@ -178,7 +179,7 @@ public class Surgeon : Character {
         currentItems.Add(new Pistol());
     }
 }
-
+[System.Serializable]
 public class Tank : Character {
     public Tank() {
         className = "Tank";

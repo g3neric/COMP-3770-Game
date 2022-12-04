@@ -13,7 +13,6 @@ public class TileMap : MonoBehaviour {
 	// Map generation variables
 	[Space]
 	[Header("Map settings")]
-	[Range(20, 100)] public int mapSize;
 	public int shoreSize;
 	public float shoreVariation;
 	[Range(5, 20)] public float biomeSize;
@@ -53,17 +52,77 @@ public class TileMap : MonoBehaviour {
 
 		// Initiate the map and pathfinding
 		GenerateMap(); // generate map
-		fullMapGraph = GeneratePathfindingGraph(mapSize, 0); // pathfinding
+		fullMapGraph = GeneratePathfindingGraph(gameManager.mapSize, 0); // pathfinding
 	}
 
 	// Allocate our map tiles
 	// I combined GenerateMapVisual() into this function becuz it didnt need to be seperate
 	public void GenerateMap() {
+		// quick reference
+		int mapSize = gameManager.mapSize;
+
 		tiles = new int[mapSize, mapSize]; // all of the tile types
 		tilesObjects = new GameObject[mapSize, mapSize]; // all gameobjects of tiles
 		viewableTiles = new List<int[]>(); // instantiate viewable tiles for fog of war
 
-		// Test if someone messed up the frequency attributes in the editor >:(
+		// set tile frequencies
+		switch(gameManager.biomeSetting) {
+			case BiomeSetting.Default:
+				// swamp tile
+				tileTypes[0].frequency = 15;
+				// grass tile
+				tileTypes[1].frequency = 30;
+				// hill tile
+				tileTypes[2].frequency = 25;
+				// mountain tile
+				tileTypes[3].frequency = 30;
+				break;
+			case BiomeSetting.Hilly:
+				// swamp tile
+				tileTypes[0].frequency = 10;
+				// grass tile
+				tileTypes[1].frequency = 20;
+				// hill tile
+				tileTypes[2].frequency = 35;
+				// mountain tile
+				tileTypes[3].frequency = 35;
+				break;
+			case BiomeSetting.Superflat:
+				// swamp tile
+				tileTypes[0].frequency = 50;
+				// grass tile
+				tileTypes[1].frequency = 50;
+				// hill tile
+				tileTypes[2].frequency = 0;
+				// mountain tile
+				tileTypes[3].frequency = 0;
+				break;
+			case BiomeSetting.Mountaineous:
+				// swamp tile
+				tileTypes[0].frequency = 10;
+				// grass tile
+				tileTypes[1].frequency = 15;
+				// hill tile
+				tileTypes[2].frequency = 30;
+				// mountain tile
+				tileTypes[3].frequency = 45;
+				break;
+			case BiomeSetting.Swampland:
+				// swamp tile
+				tileTypes[0].frequency = 45;
+				// grass tile
+				tileTypes[1].frequency = 25;
+				// hill tile
+				tileTypes[2].frequency = 15;
+				// mountain tile
+				tileTypes[3].frequency = 15;
+				break;
+        }
+
+
+
+
+		// Test if frequencies attributes are messed up. If they are, generation will break
 		// Must add up to 100%.
 		int sum = 0;
 		for (int x = 0; x < numOfRandomlyGeneratedTiles; x++) {
@@ -252,7 +311,7 @@ public class TileMap : MonoBehaviour {
 	public int CostToEnterTile(int x, int y) {
 		if (UnitCanEnterTile(x, y) == false) {
 			// unit cannot enter tile, so return big number
-			return mapSize * 10;
+			return gameManager.mapSize * 10;
 		}
 		int cost = tileTypes[tiles[x, y]].movementCost;
 		return cost;

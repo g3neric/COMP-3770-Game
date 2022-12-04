@@ -105,10 +105,10 @@ public class EnemyManager : MonoBehaviour {
     // spawn a single enemy at a random pos
     public void SpawnEnemy(int enemyPrefabIndex) {
         // iterate over every tile over a rough approximation of the island size
-        int startingX = Random.Range(map.oceanSize, map.mapSize - map.oceanSize);
-        int startingY = Random.Range(map.oceanSize, map.mapSize - map.oceanSize);
-        for (int x = startingX; x <= map.mapSize - map.oceanSize; x++) {
-            for (int y = startingY; y <= map.mapSize - map.oceanSize; y++) {
+        int startingX = Random.Range(map.oceanSize, gameManager.mapSize - map.oceanSize);
+        int startingY = Random.Range(map.oceanSize, gameManager.mapSize - map.oceanSize);
+        for (int x = startingX; x <= gameManager.mapSize - map.oceanSize; x++) {
+            for (int y = startingY; y <= gameManager.mapSize - map.oceanSize; y++) {
                 // check if current tile is not viewable by the player, is walkable, and nobody is on that tile rn
                 if (map.UnitCanEnterTile(x, y) &&
                     !map.IsTileVisibleToPlayer(x, y)) {
@@ -124,7 +124,7 @@ public class EnemyManager : MonoBehaviour {
 
                     // randomly choose one of the 8 classes
                     // it's a shame i have to do it this way but it's the only way :(
-                    int randomClass = Random.Range(1, 8);
+                    int randomClass = Random.Range(1, 9);
                     switch(randomClass) {
                         case 1:
                             enemyCharacter = new Engineer();
@@ -161,12 +161,13 @@ public class EnemyManager : MonoBehaviour {
 
                     switch(gameManager.difficulty) {
                         case DifficultyState.Ez:
-                            enemyCharacter.HP -= 10;
-                            enemyCharacter.maxAP -= 1;
+                            enemyCharacter.maxHP -= 15;
+                            enemyCharacter.HP -= 15;
                             break;
                         case DifficultyState.Impossible:
+                            enemyCharacter.maxHP += 15;
                             enemyCharacter.HP += 15;
-                            enemyCharacter.maxAP += 1;
+                            enemyCharacter.maxAP += 2;
                             break;
                     }
 
@@ -238,11 +239,26 @@ public class EnemyManager : MonoBehaviour {
             }
             */
 
-            // check if enemy can attack player
-            if (IsPlayerInRange(curEnemy, curEnemy.currentItems[curEnemy.selectedItemIndex].range) != null) {
+            // switch to primary weapon
+            curEnemy.selectedItemIndex = 0;
+
+            // check if enemy can attack player with primary
+            if (IsPlayerInRange(curEnemy, curEnemy.currentItems[0].range) != null) {
                 // player is in attack range, so lets check if we can attack them
-                while (curEnemy.AP - curEnemy.currentItems[curEnemy.selectedItemIndex].APcost >= 0) {
+                while (curEnemy.AP - curEnemy.currentItems[0].APcost >= 0) {
                     gameManager.AttackPlayer(curEnemy);
+                }
+            }
+
+            // check if enemy has a secondary
+            if (curEnemy.currentItems.Count > 1) {
+                // check if player is in range of their secondary
+                if (IsPlayerInRange(curEnemy, curEnemy.currentItems[1].range) != null) {
+                    curEnemy.selectedItemIndex = 1; // switch to secondary
+                    // attack until out of AP
+                    while (curEnemy.AP - curEnemy.currentItems[1].APcost >= 0) {
+                        gameManager.AttackPlayer(curEnemy);
+                    }
                 }
             }
 
@@ -251,13 +267,14 @@ public class EnemyManager : MonoBehaviour {
             Vector2 end = new Vector2(playerCoordIfInRange[0], playerCoordIfInRange[1]);
             Vector2 directionVector = start - end;
             int attackRange = curEnemy.currentItems[curEnemy.selectedItemIndex].range;
-            Vector2 result = ((attackRange - 1) * (Vector2)Vector3.Normalize(directionVector)) + end; // have to cast to vector2
+            Vector2 result = ((attackRange - 2) * (Vector2)Vector3.Normalize(directionVector)) + end; // have to cast to vector2
 
             // path to chosen location
             PathEnemyToLocation(Mathf.RoundToInt(result.x), Mathf.RoundToInt(result.y), curEnemy, curEnemyObject);
 
         } else {
-            // wander
+            // wander; player not in view range
+
             // move towards current path. if no current path, pick random point nearby to patrol to
             if (curEnemy.currentPath == null) {
                 // no path right now, so lets pick a point to path to
@@ -269,8 +286,8 @@ public class EnemyManager : MonoBehaviour {
                 // destination cannot be current tile
                 while (!map.UnitCanEnterTile(x, y) || (curEnemy.currentX == x && curEnemy.currentY == y)) {
                     // pick new point and try again
-                    x = Mathf.Clamp(curEnemy.currentX + Random.Range(-5, 6), map.oceanSize, map.mapSize - map.oceanSize);
-                    y = Mathf.Clamp(curEnemy.currentY + Random.Range(-5, 6), map.oceanSize, map.mapSize - map.oceanSize);
+                    x = Mathf.Clamp(curEnemy.currentX + Random.Range(-5, 6), map.oceanSize, gameManager.mapSize - map.oceanSize);
+                    y = Mathf.Clamp(curEnemy.currentY + Random.Range(-5, 6), map.oceanSize, gameManager.mapSize - map.oceanSize);
                 }
                 // create path to location
                 PathEnemyToLocation(x, y, curEnemy, curEnemyObject);

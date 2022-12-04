@@ -9,8 +9,15 @@ using UnityEngine;
 public enum ControlState { Move, Item1, Item2, Deselected };
 public enum DifficultyState { Ez, Mid, Impossible };
 
+public enum BiomeSetting { Default, Hilly, Superflat, Mountaineous, Swampland };
+
 public class GameManager : MonoBehaviour {
 	// I KNOW THIS IS A LIL MESSY I'LL CLEAN IT UP LATER
+
+	// constants
+	// these are base percents, joker is 3x chance
+	[HideInInspector] public const int crazyCritChance = 3;
+	[HideInInspector] public const int critChance = 25;
 
 	// link to asset handler
 	private AssetHandler assetHandler;
@@ -23,8 +30,12 @@ public class GameManager : MonoBehaviour {
 
 	[HideInInspector] public int turnCount = 1;
 
+	// enums
 	[HideInInspector] public ControlState cs = ControlState.Deselected;
 	[HideInInspector] public DifficultyState difficulty = DifficultyState.Mid; // default to mid
+	[HideInInspector] public BiomeSetting biomeSetting;
+
+	[HideInInspector] public int mapSize;
 
 	// Prefabs
 	[Space]
@@ -80,7 +91,23 @@ public class GameManager : MonoBehaviour {
 		enemyManager.playerManager = playerManager;
 
 		// spawn enemies
-		for (int i = 0; i < 25; i++) {
+		int enemyCount; // amount of enemies at start of game
+		switch(difficulty) {
+			case DifficultyState.Ez:
+				enemyCount = 15;
+				break;
+			case DifficultyState.Mid:
+				enemyCount = 25;
+				break;
+			case DifficultyState.Impossible:
+				enemyCount = 35;
+				break;
+			default:
+				// this section should never be reached
+				print("error spawning enemies - difficulty state not set");
+				return;
+        }
+		for (int i = 0; i < enemyCount; i++) {
 			enemyManager.SpawnEnemy(0);
 		}
 		enemyManager.UpdateEnemiesVisibility();
@@ -133,7 +160,7 @@ public class GameManager : MonoBehaviour {
 
     // I seperated this class for easy viewing
     public void CreatePlayerCharacter() {
-		GameObject prefab = null;
+		GameObject prefab;
 		switch (characterClassInt) {
 			case 0:
 				characterClass = new Grunt();
@@ -182,8 +209,8 @@ public class GameManager : MonoBehaviour {
 		playerManager.map = tileMap;
 
 		// Start at middle of map and keep moving until we find a walkable spawn
-		int tempX = Mathf.FloorToInt(tileMap.mapSize / 2);
-		int tempY = Mathf.FloorToInt(tileMap.mapSize / 2);
+		int tempX = Mathf.FloorToInt(mapSize / 2);
+		int tempY = Mathf.FloorToInt(mapSize / 2);
 		while (!tileMap.tileTypes[tileMap.tiles[tempX, tempY]].isWalkable) {
 			// Keep moving spawn position until spawn is walkable
 			tempX += 1;
@@ -262,10 +289,10 @@ public class GameManager : MonoBehaviour {
 		// 4% chance for crazy crit, 25% for regular crit
 		// joker is 16% for crazy crit, 75% for regular crit
 		int critChance = Random.Range(0, 100);
-		if (critChance < 4 * characterClass.luckMultiplier) {
+		if (critChance < crazyCritChance * characterClass.luckMultiplier) {
 			damageAmount += Random.Range(10, 30);
 			message = "Crazy crit! ";
-        } else if (critChance < 25 * characterClass.luckMultiplier) {
+        } else if (critChance < critChance * characterClass.luckMultiplier) {
 			damageAmount += Random.Range(1, 10);
 			message = "Crit! ";
 		}
@@ -298,10 +325,10 @@ public class GameManager : MonoBehaviour {
 			// 4% chance for crazy crit, 25% for regular crit
 			// joker is 16% for crazy crit, 75% for regular crit
 			int critChance = Random.Range(0, 100);
-			if (critChance < 5 * characterClass.luckMultiplier) {
+			if (critChance < crazyCritChance * characterClass.luckMultiplier) {
 				damageAmount += Random.Range(10, 30);
 				message = "Crazy crit! ";
-			} else if (critChance < 25 * characterClass.luckMultiplier) {
+			} else if (critChance < critChance * characterClass.luckMultiplier) {
 				damageAmount += Random.Range(1, 10);
 				message = "Crit! ";
 			}
@@ -317,8 +344,7 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
-	void Update() {
-		
+	void LateUpdate() {
 		// update cursor based on game state
 		if (cs == ControlState.Move) {
 			// update cursor to move cursor

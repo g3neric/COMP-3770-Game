@@ -15,6 +15,7 @@ public class Item {
     
 }
 
+[System.Serializable]
 public class AssaultRifle : Item {
     // constructor
     public AssaultRifle() {
@@ -25,6 +26,7 @@ public class AssaultRifle : Item {
     }
 }
 
+[System.Serializable]
 public class SniperRifle : Item {
     // constructor
     public SniperRifle() {
@@ -35,12 +37,13 @@ public class SniperRifle : Item {
     }
 }
 
+[System.Serializable]
 public class Pistol : Item {
     // constructor
     public Pistol() {
         name = "Pistol";
-        damage = 7;
-        APcost = 3;
+        damage = 4;
+        APcost = 2;
         range = 5;
     }
 }

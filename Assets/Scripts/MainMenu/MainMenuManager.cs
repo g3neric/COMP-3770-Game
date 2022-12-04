@@ -31,9 +31,11 @@ public class MainMenuManager : MonoBehaviour {
     public GameObject controlsMenu;
     public GameObject settingsMenu;
 
-    // dropdowns in start game
-    public GameObject classDropdown;
-    public GameObject difficultyDropdown;
+    // dropDowns[0] = class dropdown
+    // dropDowns[1] = difficulty dropdown
+    // dropDowns[2] = biomes dropdown
+    // dropDowns[3] = map size dropdown
+    public GameObject[] dropDowns = new GameObject[4];
 
     private void Start() {
         // initiate main menu
@@ -88,10 +90,11 @@ public class MainMenuManager : MonoBehaviour {
 
     // coroutine because we have to wait a little bit before calling InitiateGameSession()
     private void StartNewGame() {
-        SceneManager.LoadScene("Game");
+        // this is the easiest way to do this
+        gameManager.characterClassInt = dropDowns[0].GetComponent<TMP_Dropdown>().value;
 
-        // set difficulty
-        switch(difficultyDropdown.GetComponent<TMP_Dropdown>().value) {
+        // difficulty dropdown
+        switch (dropDowns[1].GetComponent<TMP_Dropdown>().value) {
             case 0:
                 gameManager.difficulty = DifficultyState.Ez;
                 break;
@@ -103,10 +106,42 @@ public class MainMenuManager : MonoBehaviour {
                 break;
         }
 
-        // this is the easiest way to do this
-        gameManager.characterClassInt = classDropdown.GetComponent<TMP_Dropdown>().value;
+        // biome setting dropdown
+        switch(dropDowns[2].GetComponent<TMP_Dropdown>().value) {
+            case 0:
+                gameManager.biomeSetting = BiomeSetting.Default;
+                break;
+            case 1:
+                gameManager.biomeSetting = BiomeSetting.Hilly;
+                break;
+            case 2:
+                gameManager.biomeSetting = BiomeSetting.Superflat;
+                break;
+            case 3:
+                gameManager.biomeSetting = BiomeSetting.Mountaineous;
+                break;
+            case 4:
+                gameManager.biomeSetting = BiomeSetting.Swampland;
+                break;
+        }
 
+        // map size dropdown
+        switch (dropDowns[3].GetComponent<TMP_Dropdown>().value) {
+            case 0:
+                gameManager.mapSize = 75;
+                break;
+            case 1:
+                gameManager.mapSize = 100;
+                break;
+            case 2:
+                gameManager.mapSize = 125;
+                break;
+            case 3:
+                gameManager.mapSize = 150;
+                break;
+        }
         gameManager.StartNewGame();
+        SceneManager.LoadScene("Game");
     }
 
     // exit the game completely

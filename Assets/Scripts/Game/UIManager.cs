@@ -220,7 +220,6 @@ public class UIManager : MonoBehaviour {
                     
                     LogMessageList.RemoveAt(i);
                     Destroy(LogMessageList[i].messageObject);
-                    LogMessageList.RemoveAt(i);
                 } else {
                     LogMessageList[i].messageTime += 1;
                 }

@@ -15,16 +15,18 @@ public class GameManager : MonoBehaviour {
 	// I KNOW THIS IS A LIL MESSY I'LL CLEAN IT UP LATER
 
 	// constants
-	// these are base percents, joker is 3x chance
-	[HideInInspector] public const int crazyCritChance = 3;
+	// these are base %, joker is 3x chance
 	[HideInInspector] public const int critChance = 25;
+	[HideInInspector] public const int epicCritChance = 3;
 
 	// link to asset handler
-	private AssetHandler assetHandler;
+	[HideInInspector] public AssetHandler assetHandler;
+	[HideInInspector] public SoundManager soundManager;
 	[HideInInspector] public UIManager uiManager;
 	[HideInInspector] public PlayerManager playerManager;
 	[HideInInspector] public EnemyManager enemyManager;
 	[HideInInspector] public CameraController camController;
+	
 
 	public GameObject selectedUnit; // currently selected unit
 
@@ -52,9 +54,6 @@ public class GameManager : MonoBehaviour {
 	// the class the player has chosen
 	[HideInInspector] public Character characterClass; // player character
 
-	// set by main menu manager
-	[HideInInspector] public int characterClassInt;
-
 	// misc
 	[HideInInspector] public bool pauseMenuEnabled;
 
@@ -63,6 +62,7 @@ public class GameManager : MonoBehaviour {
 		DontDestroyOnLoad(gameObject);
 		cs = ControlState.Deselected;
 		assetHandler = GameObject.Find("AssetHandler").GetComponent<AssetHandler>();
+		soundManager = GameObject.Find("SoundManager").GetComponent<SoundManager>();
 	}
 
 	public void StartNewGame() {
@@ -158,40 +158,58 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
+	// helper function to help with class selection
+	// the dropdown gives int values, this converts that to an object of the correct type
+	public static Character ClassIntToClass(int input) {
+		switch (input) {
+			case 0:
+				return new Grunt();
+			case 1:
+				return new Engineer();
+			case 2:
+				return new Joker();
+			case 3:
+				return new Saboteur();
+			case 4:
+				return new Scout();
+			case 5:
+				return new Sharpshooter();
+			case 6:
+				return new Surgeon();
+			case 7:
+				return new Tank();
+			default:
+				return null;
+		}
+	}
+
     // I seperated this class for easy viewing
     public void CreatePlayerCharacter() {
 		GameObject prefab;
-		switch (characterClassInt) {
-			case 0:
-				characterClass = new Grunt();
+		// get correct prefab
+		switch (characterClass.className) {
+			case "Grunt":
 				prefab = assetHandler.GruntPrefab;
 				break;
-			case 1:
-				characterClass = new Engineer();
+			case "Engineer":
 				prefab = assetHandler.EngineerPrefab;
 				break;
-			case 2:
-				characterClass = new Joker();
+			case "Joker":
 				prefab = assetHandler.JokerPrefab;
 				break;
-			case 3:
-				characterClass = new Saboteur();
+			case "Saboteur":
 				prefab = assetHandler.SaboteurPrefab;
 				break;
-			case 4:
-				characterClass = new Scout();
+			case "Scout":
 				prefab = assetHandler.ScoutPrefab;
 				break;
-			case 5:
-				characterClass = new Sharpshooter();
+			case "Sharpshooter":
 				prefab = assetHandler.SharpshooterPrefab;
 				break;
-			case 6:
-				characterClass = new Surgeon();
+			case "Surgeon":
 				prefab = assetHandler.SurgeonPrefab;
 				break;
-			case 7:
-				characterClass = new Tank();
+			case "Tank":
 				prefab = assetHandler.TankPrefab;
 				break;
 			default:
@@ -207,6 +225,10 @@ public class GameManager : MonoBehaviour {
 		playerManager = selectedUnit.AddComponent<PlayerManager>();
 		playerManager.gameManager = this;
 		playerManager.map = tileMap;
+
+		// setup audio source
+		var audioSource = selectedUnit.AddComponent<AudioSource>();
+		audioSource.loop = false;
 
 		// Start at middle of map and keep moving until we find a walkable spawn
 		int tempX = Mathf.FloorToInt(mapSize / 2);
@@ -255,22 +277,18 @@ public class GameManager : MonoBehaviour {
 		Character enemyCharacter = enemyManager.enemyList[enemyIndex];
 
 		int selectedItemIndex = characterClass.selectedItemIndex;
-		if (selectedItemIndex == -1) {
-			// no item is actually even selected
-			return;
-        }
-
+		Item currentItem = characterClass.currentItems[selectedItemIndex];
 		// check if in range
 		if (tileMap.IsTileInAttackRange(enemyCharacter.currentX, 
 										enemyCharacter.currentY, 
 										characterClass.currentX,
 										characterClass.currentY,
-										characterClass.currentItems[selectedItemIndex].range)) {
+										currentItem.range)) {
 			// check if enough AP
-			if (characterClass.AP - characterClass.currentItems[selectedItemIndex].APcost >= 0) {
+			if (characterClass.AP - currentItem.APcost >= 0) {
 				// use item 1
-				damageAmount = characterClass.currentItems[selectedItemIndex].damage;
-				characterClass.AP -= characterClass.currentItems[selectedItemIndex].APcost;
+				damageAmount = currentItem.damage;
+				characterClass.AP -= currentItem.APcost;
 			} else {
 				// not enough AP
 				uiManager.SendMessageToLog("Not enough AP to attack enemy.");
@@ -289,9 +307,9 @@ public class GameManager : MonoBehaviour {
 		// 4% chance for crazy crit, 25% for regular crit
 		// joker is 16% for crazy crit, 75% for regular crit
 		int critChance = Random.Range(0, 100);
-		if (critChance < crazyCritChance * characterClass.luckMultiplier) {
+		if (critChance < epicCritChance * characterClass.luckMultiplier) {
 			damageAmount += Random.Range(10, 30);
-			message = "Crazy crit! ";
+			message = "Epic crit! ";
         } else if (critChance < critChance * characterClass.luckMultiplier) {
 			damageAmount += Random.Range(1, 10);
 			message = "Crit! ";
@@ -308,6 +326,17 @@ public class GameManager : MonoBehaviour {
 
 		// update possible movements because you use AP when you attack
 		playerManager.DrawPossibleMovements();
+
+		// play sound
+		if (currentItem.name == "Assault Rifle") {
+			selectedUnit.GetComponent<AudioSource>().PlayOneShot(soundManager.AssaultRifleFire);
+		} else if (currentItem.name == "Pistol") {
+			selectedUnit.GetComponent<AudioSource>().PlayOneShot(soundManager.PistolFire);
+		} 
+		
+		//else if (currentItem.name == "Sniper Rifle") {
+		//	selectedUnit.GetComponent<AudioSource>().PlayOneShot(soundManager.SniperFire);
+		//}
 	}
 
 	// enemy attacking player
@@ -325,9 +354,9 @@ public class GameManager : MonoBehaviour {
 			// 4% chance for crazy crit, 25% for regular crit
 			// joker is 16% for crazy crit, 75% for regular crit
 			int critChance = Random.Range(0, 100);
-			if (critChance < crazyCritChance * characterClass.luckMultiplier) {
+			if (critChance < epicCritChance * characterClass.luckMultiplier) {
 				damageAmount += Random.Range(10, 30);
-				message = "Crazy crit! ";
+				message = "Epic crit! ";
 			} else if (critChance < critChance * characterClass.luckMultiplier) {
 				damageAmount += Random.Range(1, 10);
 				message = "Crit! ";

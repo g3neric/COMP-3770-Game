@@ -37,6 +37,8 @@ public class MainMenuManager : MonoBehaviour {
     // dropDowns[3] = map size dropdown
     public GameObject[] dropDowns = new GameObject[4];
 
+    public TextMeshProUGUI classStatsText;
+
     private void Start() {
         // initiate main menu
         mainMenu.SetActive(true);
@@ -50,14 +52,11 @@ public class MainMenuManager : MonoBehaviour {
         mainMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.LoadGame); });
         mainMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Controls); });
         mainMenuButtons[3].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Settings); });
-        mainMenuButtons[4].GetComponent<Button>().onClick.AddListener(delegate { CloseGame(); });
 
         returnToMainMenuButtons[0].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Default); });
         returnToMainMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Default); });
         returnToMainMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Default); });
         returnToMainMenuButtons[3].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Default); });
-
-        startNewGameButton.GetComponent<Button>().onClick.AddListener(delegate { StartNewGame(); ; });
     }
 
     public void SwitchMainMenuPanel(MainMenuState newState) {
@@ -67,6 +66,8 @@ public class MainMenuManager : MonoBehaviour {
             // open controls panel
             case MainMenuState.NewGame:
                 newGameMenu.SetActive(true);
+                // initiate character stats text
+                UpdateCharacterStats();
                 break;
             case MainMenuState.LoadGame:
                 loadGameMenu.SetActive(true);
@@ -89,9 +90,9 @@ public class MainMenuManager : MonoBehaviour {
     }
 
     // coroutine because we have to wait a little bit before calling InitiateGameSession()
-    private void StartNewGame() {
-        // this is the easiest way to do this
-        gameManager.characterClassInt = dropDowns[0].GetComponent<TMP_Dropdown>().value;
+    public void StartNewGame() {
+        // create new player character with the value from the dropdown
+        gameManager.characterClass = GameManager.ClassIntToClass(dropDowns[0].GetComponent<TMP_Dropdown>().value);
 
         // difficulty dropdown
         switch (dropDowns[1].GetComponent<TMP_Dropdown>().value) {
@@ -128,20 +129,36 @@ public class MainMenuManager : MonoBehaviour {
         // map size dropdown
         switch (dropDowns[3].GetComponent<TMP_Dropdown>().value) {
             case 0:
-                gameManager.mapSize = 75;
-                break;
-            case 1:
                 gameManager.mapSize = 100;
                 break;
-            case 2:
+            case 1:
                 gameManager.mapSize = 125;
                 break;
-            case 3:
+            case 2:
                 gameManager.mapSize = 150;
+                break;
+            case 3:
+                gameManager.mapSize = 175;
                 break;
         }
         gameManager.StartNewGame();
         SceneManager.LoadScene("Game");
+    }
+
+    public void UpdateCharacterStats() {
+        Character newChar = GameManager.ClassIntToClass(dropDowns[0].GetComponent<TMP_Dropdown>().value);
+        string text = newChar.className + " stats:\n\n" +
+                      "Max AP: " + newChar.maxAP + " \n" +
+                      "Max HP: " + newChar.maxHP + " \n" +
+                      "Heal Rate: " + newChar.healRate + " HP per turn\n" +
+                      "View Range: " + newChar.viewRange + " tiles\n" +
+                      "Crit chance: " + (GameManager.critChance * newChar.luckMultiplier) + "% per shot\n" +
+                      "Epic crit chance: " + (GameManager.epicCritChance * newChar.luckMultiplier) + "% per shot\n" +
+                      "Starting Items: " + newChar.currentItems[0].name;
+        if (newChar.currentItems.Count > 1) {
+            text = text + ", " + newChar.currentItems[1].name;
+        }
+        classStatsText.text = text;
     }
 
     // exit the game completely

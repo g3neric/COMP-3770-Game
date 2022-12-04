@@ -16,7 +16,7 @@ public class TileMap : MonoBehaviour {
 	public int shoreSize;
 	public float shoreVariation;
 	[Range(5, 20)] public float biomeSize;
-	[Range(10, 100)] public int oceanSize;
+	[Range(15, 100)] public int oceanSize;
 	[Space()]
 
 	[Space]
@@ -572,6 +572,7 @@ public class TileMap : MonoBehaviour {
 
 					// iterate over each tile that lies on the line
 					for (int i = 0; i < result.Count; i++) {
+
 						int type = tiles[result[i][0], result[i][1]];
 						// check if we're including the tile that is blocking the vision
 						if (includeFrontier) {

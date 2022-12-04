@@ -81,11 +81,8 @@ public class UIManager : MonoBehaviour {
         toolbarButtons[2].GetComponent<Button>().onClick.AddListener(delegate { ToolbarButtonSelected(2); });
 
         // Initiate pause menu buttons
-        pauseMenuButtons[0].GetComponent<Button>().onClick.AddListener(delegate { TogglePauseMenu(); });
         pauseMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Controls); });
         pauseMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Settings); });
-        pauseMenuButtons[3].GetComponent<Button>().onClick.AddListener(delegate { ReturnToMainMenu(); });
-        gameOverMenuButton.GetComponent<Button>().onClick.AddListener(delegate { ReturnToMainMenu(); });
 
         // Initiate control menu button
         controlMenuReturnButton.GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Default); });

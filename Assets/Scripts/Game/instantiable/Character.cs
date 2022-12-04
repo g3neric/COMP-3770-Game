@@ -116,7 +116,7 @@ public class Joker : Character {
         maxAP = 7;
         maxHP = 35;
         healRate = 3;
-        viewRange = 10;
+        viewRange = 9;
         luckMultiplier = 3f;
         HP = maxHP;
         AP = maxAP;
@@ -141,10 +141,10 @@ public class Saboteur : Character {
 public class Scout : Character {
     public Scout() {
         className = "Scout";
-        maxAP = 9;
+        maxAP = 10;
         maxHP = 45;
         healRate = 3;
-        viewRange = 10;
+        viewRange = 12;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
@@ -158,8 +158,8 @@ public class Sharpshooter : Character {
         maxAP = 6;
         maxHP = 30;
         healRate = 3;
-        viewRange = 10;
-        luckMultiplier = 1f;
+        viewRange = 15;
+        luckMultiplier = .75f;
         HP = maxHP;
         AP = maxAP;
         currentItems.Add(new SniperRifle());

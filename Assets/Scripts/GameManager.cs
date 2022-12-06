@@ -55,7 +55,8 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector] public Character characterClass; // player character
 
 	// misc
-	[HideInInspector] public bool pauseMenuEnabled;
+	[HideInInspector] public bool pauseMenuEnabled = false;
+	[HideInInspector] public bool shopMenuEnabled = false;
 
 	void Start() {
 		// Make this game object persistant throughout scenes
@@ -169,14 +170,12 @@ public class GameManager : MonoBehaviour {
 			case 2:
 				return new Joker();
 			case 3:
-				return new Saboteur();
-			case 4:
 				return new Scout();
-			case 5:
+			case 4:
 				return new Sharpshooter();
-			case 6:
+			case 5:
 				return new Surgeon();
-			case 7:
+			case 6:
 				return new Tank();
 			default:
 				return null;
@@ -196,9 +195,6 @@ public class GameManager : MonoBehaviour {
 				break;
 			case "Joker":
 				prefab = assetHandler.JokerPrefab;
-				break;
-			case "Saboteur":
-				prefab = assetHandler.SaboteurPrefab;
 				break;
 			case "Scout":
 				prefab = assetHandler.ScoutPrefab;
@@ -255,9 +251,25 @@ public class GameManager : MonoBehaviour {
 		enemyManager.ResolveAllEnemyTurns();
 		enemyManager.UpdateEnemiesVisibility();
 
-		// 5% chance to spawn new enemy each turn
+		// determine chance of enemy spawning each turn based on difficulty
+		int spawnChance;
+		switch (difficulty) {
+			case DifficultyState.Ez:
+				spawnChance = 5;
+				break;
+			case DifficultyState.Mid:
+				spawnChance = 7;
+				break;
+			case DifficultyState.Impossible:
+				spawnChance = 10;
+				break;
+			default:
+				return;
+		}
+
+		// roll dice to determine if enemy will spawn
 		int spawnRandom = Random.Range(0, 100);
-		if (spawnRandom < 5) {
+		if (spawnRandom < spawnChance) {
 			enemyManager.SpawnEnemy(0);
         }
 
@@ -391,4 +403,6 @@ public class GameManager : MonoBehaviour {
 	public void SendMessageToLog(string message) {
 		uiManager.SendMessageToLog(message);
 	}
+
+	
 }

@@ -123,25 +123,12 @@ public class Joker : Character {
         currentItems.Add(new Pistol());
     }
 }
-[System.Serializable]
-public class Saboteur : Character {
-    public Saboteur() {
-        className = "Saboteur";
-        maxAP = 7;
-        maxHP = 45;
-        healRate = 3;
-        viewRange = 10;
-        luckMultiplier = 1f;
-        HP = maxHP;
-        AP = maxAP;
-        currentItems.Add(new Pistol());
-    }
-}
+
 [System.Serializable]
 public class Scout : Character {
     public Scout() {
         className = "Scout";
-        maxAP = 10;
+        maxAP = 9;
         maxHP = 45;
         healRate = 3;
         viewRange = 12;

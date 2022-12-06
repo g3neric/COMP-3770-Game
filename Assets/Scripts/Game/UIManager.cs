@@ -49,6 +49,7 @@ public class UIManager : MonoBehaviour {
 
     // menus
     public GameObject pauseMenu;
+    public GameObject shopMenu;
     public GameObject controlsMenu;
     public GameObject settingsMenu;
     public GameObject gameOverMenu;
@@ -60,6 +61,10 @@ public class UIManager : MonoBehaviour {
     public const int messageLife = 30; // in seconds
 
     public Button buttonNextTurn;
+    public GameObject shopButton;
+
+    // cursor movement costs
+    public GameObject cursorCostText;
 
     private ControlState previousCS;
 
@@ -69,6 +74,7 @@ public class UIManager : MonoBehaviour {
         pauseMenu.SetActive(false);
         settingsMenu.SetActive(false);
         controlsMenu.SetActive(false);
+        shopMenu.SetActive(false);
 
         // Initiate next turn button
         buttonNextTurn.GetComponent<Button>().onClick.AddListener(delegate { gameManager.FinishTurn(); });
@@ -170,7 +176,36 @@ public class UIManager : MonoBehaviour {
                 // update health bar value
                 enemyUIObjects[i].transform.GetChild(1).GetComponent<Slider>().value = gameManager.enemyManager.enemyList[i].HP;
             }
+
+            if (gameManager.cs != ControlState.Move) {
+                cursorCostText.SetActive(false);
+            }
         }
+    }
+
+    // fixed update for consistent time keeping
+    // fixed time step is 0.02, so this is run 50 times every second
+    private void FixedUpdate() {
+        // update message times
+        if (LogMessageList.Count != 0) {
+            for (int i = 0; i < LogMessageList.Count; i++) {
+                if (LogMessageList[i].messageTime >= messageLife * 50 &&
+                    LogMessageList[i].messageTurnTime < gameManager.turnCount - 1) { // fixed time step is 0.02, so each timing will be increased by one 50 times a second
+                                                                                     // message has been alive too long, so destroy it
+
+                    LogMessageList.RemoveAt(i);
+                    Destroy(LogMessageList[i].messageObject);
+                } else {
+                    LogMessageList[i].messageTime += 1;
+                }
+            }
+        }
+    }
+
+    // calculate mouse speed
+    float mouseCursorSpeed;
+    void Update() {
+        mouseCursorSpeed = Input.GetAxis("Mouse X") / Time.deltaTime;
     }
 
     // enemy UI objects
@@ -205,36 +240,25 @@ public class UIManager : MonoBehaviour {
         enemyUIObjects.RemoveAt(enemyIndex);
     }
 
-    // fixed update for consistent time keeping
-    // fixed time step is 0.02, so this is run 50 times every second
-    private void FixedUpdate() {
-        // update message times
-        if (LogMessageList.Count != 0) {
-            for (int i = 0; i < LogMessageList.Count; i++) {
-                if (LogMessageList[i].messageTime >= messageLife * 50 &&
-                    LogMessageList[i].messageTurnTime < gameManager.turnCount - 1) { // fixed time step is 0.02, so each timing will be increased by one 50 times a second
-                    // message has been alive too long, so destroy it
-                    
-                    LogMessageList.RemoveAt(i);
-                    Destroy(LogMessageList[i].messageObject);
-                } else {
-                    LogMessageList[i].messageTime += 1;
-                }
-            }
-        }
-    }
-
     // Toggle pause menu
     public void TogglePauseMenu() {
         if (gameManager.pauseMenuEnabled) {
+            // close pause menu
             pauseMenu.SetActive(false);
             controlsMenu.SetActive(false); 
             settingsMenu.SetActive(false);
             gameManager.pauseMenuEnabled = false;
             gameManager.SetControlState(previousCS);
         } else if (!gameManager.pauseMenuEnabled) {
+            // open pause menu
             pauseMenu.SetActive(true);
             gameManager.pauseMenuEnabled = true;
+            
+            // if shop menu is open, then close it
+            if (gameManager.shopMenuEnabled) {
+                ToggleShopMenu();
+            }
+
             previousCS = gameManager.cs;
             gameManager.SetControlState(ControlState.Deselected);
         }
@@ -262,6 +286,41 @@ public class UIManager : MonoBehaviour {
                     break;
             }
             currentPMState = newState;
+        }
+    }
+
+    public void SetShopMenuButtonActive() {
+        // update shop button every time you move
+        // update shop menu visibility
+        if (gameManager.tileMap.tiles[gameManager.characterClass.currentX, gameManager.characterClass.currentY] == 7 &&
+            !gameManager.shopMenuEnabled) {
+            // set button to active if shop menu isn't open and player is on shop tile
+            shopButton.SetActive(true);
+        } else {
+            shopButton.SetActive(false);
+        }
+    }
+
+    public void ToggleShopMenu() {
+        if (gameManager.shopMenuEnabled) {
+            // close shop menu
+            shopMenu.SetActive(false);
+            shopButton.SetActive(true);
+            gameManager.shopMenuEnabled = false;
+            gameManager.SetControlState(previousCS);
+        } else if (!gameManager.pauseMenuEnabled) {
+            // open shop menu
+            shopMenu.SetActive(true);
+            shopButton.SetActive(false);
+            gameManager.shopMenuEnabled = true;
+
+            // if pause menu is open (it shouldn't be) then close it
+            if (gameManager.pauseMenuEnabled) {
+                TogglePauseMenu();
+            }
+
+            previousCS = gameManager.cs;
+            gameManager.SetControlState(ControlState.Deselected);
         }
     }
 
@@ -336,5 +395,41 @@ public class UIManager : MonoBehaviour {
     public void ReturnToMainMenu() {
         gameManager.SetControlState(ControlState.Deselected);
         SceneManager.LoadScene("MainMenu");
+    }
+
+    // update movement cost on cursor
+    public void UpdateCursorMovementCost(int curX, int curY) {
+        if (gameManager.cs == ControlState.Move && Mathf.Abs(mouseCursorSpeed) < 100) {
+            cursorCostText.SetActive(true);
+            
+            List<Node> shortestPath = gameManager.tileMap.DijkstraPath(Mathf.RoundToInt(gameManager.selectedUnit.transform.position.x),
+                                                                        Mathf.RoundToInt(gameManager.selectedUnit.transform.position.z),
+                                                                        curX,
+                                                                        curY,
+                                                                        gameManager.tileMap.fullMapGraph);
+            
+            if (shortestPath == null) {
+                // no path to target
+                cursorCostText.SetActive(false);
+            } else {
+                // remove node we're standing on
+                shortestPath.RemoveAt(0);
+                int dist = 0;
+
+                foreach (Node curNode in shortestPath) {
+                    dist += gameManager.tileMap.tileTypes[gameManager.tileMap.tiles[curNode.x, curNode.y]].movementCost;
+                }
+
+                cursorCostText.GetComponent<TextMeshProUGUI>().text = "" + dist;
+
+                if (dist > gameManager.characterClass.AP) {
+                    cursorCostText.GetComponent<TextMeshProUGUI>().color = Color.red;
+                } else {
+                    cursorCostText.GetComponent<TextMeshProUGUI>().color = Color.yellow;
+                }
+            }
+        } else {
+            cursorCostText.SetActive(false);
+        }
     }
 }

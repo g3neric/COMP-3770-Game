@@ -33,9 +33,12 @@ public class TileMap : MonoBehaviour {
 
 	// List of tile types, represented by integers
 	public int[,] tiles;
+	public int[,] originalTiles; // before mutation
 
 	// List of the tile's game objects
 	public GameObject[,] tilesObjects;
+	public GameObject[,] roadObjects;
+	public GameObject[,] shopTilesObjects;
 
 	// graph of map for pathfinding
 	[HideInInspector] public Node[,] fullMapGraph;
@@ -52,7 +55,7 @@ public class TileMap : MonoBehaviour {
 
 		// Initiate the map and pathfinding
 		GenerateMap(); // generate map
-		fullMapGraph = GeneratePathfindingGraph(gameManager.mapSize, 0); // pathfinding
+		fullMapGraph = GeneratePathfindingGraph(gameManager.mapSize); // pathfinding
 	}
 
 	// Allocate our map tiles
@@ -61,12 +64,19 @@ public class TileMap : MonoBehaviour {
 		// quick reference
 		int mapSize = gameManager.mapSize;
 
+		// for later
+		int ranY;
+		int ranX;
+
 		tiles = new int[mapSize, mapSize]; // all of the tile types
+		originalTiles = new int[mapSize, mapSize];
 		tilesObjects = new GameObject[mapSize, mapSize]; // all gameobjects of tiles
 		viewableTiles = new List<int[]>(); // instantiate viewable tiles for fog of war
+		roadObjects = new GameObject[mapSize, mapSize];
+		shopTilesObjects = new GameObject[mapSize, mapSize];
 
 		// set tile frequencies
-		switch(gameManager.biomeSetting) {
+		switch (gameManager.biomeSetting) {
 			case BiomeSetting.Default:
 				// swamp tile
 				tileTypes[0].frequency = 15;
@@ -117,10 +127,7 @@ public class TileMap : MonoBehaviour {
 				// mountain tile
 				tileTypes[3].frequency = 15;
 				break;
-        }
-
-
-
+		}
 
 		// Test if frequencies attributes are messed up. If they are, generation will break
 		// Must add up to 100%.
@@ -183,7 +190,7 @@ public class TileMap : MonoBehaviour {
 					// Generate remaining tiles
 
 					// Generate number using perlin noise
-					float num = 100 * Mathf.PerlinNoise( mapSeed + ((float)biomeSize * x / mapSize), mapSeed + ((float)biomeSize * y / mapSize));
+					float num = 100 * Mathf.PerlinNoise(mapSeed + ((float)biomeSize * x / mapSize), mapSeed + ((float)biomeSize * y / mapSize));
 
 					// Initialize end points
 					int[] endPoints = new int[numOfRandomlyGeneratedTiles];
@@ -207,13 +214,14 @@ public class TileMap : MonoBehaviour {
 			}
 		}
 
-		// now we do some corrections
-		// which unfortunately involves iterating over the entire map again
-		for (int x = 1; x < mapSize - 1; x++) {
-			for (int y = 1; y < mapSize - 1; y++) {
+		// do some corrections
+		// iterate over every tile
+		for (int x = 0; x < mapSize; x++) {
+			for (int y = 0; y < mapSize; y++) {
+				// now we do some corrections
 				// make sure we're not on a water tile
 				if (tiles[x, y] != waterType) {
-					// If current tile is surrounded by unwalkable tiles, then make it mountain (for now)
+					// If current tile is surrounded by unwalkable tiles, then make it mountain
 					if (!tileTypes[tiles[x - 1, y]].isWalkable &&
 					!tileTypes[tiles[x + 1, y]].isWalkable &&
 					!tileTypes[tiles[x, y - 1]].isWalkable &&
@@ -226,7 +234,7 @@ public class TileMap : MonoBehaviour {
 							   (tiles[x + 1, y] == waterType) ||
 							   (tiles[x, y - 1] == waterType) ||
 							   (tiles[x, y + 1] == waterType)) {
-						
+
 						tiles[x, y] = sandType;
 					}
 				}
@@ -234,11 +242,16 @@ public class TileMap : MonoBehaviour {
 		}
 
 		// Generate map visuals
+		// iterate over every tile
 		for (int x = 0; x < mapSize; x++) {
 			for (int y = 0; y < mapSize; y++) {
 				TileType tt = tileTypes[tiles[x, y]];
-				GameObject currentTile = Instantiate(tileTypes[tiles[x, y]].tilePrefab, new Vector3(x, 0f, y), Quaternion.identity, GameObject.Find("TileContainer").transform);
+				GameObject currentTile = Instantiate(tileTypes[tiles[x, y]].tilePrefab,
+													 new Vector3(x, 0f, y),
+													 Quaternion.identity,
+													 GameObject.Find("TileContainer").transform);
 				tilesObjects[x, y] = currentTile;
+				currentTile.name = tt.name + " (" + x + ", " + y + ")";
 
 				// Randomly rotate tile a little so there's not as much reptition
 				if (currentTile.name != "water_tile") {
@@ -246,7 +259,7 @@ public class TileMap : MonoBehaviour {
 					int phase = Mathf.RoundToInt(Random.Range(1, 3));
 					currentTile.transform.Rotate(0f, 90f * phase, 0f, Space.World);
 				}
-				
+
 				// add script to tile
 				ClickableTile ct = currentTile.AddComponent<ClickableTile>();
 				ct.map = this;
@@ -256,6 +269,98 @@ public class TileMap : MonoBehaviour {
 
 				ChangeTileToFog(x, y);
 			}
+		}
+
+		// copy tiles into originalTiles for storage
+		for (int x = 0; x < mapSize; x++) {
+			for (int y = 0; y < mapSize; y++) {
+				originalTiles[x, y] = tiles[x, y];
+			}
+		}
+
+		// generate roads
+		for (int i = 0; i < Mathf.RoundToInt(mapSize / 15); i++) {
+			// pick random point on the map that is walkable
+			ranY = 0;
+			ranX = 0;
+			while (!tileTypes[tiles[ranY, ranX]].isWalkable || tiles[ranY, ranX] == 6) {
+				ranY = Random.Range(oceanSize + 4, mapSize - oceanSize - 4);
+				ranX = Random.Range(oceanSize + 4, mapSize - oceanSize - 4);
+			}
+
+			for (int x = ranX; x < mapSize - oceanSize - Random.Range(2, 8); x++) {
+				if (tileTypes[tiles[x, ranY]].isWalkable) {
+					// tile is walkable, so set it to road
+					tiles[x, ranY] = 6; // 6 is road
+					if (!tileTypes[tiles[x + Random.Range(2, 5), ranY]].isWalkable) {
+						// mountain in the way, end road
+						break;
+                    }
+				}
+			}
+		}
+
+		// generate road visuals
+		for (int x = 0; x < mapSize; x++) {
+			for (int y = 0; y < mapSize; y++) {
+				// check every tile if its road
+				if (tiles[x, y] == 6) {
+					// instantiate road outline a little bit overtop the current tile,
+					// so that you can see the old tile underneath a lil bit
+					GameObject currentTile = Instantiate(assetHandler.straightRoadPrefab,
+														 new Vector3(x, 0.009f, y),
+														 Quaternion.identity,
+														 GameObject.Find("TileContainer").transform);
+					currentTile.name = "Road (" + x + ", " + y + ")";
+					currentTile.transform.Rotate(0f, 90f, 0f, Space.World);
+					if (tilesObjects[x, y].transform.childCount > 0) {
+						foreach (Transform child in tilesObjects[x, y].transform) {
+							Destroy(child.gameObject);
+						}
+					}
+					roadObjects[x, y] = currentTile;
+
+					// make the road initially foggy
+					ChangeTileToFog(x, y);
+
+				} else {
+					roadObjects[x, y] = null;
+				}
+			}
+		}
+
+		// generate shop tiles
+		// Mathf.RoundToInt(mapSize / 50)
+		for (int i = 0; i < 50; i++) {
+			ranX = 0;
+			ranY = 0;
+			while (!tileTypes[tiles[ranY, ranX]].isWalkable || 
+				   (tiles[ranY, ranX] == 6) || 
+				   (tiles[ranY, ranX] == 7)) {
+				// generate random point on the land; not on the sand
+				ranY = Random.Range(oceanSize + shoreSize, mapSize - oceanSize - shoreSize);
+				ranX = Random.Range(oceanSize + shoreSize, mapSize - oceanSize - shoreSize);
+			}
+
+			// set to shop tile
+			tiles[ranX, ranY] = 7;
+
+			GameObject currentTile = Instantiate(tileTypes[7].tilePrefab,
+												 new Vector3(ranX, 0.00925f, ranY),
+											     Quaternion.identity,
+												 GameObject.Find("TileContainer").transform);
+			currentTile.name = "Shop (" + ranX + ", " + ranY + ")";
+			shopTilesObjects[ranX, ranY] = currentTile;
+
+			// remove all children of original tile
+			if (tilesObjects[ranX, ranY].transform.childCount > 0) {
+				foreach (Transform child in tilesObjects[ranX, ranY].transform) {
+					Destroy(child.gameObject);
+				}
+			}
+
+			// make tile initially foggy
+			ChangeTileToFog(ranX, ranY);
 		}
 	}
 
@@ -272,6 +377,15 @@ public class TileMap : MonoBehaviour {
 
 	public void ChangeTileToFog(int x, int y) {
 		// change material to fog
+		// update overlay tiles
+		if (tiles[x,y] == 6) {
+			// road
+			roadObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = assetHandler.fogOfWarOutlineMaterial;
+		} else if (tiles[x,y] == 7) {
+			// shop tile
+			shopTilesObjects[x,y].GetComponent<MeshRenderer>().sharedMaterial = assetHandler.fogOfWarOutlineMaterial;
+		}
+		// update tile underneath
 		tilesObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = assetHandler.fogOfWarOutlineMaterial;
 
 		// disable all children
@@ -282,7 +396,16 @@ public class TileMap : MonoBehaviour {
 
 	public void RevertTileToDefault(int x, int y) {
 		// revert material
-		tilesObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = tileTypes[tiles[x, y]].tilePrefab.GetComponent<MeshRenderer>().sharedMaterial;
+		// update overlay tiles
+		if (tiles[x, y] == 6) {
+			// road
+			roadObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = assetHandler.straightRoadPrefab.GetComponent<MeshRenderer>().sharedMaterial;
+		} else if (tiles[x, y] == 7) {
+			// shop tile
+			shopTilesObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = tileTypes[7].tilePrefab.GetComponent<MeshRenderer>().sharedMaterial;
+		}
+		// update tile underneath
+		tilesObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = tileTypes[originalTiles[x, y]].tilePrefab.GetComponent<MeshRenderer>().sharedMaterial;
 
 		// enable all children
 		foreach (Transform child in tilesObjects[x, y].transform) {
@@ -311,14 +434,14 @@ public class TileMap : MonoBehaviour {
 	public int CostToEnterTile(int x, int y) {
 		if (UnitCanEnterTile(x, y) == false) {
 			// unit cannot enter tile, so return big number
-			return gameManager.mapSize * 10;
+			return gameManager.mapSize;
+		} else {
+			return tileTypes[tiles[x, y]].movementCost;
 		}
-		int cost = tileTypes[tiles[x, y]].movementCost;
-		return cost;
 	}
 
 	// Generates a graph of size rangeX by rangeY, starting at (offsetX, offsetY)
-	public static Node[,] GeneratePathfindingGraph(int range, int offset) {
+	public static Node[,] GeneratePathfindingGraph(int range) {
 		// Initialize the array
 		Node[,] graph = new Node[range, range];
 
@@ -326,8 +449,8 @@ public class TileMap : MonoBehaviour {
 		for(int x = 0; x < range; x++) {
 			for(int y = 0; y < range; y++) {
 				graph[x,y] = new Node();
-				graph[x,y].x = x + offset;
-				graph[x,y].y = y + offset;
+				graph[x,y].x = x;
+				graph[x,y].y = y;
 			}
 		}
 
@@ -394,16 +517,20 @@ public class TileMap : MonoBehaviour {
 				return result;
 			} else {
 				// Not the final node
-				for (int i = 0; i < current.neighbours.Count; i++) {
-					Node currentNeighbor = current.neighbours[i];
-					int distance = current.distance + tileTypes[tiles[currentNeighbor.x, currentNeighbor.y]].movementCost;
-					
-					// Check if neighbour is walkable, in range and hasn't been visited yet
-					if (tileTypes[tiles[currentNeighbor.x, currentNeighbor.y]].isWalkable &&
-						distance <= maxDistance &&
-						!visited.Contains(currentNeighbor)) {
-						// Neighbour is in range, walkable and hasn't been visited yet! Yay!
-						currentNeighbor.distance = distance;
+				// Go over each neighbour and check the distance to that neighbour.
+				// If we can move to that neighbour, then add that neighbour to the list of
+				// work tiles that we must still visit to check.
+				foreach (Node currentNeighbor in current.neighbours) {
+					// calculate distance to next node
+					int dist = current.distance + CostToEnterTile(currentNeighbor.x, currentNeighbor.y);
+
+					// Check if neighbour is walkable, in range, hasn't been visited yet and is viewable
+					if (dist <= maxDistance &&
+						!visited.Contains(currentNeighbor) &&
+						tileTypes[tiles[currentNeighbor.x, currentNeighbor.y]].isWalkable &&
+						IsTileVisibleToPlayer(currentNeighbor.x, currentNeighbor.y)) {
+						// Neighbour is in range, walkable, hasn't been visited yet and is viewable. Yay!
+						currentNeighbor.distance = dist;
 						currentNeighbor.history = new List<Node>(current.history);
 						currentNeighbor.history.Add(current);
 						visited.Add(currentNeighbor);
@@ -499,13 +626,15 @@ public class TileMap : MonoBehaviour {
 	public List<int[]> CalculatePossibleMovements(int centerX, int centerY, int AP) {
 		List<int[]> returnValues = new List<int[]>();
 		// iterate over each tile in range of the player
-		for (int x = centerX - AP; x <= centerX + AP; x++) {
-			for (int y = centerY - AP; y <= centerY + AP; y++) {
+		for (int x = centerX - AP - 1; x <= centerX + AP + 1; x++) {
+			for (int y = centerY - AP - 1; y <= centerY + AP + 1; y++) {
 				// check if there's a path to current tile from the player's current position
 				// and if there's no character on the tile already
-				if (BreadthFirstSearch(fullMapGraph[centerX, centerY], fullMapGraph[x, y], AP) != null && 
-					tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile == null ||
-					tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile == gameManager.selectedUnit) {
+				List<Node> shortestPath = BreadthFirstSearch(fullMapGraph[centerX, centerY], fullMapGraph[x, y], AP);
+
+				if (shortestPath != null && 
+					(tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile == null ||
+					tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile == gameManager.selectedUnit)) {
 					// Put the current tile position in list
 					int[] temp = new int[2];
 					temp[0] = x;

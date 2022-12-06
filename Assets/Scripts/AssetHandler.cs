@@ -10,7 +10,6 @@ public class AssetHandler : MonoBehaviour {
     public GameObject EngineerPrefab;
     public GameObject GruntPrefab;
     public GameObject JokerPrefab;
-    public GameObject SaboteurPrefab;
     public GameObject ScoutPrefab;
     public GameObject SharpshooterPrefab;
     public GameObject SurgeonPrefab;
@@ -24,6 +23,10 @@ public class AssetHandler : MonoBehaviour {
     public GameObject[] tilePossibleMovementOutlinePrefabs;
     public GameObject[] rangeOutlinePrefabs;
 
+    [Space]
+    [Header("Road prefabs")]
+    public GameObject straightRoadPrefab;
+    public GameObject crossroadPrefab;
 
     [Space]
     [Header("Materials")]

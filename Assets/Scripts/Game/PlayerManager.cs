@@ -7,14 +7,6 @@ public class PlayerManager : MonoBehaviour {
 	// link to game manager
 	[HideInInspector] public GameManager gameManager;
 
-	// Represents the correct map-tile position
-	// for this piece. Note that this doesn't necessarily mean
-	// the world-space coordinates, because our map might be scaled
-	// or offset or something of that nature.  Also, during movement
-	// animations, we are going to be somewhere in between tiles.
-	[HideInInspector] public int currentX;
-	[HideInInspector] public int currentY;
-
 	public TileMap map;
 
 	// All the visual and outline stuff
@@ -32,10 +24,12 @@ public class PlayerManager : MonoBehaviour {
 	private AssetHandler assetHandler;
 
 	private void FixedUpdate() {
-		transform.position = Vector3.Lerp(transform.position, TileMap.TileCoordToWorldCoord(currentX, currentY, 0.125f), 10f * Time.fixedDeltaTime);
+		transform.position = Vector3.Lerp(transform.position, 
+										  TileMap.TileCoordToWorldCoord(gameManager.characterClass.currentX, 
+																		gameManager.characterClass.currentY,
+																		0.125f), 
+										   10f * Time.fixedDeltaTime);
 		// idk what im doing tbh
-		gameManager.characterClass.currentX = currentX;
-		gameManager.characterClass.currentY = currentY;
 	}
 
     private void Update() {
@@ -56,12 +50,9 @@ public class PlayerManager : MonoBehaviour {
 		currentPath = gameManager.characterClass.currentPath;
 
 		// instantiate reference to target
-		currentX = gameManager.characterClass.currentX;
-		currentY = gameManager.characterClass.currentY;
-
-		currentX = x;
-		currentY = y;
-		transform.position = TileMap.TileCoordToWorldCoord(currentX, currentY, 0.125f);
+		gameManager.characterClass.currentX = x;
+		gameManager.characterClass.currentY = y;
+		transform.position = TileMap.TileCoordToWorldCoord(x, y, 0.125f);
 
 		// create the lists
 		createdMovementOutlines = new List<GameObject>();
@@ -91,7 +82,25 @@ public class PlayerManager : MonoBehaviour {
 		TileMap.DestroyOutlines(createdMovementOutlines);
 
 		// calculate which tiles are in range, then draw the outlines on the screen
-		List<int[]> tilePosInMovementRange = map.CalculatePossibleMovements(currentX, currentY, gameManager.characterClass.AP);
+		List<int[]> tilePosInMovementRange = map.CalculatePossibleMovements(gameManager.characterClass.currentX, 
+																			gameManager.characterClass.currentY, 
+																			gameManager.characterClass.AP);
+		
+		/*
+		// tile positions out of sight but in movement range
+		List<int[]> tilePosOSBIMR = new List<int[]>();
+
+		foreach (int[] tilePos in tilePosInMovementRange) {
+			if (map.viewableTiles.Contains(tilePos)) {
+				tilePosOSBIMR.Add(tilePos);
+            }
+		}
+
+		foreach (int[] tilePos in tilePosOSBIMR) {
+			tilePosInMovementRange.Remove(tilePos);
+        }*/
+
+		// create outlines for all tiles that you can move to and are viewable
 		createdMovementOutlines = TileMap.InstantiateOrientedOutlines(assetHandler.tilePossibleMovementOutlinePrefabs, tilePosInMovementRange, 0.01f);
 	}
 
@@ -102,7 +111,10 @@ public class PlayerManager : MonoBehaviour {
 
 		// calculate which tiles are in range
 		int range = gameManager.characterClass.currentItems[gameManager.characterClass.selectedItemIndex].range;
-		List<int[]> tilePosInAttackRange = map.CalculateTilesInRange(currentX, currentY, range, false);
+		List<int[]> tilePosInAttackRange = map.CalculateTilesInRange(gameManager.characterClass.currentX, 
+																	 gameManager.characterClass.currentY, 
+																	 range, 
+																	 false);
 
 		// create new outlines
 		createdRangeOutlines = TileMap.InstantiateOrientedOutlines(assetHandler.rangeOutlinePrefabs, tilePosInAttackRange, 0.011f);
@@ -118,7 +130,10 @@ public class PlayerManager : MonoBehaviour {
 		map.viewableTiles.Clear();
 
 		// calculate tiles with line of sight and within view range
-		map.viewableTiles = map.CalculateTilesInRange(currentX, currentY, gameManager.characterClass.viewRange, true);
+		map.viewableTiles = map.CalculateTilesInRange(gameManager.characterClass.currentX,
+													  gameManager.characterClass.currentY,
+													  gameManager.characterClass.viewRange, 
+													  true);
 
 		foreach (int[] tile in map.viewableTiles) {
 			map.RevertTileToDefault(tile[0], tile[1]);
@@ -127,6 +142,9 @@ public class PlayerManager : MonoBehaviour {
 
 	// Advances our pathfinding progress by one tile.
 	private void AdvancePathing() {
+		// update shop button
+		gameManager.uiManager.SetShopMenuButtonActive();
+
 		if(currentPath == null || gameManager.characterClass.AP <= 0 ) {
 			// no path or no ap; therefore something went wrong and return
 			return;
@@ -142,11 +160,13 @@ public class PlayerManager : MonoBehaviour {
 
 		// Teleport us to our correct "current" position, in case we
 		// haven't finished the animation yet.
-		transform.position = TileMap.TileCoordToWorldCoord(currentX, currentY, 0.125f);
+		transform.position = TileMap.TileCoordToWorldCoord(gameManager.characterClass.currentX,
+													       gameManager.characterClass.currentY, 
+														   0.125f);
 
 		// Move us to the next tile in the sequence
-		currentX = currentPath[1].x;
-		currentY = currentPath[1].y;
+		gameManager.characterClass.currentX = currentPath[1].x;
+		gameManager.characterClass.currentY = currentPath[1].y;
 		
 		// Remove the old animated line
 		Destroy(createdLines[0]);
@@ -209,7 +229,8 @@ public class PlayerManager : MonoBehaviour {
 	// the main function of this method is to create a new currentPath, and then initiate
 	// movement as far as possible along that new currentPath's towards its end destination
 	public void PathToLocation(int x, int y) {
-		if (!map.UnitCanEnterTile(x, y) || (currentX == x && currentY == y)) {
+		if (!map.UnitCanEnterTile(x, y) || 
+			(gameManager.characterClass.currentX == x && gameManager.characterClass.currentY == y)) {
 			return;
 		}
 
@@ -221,7 +242,10 @@ public class PlayerManager : MonoBehaviour {
 
 		// [currentX, currentY] is the current position of the unit
 		// [x, y] is the new target position, which was just clicked on
-		currentPath = map.GeneratePathTo(currentX, currentY, x, y); // generate path
+		currentPath = map.GeneratePathTo(gameManager.characterClass.currentX, 
+										 gameManager.characterClass.currentY, 
+										 x, 
+										 y); // generate path
 
 		// Draw animated line to end destination
 		float startDelayCount = 0;

@@ -104,6 +104,26 @@ public class EnemyManager : MonoBehaviour {
 
     // spawn a single enemy at a random pos
     public void SpawnEnemy(int enemyPrefabIndex) {
+        // make sure we dont have too many enemies already
+        int maxEnemies;
+        switch(gameManager.difficulty) {
+            case DifficultyState.Ez:
+                maxEnemies = 25;
+                break;
+            case DifficultyState.Mid:
+                maxEnemies = 35;
+                break;
+            case DifficultyState.Impossible:
+                maxEnemies = 45;
+                break;
+            default:
+                return;
+        }
+
+        if (enemyList.Count >= maxEnemies) {
+            return;
+        }
+
         // iterate over every tile over a rough approximation of the island size
         int startingX = Random.Range(map.oceanSize, gameManager.mapSize - map.oceanSize);
         int startingY = Random.Range(map.oceanSize, gameManager.mapSize - map.oceanSize);
@@ -122,9 +142,9 @@ public class EnemyManager : MonoBehaviour {
                     // create enemy character
                     Character enemyCharacter = null; // temporarily all tanks
 
-                    // randomly choose one of the 8 classes
+                    // randomly choose one of the classes
                     // it's a shame i have to do it this way but it's the only way :(
-                    int randomClass = Random.Range(1, 9);
+                    int randomClass = Random.Range(1, 8);
                     switch(randomClass) {
                         case 1:
                             enemyCharacter = new Engineer();
@@ -136,18 +156,15 @@ public class EnemyManager : MonoBehaviour {
                             enemyCharacter = new Joker();
                             break;
                         case 4:
-                            enemyCharacter = new Saboteur();
-                            break;
-                        case 5:
                             enemyCharacter = new Scout();
                             break;
-                        case 6:
+                        case 5:
                             enemyCharacter = new Sharpshooter();
                             break;
-                        case 7:
+                        case 6:
                             enemyCharacter = new Surgeon();
                             break;
-                        case 8:
+                        case 7:
                             enemyCharacter = new Tank();
                             break;
                         default:
@@ -178,9 +195,6 @@ public class EnemyManager : MonoBehaviour {
                     // name the object with it's index
                     // you would think the add function above would return the index, but it doesn't. whatever.
                     enemyObject.name = "Enemy ("  + enemyGameObjects.IndexOf(enemyObject) + ") " + enemyCharacter.className;
-
-                    // set tag
-                    enemyObject.tag = "Enemy";
 
                     // create UI objects
                     gameManager.uiManager.CreateEnemyUIObjects(enemyCharacter);

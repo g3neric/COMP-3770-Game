@@ -31,7 +31,7 @@ public class ClickableTile : MonoBehaviour {
 			} else {
 				// not move state, therefore attack state
 				if (currentCharacterOnTile != null) {
-					if (currentCharacterOnTile.tag == "Enemy") {
+					if (currentCharacterOnTile.name.Substring(0, 5) == "Enemy") {
 						gameManager.AttackEnemy(currentCharacterOnTile);
 					}
 				}
@@ -45,6 +45,12 @@ public class ClickableTile : MonoBehaviour {
 		if (!EventSystem.current.IsPointerOverGameObject() && !completed) {
 			playerManager.tileHoverOutline.transform.position = transform.position + new Vector3(0, 0.012f, 0);
 			completed = true;
+
+			// update cursor text
+			if (gameManager.tileMap.UnitCanEnterTile(x, y) &&
+				gameManager.tileMap.IsTileVisibleToPlayer(x,y)) {
+				gameManager.uiManager.UpdateCursorMovementCost(x, y);
+			}
 		}
     }
 

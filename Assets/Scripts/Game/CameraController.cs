@@ -74,7 +74,7 @@ public class CameraController : MonoBehaviour {
     }
     void LateUpdate() {
         // check if game is paused before doing anything
-        if (gameManager != null && !gameManager.pauseMenuEnabled) {
+        if (gameManager != null && !gameManager.pauseMenuEnabled && !gameManager.shopMenuEnabled) {
             // game is not paused
             CamTarget = ObjectCamTarget.transform.position; // saves alot of time 
                                                             // target movement

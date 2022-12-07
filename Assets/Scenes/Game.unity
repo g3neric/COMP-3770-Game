@@ -1459,6 +1459,12 @@ MonoBehaviour:
   map: {fileID: 0}
   playerManager: {fileID: 0}
   enemyPrefabs:
+  - {fileID: 919132149155446097, guid: ad99d0fbcb5a45c458009e4c45b8c4f4, type: 3}
+  - {fileID: 919132149155446097, guid: 367f341d2c6f90f4981ef1a1f39e3823, type: 3}
+  - {fileID: 9214890647027803876, guid: b31f6596a0be836459fa193cbb5e0316, type: 3}
+  - {fileID: 9214890647027803876, guid: b31f6596a0be836459fa193cbb5e0316, type: 3}
+  - {fileID: 9214890647027803876, guid: b31f6596a0be836459fa193cbb5e0316, type: 3}
+  - {fileID: 919132149155446097, guid: f928683c9575adb40ada9b3fb4329444, type: 3}
   - {fileID: 9214890647027803876, guid: b31f6596a0be836459fa193cbb5e0316, type: 3}
   enemyGameObjects: []
   enemyList: []

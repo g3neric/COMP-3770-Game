@@ -74,7 +74,11 @@ public class EnemyManager : MonoBehaviour {
             if (map.IsTileVisibleToPlayer(Mathf.RoundToInt(curEnemyObject.transform.position.x), Mathf.RoundToInt(curEnemyObject.transform.position.z))) {
                 // enemy is visible
                 // update mesh visibility
-                curEnemyObject.GetComponent<MeshRenderer>().enabled = true;
+                
+                    //curEnemyObject.GetComponent<MeshRenderer>().enabled = true;
+                
+                curEnemyObject.SetActive(true);
+                
 
                 // update nametag visibility
                 gameManager.uiManager.SetVisibilityOfEnemyUIObject(enemyIndex, true);
@@ -89,7 +93,11 @@ public class EnemyManager : MonoBehaviour {
             } else {
                 // enemy is not visible
                 // update mesh visibility
-                curEnemyObject.GetComponent<MeshRenderer>().enabled = false;
+                
+                    //curEnemyObject.GetComponent<MeshRenderer>().enabled = false;
+                
+                curEnemyObject.SetActive(false);
+                
 
                 // update nametag visibility
                 gameManager.uiManager.SetVisibilityOfEnemyUIObject(enemyIndex, false);
@@ -132,39 +140,33 @@ public class EnemyManager : MonoBehaviour {
                 // check if current tile is not viewable by the player, is walkable, and nobody is on that tile rn
                 if (map.UnitCanEnterTile(x, y) &&
                     !map.IsTileVisibleToPlayer(x, y)) {
-                    // spawn enemy at (x, y)
-                    // instantiate enemy
-                    GameObject enemyObject = Instantiate(enemyPrefabs[enemyPrefabIndex], TileMap.TileCoordToWorldCoord(x, y, 0.125f), Quaternion.identity);
-
-                    // set reference to enemy in the tile its on
-                    map.tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile = enemyObject;
-
+                    
                     // create enemy character
                     Character enemyCharacter = null; // temporarily all tanks
 
                     // randomly choose one of the classes
                     // it's a shame i have to do it this way but it's the only way :(
-                    int randomClass = Random.Range(1, 8);
+                    int randomClass = Random.Range(0, 7);
                     switch(randomClass) {
-                        case 1:
+                        case 0:
                             enemyCharacter = new Engineer();
                             break;
-                        case 2:
+                        case 1:
                             enemyCharacter = new Grunt();
                             break;
-                        case 3:
+                        case 2:
                             enemyCharacter = new Joker();
                             break;
-                        case 4:
+                        case 3:
                             enemyCharacter = new Scout();
                             break;
-                        case 5:
+                        case 4:
                             enemyCharacter = new Sharpshooter();
                             break;
-                        case 6:
+                        case 5:
                             enemyCharacter = new Surgeon();
                             break;
-                        case 7:
+                        case 6:
                             enemyCharacter = new Tank();
                             break;
                         default:
@@ -172,17 +174,27 @@ public class EnemyManager : MonoBehaviour {
                             break;
                     }
 
+                    // spawn enemy at (x, y)
+                    // instantiate enemy
+                    GameObject enemyObject = Instantiate(enemyPrefabs[randomClass], TileMap.TileCoordToWorldCoord(x, y, 0.125f), Quaternion.identity);
+
+                    // set reference to enemy in the tile its on
+                    map.tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile = enemyObject;
+
+
                     // update target variables
                     enemyCharacter.currentX = x;
                     enemyCharacter.currentY = y;
 
                     switch(gameManager.difficulty) {
                         case DifficultyState.Ez:
-                            enemyCharacter.maxHP -= 15;
-                            enemyCharacter.HP -= 15;
+                            enemyCharacter.maxHP -= 20;
+                            enemyCharacter.HP -= 20;
+                            enemyCharacter.luckMultiplier -= 0.5f;
                             break;
                         case DifficultyState.Impossible:
-                            enemyCharacter.maxHP += 15;
+                            enemyCharacter.maxHP += 10;
+                            enemyCharacter.luckMultiplier *= 1.2f;
                             enemyCharacter.HP += 15;
                             enemyCharacter.maxAP += 2;
                             break;

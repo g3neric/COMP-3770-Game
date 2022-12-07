@@ -210,9 +210,10 @@ public class UIManager : MonoBehaviour {
                 if (LogMessageList[i].messageTime >= messageLife * 50 &&
                     LogMessageList[i].messageTurnTime < gameManager.turnCount - 1) { // fixed time step is 0.02, so each timing will be increased by one 50 times a second
                                                                                      // message has been alive too long, so destroy it
-
+                    Message temp = LogMessageList[i];
                     LogMessageList.RemoveAt(i);
-                    Destroy(LogMessageList[i].messageObject);
+                    Destroy(temp.messageObject);
+                    break;
                 } else {
                     LogMessageList[i].messageTime += 1;
                 }

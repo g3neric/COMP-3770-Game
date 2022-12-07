@@ -260,7 +260,7 @@ public class GameManager : MonoBehaviour {
 		// finish up current turn
 		// resolve the player's actions
 		if (characterClass.AP > 0) {
-			selectedUnit.GetComponent<PlayerManager>().TakeMovement();
+			playerManager.TakeMovement();
 		}
 		characterClass.FinishTurn(); // update character stats
 
@@ -292,9 +292,12 @@ public class GameManager : MonoBehaviour {
 
 		// initiate new turn
 		turnCount++;
-		selectedUnit.GetComponent<PlayerManager>().DrawPossibleMovements();
-		selectedUnit.GetComponent<PlayerManager>().DrawFogOfWar();
-		playerManager.DrawPossibleMovements(); // update possible movements at start of new turn
+		playerManager.DrawFogOfWar();
+		// update possible movements at start of new turn if move state selected
+		if (cs == ControlState.Move) {
+			playerManager.DrawPossibleMovements();
+		}
+		
 
 	}
 
@@ -365,6 +368,7 @@ public class GameManager : MonoBehaviour {
 			// we killed the enemy pog
 			characterClass.killCount++;
 			int goldAmount = 0;
+
 			// determine amount of gold to reward upon death
 			switch (difficulty) {
 				case DifficultyState.Ez:

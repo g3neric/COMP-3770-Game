@@ -13,6 +13,7 @@ public class ShopItem {
     public int goldCost; // purchase price
     public bool soldOut;
     public GameObject shopItemObject;
+    public Shop currentShop; // parent
 
     public ShopItem() {
         soldOut = false;
@@ -23,6 +24,18 @@ public class ShopItem {
         shopItemObject.transform.Find("Quantity and cost").gameObject.SetActive(false);
         shopItemObject.transform.Find("Description").gameObject.SetActive(false);
         shopItemObject.transform.Find("Purchase Button").gameObject.SetActive(false);
+    }
+
+    public void UpdateColour(Character playerChar) {
+        if (playerChar.gold - goldCost < 0 || soldOut) {
+            // slightly transparent red
+            Color32 newColour = new Color32(140, 0, 0, 100);
+            shopItemObject.GetComponent<Image>().color = newColour;
+        } else {
+            // default (slightly transparent black)
+            Color32 newColour = new Color32(0, 0, 0, 100);
+            shopItemObject.GetComponent<Image>().color = newColour;
+        }
     }
 
     public void UpdateItem(Character playerChar) {
@@ -45,14 +58,6 @@ public class ShopItem {
 
             // set description
             shopItemObject.transform.Find("Description").GetComponent<TextMeshProUGUI>().text = description;
-
-            if (playerChar.gold - goldCost < 0) {
-                Color32 newColour = new Color32(140, 0, 0, 100);
-                shopItemObject.GetComponent<Image>().color = newColour;
-            } else {
-                Color32 newColour = new Color32(0, 0, 0, 100);
-                shopItemObject.GetComponent<Image>().color = newColour;
-            }
         }
     }
 
@@ -63,9 +68,14 @@ public class ShopItem {
 
     public bool PurchaseCheck(Character playerChar) {
         if (playerChar.gold - goldCost >= 0 && quantity > 0) {
+            // purchase successful
             playerChar.gold -= goldCost;
             quantity--;
             UpdateItem(playerChar);
+
+            foreach (ShopItem item in currentShop.shopItems) {
+                item.UpdateColour(playerChar);
+            }
 
             if (quantity <= 0) {
                 SoldOut();

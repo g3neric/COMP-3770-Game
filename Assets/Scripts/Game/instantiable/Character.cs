@@ -56,7 +56,7 @@ public class Character {
     public Character() {
         currentItems = new List<Item>();
         killCount = 0;
-        gold = 999;
+        gold = 5;
         dead = false;
         selectedItemIndex = 0;
     }
@@ -104,8 +104,8 @@ public class Character {
     }
 
     public string GetStringCharacterStats() {
-        string text = maxAP + " \n" +
-                      maxHP + " \n" +
+        string text = maxAP + " AP\n" +
+                      maxHP + " HP\n" +
                       healRate + " HP per turn\n" +
                       viewRange + " tiles\n" +
                       (GameManager.critChance * luckMultiplier) + "% per shot\n" +

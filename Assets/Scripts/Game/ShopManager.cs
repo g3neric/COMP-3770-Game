@@ -35,6 +35,9 @@ public class ShopManager : MonoBehaviour {
                     // not currently active, so set all items to active
                     foreach (ShopItem curShopItem in curShop.shopItems) {
                         curShopItem.shopItemObject.SetActive(true);
+
+                        curShopItem.UpdateColour(gameManager.GetCharacterClass());
+
                         if (curShopItem.name == "Incendiary Rounds" && gameManager.GetCharacterClass().incendiaryRounds) {
                             curShopItem.SoldOut();
                         }
@@ -42,6 +45,8 @@ public class ShopManager : MonoBehaviour {
                         if (curShopItem.name == "Armour Piercing Rounds" && gameManager.GetCharacterClass().armourPiercingRounds) {
                             curShopItem.SoldOut();
                         }
+
+
                     }
                     curShop.active = true;
                 } else {
@@ -102,6 +107,7 @@ public class ShopManager : MonoBehaviour {
             int quantity = Random.Range(1, 3);
             // pick which item to add randomly
             ShopItem newShopItem = RandomShopItem(quantity, newShopItemObject);
+            newShopItem.currentShop = newShop;
 
             // keep picking new item until we find an item that isn't already in the shop
             while (ShopContains(newShopItem.name, newShop)) {

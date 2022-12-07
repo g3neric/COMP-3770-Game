@@ -328,13 +328,13 @@ public class TileMap : MonoBehaviour {
 		}
 
 		// generate shop tiles
-		// Mathf.RoundToInt(mapSize / 50)
-		for (int i = 0; i < 150; i++) {
+		for (int i = 0; i < Mathf.RoundToInt(mapSize / 10); i++) {
 			ranX = 0;
 			ranY = 0;
 			while (!tileTypes[tiles[ranY, ranX]].isWalkable || 
 				   (tiles[ranY, ranX] == 6) || 
-				   (tiles[ranY, ranX] == 7)) {
+				   (tiles[ranY, ranX] == 7) ||
+                   (tiles[ranY, ranX] == waterType)) {
 				// generate random point on the land; not on the sand
 				ranY = Random.Range(oceanSize + shoreSize, mapSize - oceanSize - shoreSize);
 				ranX = Random.Range(oceanSize + shoreSize, mapSize - oceanSize - shoreSize);

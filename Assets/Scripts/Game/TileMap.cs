@@ -38,7 +38,6 @@ public class TileMap : MonoBehaviour {
 	// List of the tile's game objects
 	public GameObject[,] tilesObjects;
 	public GameObject[,] roadObjects;
-	public GameObject[,] shopTilesObjects;
 
 	// graph of map for pathfinding
 	[HideInInspector] public Node[,] fullMapGraph;
@@ -73,7 +72,6 @@ public class TileMap : MonoBehaviour {
 		tilesObjects = new GameObject[mapSize, mapSize]; // all gameobjects of tiles
 		viewableTiles = new List<int[]>(); // instantiate viewable tiles for fog of war
 		roadObjects = new GameObject[mapSize, mapSize];
-		shopTilesObjects = new GameObject[mapSize, mapSize];
 
 		// set tile frequencies
 		switch (gameManager.biomeSetting) {
@@ -331,7 +329,7 @@ public class TileMap : MonoBehaviour {
 
 		// generate shop tiles
 		// Mathf.RoundToInt(mapSize / 50)
-		for (int i = 0; i < 50; i++) {
+		for (int i = 0; i < 150; i++) {
 			ranX = 0;
 			ranY = 0;
 			while (!tileTypes[tiles[ranY, ranX]].isWalkable || 
@@ -350,7 +348,13 @@ public class TileMap : MonoBehaviour {
 											     Quaternion.identity,
 												 GameObject.Find("TileContainer").transform);
 			currentTile.name = "Shop (" + ranX + ", " + ranY + ")";
-			shopTilesObjects[ranX, ranY] = currentTile;
+
+			// put shop in list of shops
+			int[] temp = new int[2];
+			temp[0] = ranX;
+			temp[1] = ranY;
+
+			gameManager.shopManager.InitializeShop(temp, currentTile);
 
 			// remove all children of original tile
 			if (tilesObjects[ranX, ranY].transform.childCount > 0) {
@@ -383,7 +387,11 @@ public class TileMap : MonoBehaviour {
 			roadObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = assetHandler.fogOfWarOutlineMaterial;
 		} else if (tiles[x,y] == 7) {
 			// shop tile
-			shopTilesObjects[x,y].GetComponent<MeshRenderer>().sharedMaterial = assetHandler.fogOfWarOutlineMaterial;
+
+			// find the shop tile at current position and change its material
+			gameManager.shopManager.FindShopAtPosition(x, y).shopTileObject.GetComponent<MeshRenderer>().sharedMaterial =
+				assetHandler.fogOfWarOutlineMaterial;
+
 		}
 		// update tile underneath
 		tilesObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = assetHandler.fogOfWarOutlineMaterial;
@@ -402,7 +410,10 @@ public class TileMap : MonoBehaviour {
 			roadObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = assetHandler.straightRoadPrefab.GetComponent<MeshRenderer>().sharedMaterial;
 		} else if (tiles[x, y] == 7) {
 			// shop tile
-			shopTilesObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = tileTypes[7].tilePrefab.GetComponent<MeshRenderer>().sharedMaterial;
+
+			// find the shop tile at current position and change its material
+			gameManager.shopManager.FindShopAtPosition(x, y).shopTileObject.GetComponent<MeshRenderer>().sharedMaterial = 
+				tileTypes[7].tilePrefab.GetComponent<MeshRenderer>().sharedMaterial;
 		}
 		// update tile underneath
 		tilesObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = tileTypes[originalTiles[x, y]].tilePrefab.GetComponent<MeshRenderer>().sharedMaterial;

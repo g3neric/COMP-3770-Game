@@ -4,6 +4,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
+using UnityEngine.SceneManagement;
 
 // state enums
 public enum ControlState { Move, Item1, Item2, Deselected };
@@ -25,6 +27,7 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector] public UIManager uiManager;
 	[HideInInspector] public PlayerManager playerManager;
 	[HideInInspector] public EnemyManager enemyManager;
+	[HideInInspector] public ShopManager shopManager;
 	[HideInInspector] public CameraController camController;
 	
 
@@ -39,6 +42,9 @@ public class GameManager : MonoBehaviour {
 
 	[HideInInspector] public int mapSize;
 
+	// settings
+	[HideInInspector] public bool movementCostOnCursor = false;
+
 	// Prefabs
 	[Space]
 	[Header("Prefabs")]
@@ -52,7 +58,8 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector] public TileMap tileMap;
 
 	// the class the player has chosen
-	[HideInInspector] public Character characterClass; // player character
+	[HideInInspector] private Character characterClass; // player character
+	[HideInInspector] public int characterClassInt;
 
 	// misc
 	[HideInInspector] public bool pauseMenuEnabled = false;
@@ -67,8 +74,8 @@ public class GameManager : MonoBehaviour {
 	}
 
 	public void StartNewGame() {
-		// we have to wait a sec for some reason
-		Invoke("InitiateGameSession", .1f);
+		// we have to wait a lil for some reason
+		Invoke("InitiateGameSession", .05f);
     }
 
 	// This function is called when a new game is created
@@ -81,11 +88,20 @@ public class GameManager : MonoBehaviour {
 		enemyManager = GameObject.Find("EnemyManager").GetComponent<EnemyManager>();
 		enemyManager.gameManager = this;
 
+		// initiate shop manager
+		// have to do it this way cuz it breaks if i dont create a new one each time lmao
+		shopManager = GameObject.Find("ShopManager").GetComponent<ShopManager>();
+		shopManager.gameManager = this;
+		shopManager.shopList = new List<Shop>();
+
+		// create player character before creating map
+		characterClass = ClassIntToClass(characterClassInt);
+
 		// Initiate all the tile map stuff
 		tileMap = GameObject.Find("TileMapController").GetComponent<TileMap>();
 		tileMap.gameManager = this;
 		tileMap.InitiateTileMap();
-		
+
 		// Create and spawn the player's character
 		CreatePlayerCharacter();
 
@@ -184,6 +200,7 @@ public class GameManager : MonoBehaviour {
 
     // I seperated this class for easy viewing
     public void CreatePlayerCharacter() {
+		
 		GameObject prefab;
 		// get correct prefab
 		switch (characterClass.className) {
@@ -284,7 +301,7 @@ public class GameManager : MonoBehaviour {
 	// player attacking enemy
 	// includes checks for current item held so you dont have to check when you call this function
 	public void AttackEnemy(GameObject targetEnemyObject) {
-		int damageAmount = 0; // 0 temporarily
+		float damageAmount = 0; // 0 temporarily
 		int enemyIndex = enemyManager.enemyGameObjects.IndexOf(targetEnemyObject);
 		Character enemyCharacter = enemyManager.enemyList[enemyIndex];
 
@@ -329,12 +346,40 @@ public class GameManager : MonoBehaviour {
 		message = message + "Dealt " + damageAmount + " damage to enemy " + enemyManager.enemyList[enemyIndex].className + ".";
 		// deal damage
 		enemyCharacter.TakeDamage(damageAmount);
-		if (enemyCharacter.dead) {
-			characterClass.killCount++;
-        }
 
-		// send message to log
+		// send damage message to log
 		uiManager.SendMessageToLog(message);
+
+		// check if player has incendiary rounds
+		if (characterClass.incendiaryRounds) {
+			if (!enemyCharacter.onFire) {
+				uiManager.SendMessageToLog("Set enemy " + enemyCharacter.className + " on fire!");
+			}
+			enemyCharacter.SetOnFire();
+		}
+
+		if (enemyCharacter.dead) {
+			// clean up enemy - delete it, reset its stats, etc.
+			enemyManager.CleanUpEnemy(enemyManager.enemyList.IndexOf(enemyCharacter));
+
+			// we killed the enemy pog
+			characterClass.killCount++;
+			int goldAmount = 0;
+			// determine amount of gold to reward upon death
+			switch (difficulty) {
+				case DifficultyState.Ez:
+					goldAmount = Random.Range(3, 10);
+					break;
+				case DifficultyState.Mid:
+					goldAmount = Random.Range(5, 12);
+					break;
+				case DifficultyState.Impossible:
+					goldAmount = Random.Range(7, 14);
+					break;
+			}
+			uiManager.SendMessageToLog("Gained " + goldAmount + " gold.");
+			characterClass.gold += goldAmount;
+		}
 
 		// update possible movements because you use AP when you attack
 		playerManager.DrawPossibleMovements();
@@ -354,7 +399,7 @@ public class GameManager : MonoBehaviour {
 	// enemy attacking player
 	public void AttackPlayer(Character enemyCharacter) {
 		int itemIndex = enemyCharacter.selectedItemIndex;
-		int damageAmount = enemyCharacter.currentItems[itemIndex].damage;
+		float damageAmount = enemyCharacter.currentItems[itemIndex].damage;
 		// check if enough AP 
 		if (enemyCharacter.AP - enemyCharacter.currentItems[itemIndex].APcost >= 0) {
 			// subtract ap cost of current weapon
@@ -404,5 +449,21 @@ public class GameManager : MonoBehaviour {
 		uiManager.SendMessageToLog(message);
 	}
 
-	
+	// settings
+	public void ToggleMovementCostOnCursor() {
+		if (movementCostOnCursor) {
+			movementCostOnCursor = false;
+        } else {
+			movementCostOnCursor = true;
+        }
+	}
+
+	public Character GetCharacterClass() {
+		if (SceneManager.GetActiveScene().name == "Game") {
+			return characterClass;
+        } else {
+			characterClass = null;
+			return null;
+		}
+    }
 }

@@ -16,7 +16,7 @@ public class MainMenuManager : MonoBehaviour {
     // mainMenuButtons[0] = new game
     // mainMenuButtons[1] = load game
     // mainMenuButtons[2] = controls
-    // mainMenuButtons[3] = settings
+    // mainMenuButtons[3] = stats
     // mainMenuButtons[4] = exit game
     public Button[] mainMenuButtons = new Button[5];
 
@@ -29,7 +29,7 @@ public class MainMenuManager : MonoBehaviour {
     public GameObject newGameMenu;
     public GameObject loadGameMenu;
     public GameObject controlsMenu;
-    public GameObject settingsMenu;
+    public GameObject statsMenu;
 
     // dropDowns[0] = class dropdown
     // dropDowns[1] = difficulty dropdown
@@ -45,7 +45,7 @@ public class MainMenuManager : MonoBehaviour {
         newGameMenu.SetActive(false);
         loadGameMenu.SetActive(false);
         controlsMenu.SetActive(false);
-        settingsMenu.SetActive(false);
+        statsMenu.SetActive(false);
 
         // initiate main menu button functions
         mainMenuButtons[0].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.NewGame); });
@@ -76,14 +76,14 @@ public class MainMenuManager : MonoBehaviour {
                 controlsMenu.SetActive(true);
                 break;
             case MainMenuState.Settings:
-                settingsMenu.SetActive(true);
+                statsMenu.SetActive(true);
                 break;
             default:
                 mainMenu.SetActive(true);
                 newGameMenu.SetActive(false);
                 loadGameMenu.SetActive(false);
                 controlsMenu.SetActive(false);
-                settingsMenu.SetActive(false);
+                statsMenu.SetActive(false);
                 break;
         }
         currentMMState = newState;
@@ -92,7 +92,7 @@ public class MainMenuManager : MonoBehaviour {
     // coroutine because we have to wait a little bit before calling InitiateGameSession()
     public void StartNewGame() {
         // create new player character with the value from the dropdown
-        gameManager.characterClass = GameManager.ClassIntToClass(dropDowns[0].GetComponent<TMP_Dropdown>().value);
+        gameManager.characterClassInt = dropDowns[0].GetComponent<TMP_Dropdown>().value;
 
         // difficulty dropdown
         switch (dropDowns[1].GetComponent<TMP_Dropdown>().value) {

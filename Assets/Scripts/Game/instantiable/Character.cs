@@ -16,9 +16,9 @@ public class Character {
 
     // base stats - all classes will differ
     // health
-    public int HP;
-    public int maxHP;
-    public int healRate;
+    public float HP;
+    public float maxHP;
+    public float healRate;
 
     // action points
     public int AP;
@@ -39,8 +39,14 @@ public class Character {
     public int currentX;
     public int currentY;
 
+    // upgrades
+    public bool onFire;
+    public int fireTimer;
+    public bool incendiaryRounds = false;
+    public bool armourPiercingRounds = false;
+
     // the items the player is holding
-    [HideInInspector] public List<Item> currentItems = new List<Item>();
+    [HideInInspector] public List<Item> currentItems;
     [HideInInspector] public int selectedItemIndex; // 0 for item 1, 1 for item 2
 
     // state of death
@@ -48,13 +54,14 @@ public class Character {
 
     // constructor
     public Character() {
+        currentItems = new List<Item>();
         killCount = 0;
-        gold = 0;
+        gold = 999;
         dead = false;
         selectedItemIndex = 0;
     }
 
-    public void TakeDamage(int amount) {
+    public void TakeDamage(float amount) {
         HP -= amount;
         if (HP <= 0) {
             // die
@@ -63,9 +70,26 @@ public class Character {
         }
     }
 
+    public void SetOnFire() {
+        onFire = true;
+        fireTimer = 6;
+    }
+
     public void FinishTurn() {
         AP = maxAP; // refresh AP
         HP += healRate; // heal a little bit
+
+        if (onFire) {
+            if (fireTimer == 0) {
+                // no longer on fire
+                onFire = false;
+                fireTimer = 6;
+            } else {
+                // take 1 hp damage and reduce fire timer by one round
+                HP -= 5;
+                fireTimer--;
+            }
+        }
 
         // these are mostly failsafes
         if (HP > maxHP) {

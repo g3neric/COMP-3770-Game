@@ -7,9 +7,9 @@ using System.Collections.Generic;
 
 // All game weapons
 public class Item {
-    public GameObject icon;
+    public Sprite icon;
     public string name;
-    public int damage; // per hit
+    public float damage; // per hit
     public int APcost; // per use
     public int range;
     

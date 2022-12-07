@@ -25,8 +25,8 @@ public class PlayerManager : MonoBehaviour {
 
 	private void FixedUpdate() {
 		transform.position = Vector3.Lerp(transform.position, 
-										  TileMap.TileCoordToWorldCoord(gameManager.characterClass.currentX, 
-																		gameManager.characterClass.currentY,
+										  TileMap.TileCoordToWorldCoord(gameManager.GetCharacterClass().currentX, 
+																		gameManager.GetCharacterClass().currentY,
 																		0.125f), 
 										   10f * Time.fixedDeltaTime);
 		// idk what im doing tbh
@@ -47,11 +47,11 @@ public class PlayerManager : MonoBehaviour {
 		tileHoverOutline = Instantiate(assetHandler.tileHoverOutlinePrefab, new Vector3(-100f, -100f, -100f), Quaternion.identity, GameObject.Find("TileContainer").transform);
 
 		// instantiate reference to current path
-		currentPath = gameManager.characterClass.currentPath;
+		currentPath = gameManager.GetCharacterClass().currentPath;
 
 		// instantiate reference to target
-		gameManager.characterClass.currentX = x;
-		gameManager.characterClass.currentY = y;
+		gameManager.GetCharacterClass().currentX = x;
+		gameManager.GetCharacterClass().currentY = y;
 		transform.position = TileMap.TileCoordToWorldCoord(x, y, 0.125f);
 
 		// create the lists
@@ -82,9 +82,9 @@ public class PlayerManager : MonoBehaviour {
 		TileMap.DestroyOutlines(createdMovementOutlines);
 
 		// calculate which tiles are in range, then draw the outlines on the screen
-		List<int[]> tilePosInMovementRange = map.CalculatePossibleMovements(gameManager.characterClass.currentX, 
-																			gameManager.characterClass.currentY, 
-																			gameManager.characterClass.AP);
+		List<int[]> tilePosInMovementRange = map.CalculatePossibleMovements(gameManager.GetCharacterClass().currentX, 
+																			gameManager.GetCharacterClass().currentY, 
+																			gameManager.GetCharacterClass().AP);
 		
 		/*
 		// tile positions out of sight but in movement range
@@ -110,9 +110,9 @@ public class PlayerManager : MonoBehaviour {
 		TileMap.DestroyOutlines(createdRangeOutlines);
 
 		// calculate which tiles are in range
-		int range = gameManager.characterClass.currentItems[gameManager.characterClass.selectedItemIndex].range;
-		List<int[]> tilePosInAttackRange = map.CalculateTilesInRange(gameManager.characterClass.currentX, 
-																	 gameManager.characterClass.currentY, 
+		int range = gameManager.GetCharacterClass().currentItems[gameManager.GetCharacterClass().selectedItemIndex].range;
+		List<int[]> tilePosInAttackRange = map.CalculateTilesInRange(gameManager.GetCharacterClass().currentX, 
+																	 gameManager.GetCharacterClass().currentY, 
 																	 range, 
 																	 false);
 
@@ -130,9 +130,9 @@ public class PlayerManager : MonoBehaviour {
 		map.viewableTiles.Clear();
 
 		// calculate tiles with line of sight and within view range
-		map.viewableTiles = map.CalculateTilesInRange(gameManager.characterClass.currentX,
-													  gameManager.characterClass.currentY,
-													  gameManager.characterClass.viewRange, 
+		map.viewableTiles = map.CalculateTilesInRange(gameManager.GetCharacterClass().currentX,
+													  gameManager.GetCharacterClass().currentY,
+													  gameManager.GetCharacterClass().viewRange, 
 													  true);
 
 		foreach (int[] tile in map.viewableTiles) {
@@ -142,16 +142,13 @@ public class PlayerManager : MonoBehaviour {
 
 	// Advances our pathfinding progress by one tile.
 	private void AdvancePathing() {
-		// update shop button
-		gameManager.uiManager.SetShopMenuButtonActive();
-
-		if(currentPath == null || gameManager.characterClass.AP <= 0 ) {
+		if(currentPath == null || gameManager.GetCharacterClass().AP <= 0 ) {
 			// no path or no ap; therefore something went wrong and return
 			return;
 		}
 
 		// Get cost from current tile to next tile
-		gameManager.characterClass.AP -= map.CostToEnterTile(currentPath[1].x, currentPath[1].y);
+		gameManager.GetCharacterClass().AP -= map.CostToEnterTile(currentPath[1].x, currentPath[1].y);
 
 		// set current tile's current character to null
 		map.tilesObjects[currentPath[0].x, currentPath[0].y].GetComponent<ClickableTile>().currentCharacterOnTile = null;
@@ -160,13 +157,13 @@ public class PlayerManager : MonoBehaviour {
 
 		// Teleport us to our correct "current" position, in case we
 		// haven't finished the animation yet.
-		transform.position = TileMap.TileCoordToWorldCoord(gameManager.characterClass.currentX,
-													       gameManager.characterClass.currentY, 
+		transform.position = TileMap.TileCoordToWorldCoord(gameManager.GetCharacterClass().currentX,
+													       gameManager.GetCharacterClass().currentY, 
 														   0.125f);
 
 		// Move us to the next tile in the sequence
-		gameManager.characterClass.currentX = currentPath[1].x;
-		gameManager.characterClass.currentY = currentPath[1].y;
+		gameManager.GetCharacterClass().currentX = currentPath[1].x;
+		gameManager.GetCharacterClass().currentY = currentPath[1].y;
 		
 		// Remove the old animated line
 		Destroy(createdLines[0]);
@@ -180,6 +177,9 @@ public class PlayerManager : MonoBehaviour {
 			// So let's just clear our pathfinding info.
 			currentPath = null;
 		}
+
+		// update shop button
+		gameManager.uiManager.SetShopMenuButtonActive();
 	}
 	
 	// Helper function to create animated line to end target
@@ -230,7 +230,7 @@ public class PlayerManager : MonoBehaviour {
 	// movement as far as possible along that new currentPath's towards its end destination
 	public void PathToLocation(int x, int y) {
 		if (!map.UnitCanEnterTile(x, y) || 
-			(gameManager.characterClass.currentX == x && gameManager.characterClass.currentY == y)) {
+			(gameManager.GetCharacterClass().currentX == x && gameManager.GetCharacterClass().currentY == y)) {
 			return;
 		}
 
@@ -242,8 +242,8 @@ public class PlayerManager : MonoBehaviour {
 
 		// [currentX, currentY] is the current position of the unit
 		// [x, y] is the new target position, which was just clicked on
-		currentPath = map.GeneratePathTo(gameManager.characterClass.currentX, 
-										 gameManager.characterClass.currentY, 
+		currentPath = map.GeneratePathTo(gameManager.GetCharacterClass().currentX, 
+										 gameManager.GetCharacterClass().currentY, 
 										 x, 
 										 y); // generate path
 
@@ -279,7 +279,7 @@ public class PlayerManager : MonoBehaviour {
 
 			// Make sure to wrap-up any outstanding movement left over.
 			while (currentPath != null &&
-				   gameManager.characterClass.AP - map.CostToEnterTile(currentPath[1].x, currentPath[1].y) >= 0) {
+				   gameManager.GetCharacterClass().AP - map.CostToEnterTile(currentPath[1].x, currentPath[1].y) >= 0) {
 				AdvancePathing();
 				DrawFogOfWar();
 			}

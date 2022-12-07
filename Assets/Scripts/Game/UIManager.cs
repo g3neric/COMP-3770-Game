@@ -12,6 +12,7 @@ public enum PauseMenuState { Default, Controls, Settings };
 
 public class UIManager : MonoBehaviour {
     [HideInInspector] public GameManager gameManager;
+    [HideInInspector] public TileMap map;
 
     [HideInInspector] public PauseMenuState currentPMState = PauseMenuState.Default;
 
@@ -21,9 +22,11 @@ public class UIManager : MonoBehaviour {
     public Slider APBar;
     // misc info
     public TextMeshProUGUI turnCountText;
+    public TextMeshProUGUI goldCountText;
     public TextMeshProUGUI classNameText;
     public GameObject enemyUIObjectsPrefab;
     public GameObject messagePrefab;
+    public GameObject cursorCostText; // cursor movement costs
 
     // enemy health bars
     [HideInInspector] public List<GameObject> enemyUIObjects = new List<GameObject>();
@@ -63,12 +66,16 @@ public class UIManager : MonoBehaviour {
     public Button buttonNextTurn;
     public GameObject shopButton;
 
-    // cursor movement costs
-    public GameObject cursorCostText;
+    // settings
+    public Toggle showMovementCostOnTilesToggle;
 
+    // misc
     private ControlState previousCS;
 
     private void Start() {
+        // initiate reference to tilemapcontroller
+        map = GameObject.Find("TileMapController").GetComponent<TileMap>();
+
         // default all menus to inactive
         gameOverMenu.SetActive(false);
         pauseMenu.SetActive(false);
@@ -95,36 +102,47 @@ public class UIManager : MonoBehaviour {
 
         // Initiate settings menu button
         settingsMenuReturnButton.GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Default); });
+
+        // initiate settings toggles
+        showMovementCostOnTilesToggle.onValueChanged.AddListener(delegate { gameManager.ToggleMovementCostOnCursor(); });
     }
 
     void LateUpdate() {
         if (gameManager != null) {
             // update text on the screen
             // HP bar
-            HPBar.maxValue = gameManager.characterClass.maxHP;
-            HPBar.value = gameManager.characterClass.HP;
+            HPBar.maxValue = gameManager.GetCharacterClass().maxHP;
+            HPBar.value = gameManager.GetCharacterClass().HP;
             // text
-            HPBar.transform.GetChild(3).GetComponent<TextMeshProUGUI>().text = "HP: " + gameManager.characterClass.HP + "/" + gameManager.characterClass.maxHP;
+            HPBar.transform.GetChild(3).GetComponent<TextMeshProUGUI>().text = "HP: " + 
+                                                                                gameManager.GetCharacterClass().HP.ToString("F2") + "/" + 
+                                                                                gameManager.GetCharacterClass().maxHP.ToString("F2");
 
             // AP bar
-            APBar.maxValue = gameManager.characterClass.maxAP;
-            APBar.value = gameManager.characterClass.AP;
+            APBar.maxValue = gameManager.GetCharacterClass().maxAP;
+            APBar.value = gameManager.GetCharacterClass().AP;
             // text
-            APBar.transform.GetChild(3).GetComponent<TextMeshProUGUI>().text = "AP: " + gameManager.characterClass.AP + "/" + gameManager.characterClass.maxAP;
+            APBar.transform.GetChild(3).GetComponent<TextMeshProUGUI>().text = "AP: " + 
+                                                                                gameManager.GetCharacterClass().AP + "/" + 
+                                                                                gameManager.GetCharacterClass().maxAP;
 
             // misc text
             turnCountText.text = "Turn " + gameManager.turnCount;
-            classNameText.text = "Class: " + gameManager.characterClass.className;
+            classNameText.text = "Class: " + gameManager.GetCharacterClass().className;
+            goldCountText.text = "Gold: " + gameManager.GetCharacterClass().gold;
+
+            // settings
+            showMovementCostOnTilesToggle.isOn = gameManager.movementCostOnCursor;
 
             // update toolbar item names for now
-            if (gameManager.characterClass.currentItems.Count == 1) {
-                toolbarButtons[1].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = gameManager.characterClass.currentItems[0].name;
+            if (gameManager.GetCharacterClass().currentItems.Count == 1) {
+                toolbarButtons[1].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = gameManager.GetCharacterClass().currentItems[0].name;
                 toolbarButtons[2].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = "";
             }
 
-            if (gameManager.characterClass.currentItems.Count == 2) {
-                toolbarButtons[1].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = gameManager.characterClass.currentItems[0].name;
-                toolbarButtons[2].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = gameManager.characterClass.currentItems[1].name;
+            if (gameManager.GetCharacterClass().currentItems.Count == 2) {
+                toolbarButtons[1].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = gameManager.GetCharacterClass().currentItems[0].name;
+                toolbarButtons[2].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = gameManager.GetCharacterClass().currentItems[1].name;
             }
 
             // button controls for the toolbar
@@ -249,6 +267,7 @@ public class UIManager : MonoBehaviour {
             settingsMenu.SetActive(false);
             gameManager.pauseMenuEnabled = false;
             gameManager.SetControlState(previousCS);
+            SetShopMenuButtonActive();
         } else if (!gameManager.pauseMenuEnabled) {
             // open pause menu
             pauseMenu.SetActive(true);
@@ -258,6 +277,7 @@ public class UIManager : MonoBehaviour {
             if (gameManager.shopMenuEnabled) {
                 ToggleShopMenu();
             }
+            SetShopMenuButtonActive();
 
             previousCS = gameManager.cs;
             gameManager.SetControlState(ControlState.Deselected);
@@ -292,8 +312,9 @@ public class UIManager : MonoBehaviour {
     public void SetShopMenuButtonActive() {
         // update shop button every time you move
         // update shop menu visibility
-        if (gameManager.tileMap.tiles[gameManager.characterClass.currentX, gameManager.characterClass.currentY] == 7 &&
-            !gameManager.shopMenuEnabled) {
+        if (map.tiles[gameManager.GetCharacterClass().currentX, gameManager.GetCharacterClass().currentY] == 7 &&
+            !gameManager.shopMenuEnabled &&
+            !gameManager.pauseMenuEnabled) {
             // set button to active if shop menu isn't open and player is on shop tile
             shopButton.SetActive(true);
         } else {
@@ -308,12 +329,22 @@ public class UIManager : MonoBehaviour {
             shopButton.SetActive(true);
             gameManager.shopMenuEnabled = false;
             gameManager.SetControlState(previousCS);
+
+            // update view range for if player bought binoculars
+            gameManager.playerManager.DrawFogOfWar();
+
+            // toggle correct shop
+            gameManager.shopManager.ToggleShop(gameManager.GetCharacterClass().currentX,
+                                               gameManager.GetCharacterClass().currentY);
         } else if (!gameManager.pauseMenuEnabled) {
             // open shop menu
             shopMenu.SetActive(true);
             shopButton.SetActive(false);
             gameManager.shopMenuEnabled = true;
 
+            // toggle correct shop 
+            gameManager.shopManager.ToggleShop(gameManager.GetCharacterClass().currentX,
+                                               gameManager.GetCharacterClass().currentY);
             // if pause menu is open (it shouldn't be) then close it
             if (gameManager.pauseMenuEnabled) {
                 TogglePauseMenu();
@@ -345,13 +376,13 @@ public class UIManager : MonoBehaviour {
         if (selectedButtonIndex == 0) {
             gameManager.SetControlState(ControlState.Move);
         } else if (selectedButtonIndex == 1) {
-            if (gameManager.characterClass.currentItems.Count >= 1) {
+            if (gameManager.GetCharacterClass().currentItems.Count >= 1) {
                 gameManager.SetControlState(ControlState.Item1);
             } else {
                 gameManager.SetControlState(ControlState.Deselected);
             }
         } else if (selectedButtonIndex == 2) {
-            if (gameManager.characterClass.currentItems.Count >= 2) {
+            if (gameManager.GetCharacterClass().currentItems.Count >= 2) {
                 gameManager.SetControlState(ControlState.Item2);
             } else {
                 gameManager.SetControlState(ControlState.Deselected);
@@ -376,17 +407,17 @@ public class UIManager : MonoBehaviour {
         }
     }
 
-    public void GameOverMenu(int damageAmount, Character enemyCharacter) {
+    public void GameOverMenu(float damageAmount, Character enemyCharacter) {
         gameOverMenu.SetActive(true);
         gameManager.pauseMenuEnabled = true;
         gameManager.SetControlState(ControlState.Deselected);
         string text = "Enemy " + enemyCharacter.className + " killed you with a " + damageAmount +
                       "\ndamage shot. GG.\n";
 
-        if (gameManager.characterClass.killCount == 1) {
+        if (gameManager.GetCharacterClass().killCount == 1) {
             text = text + "\nYou killed 1 enemy.";
         } else {
-            text = text + "\nYou killed " + gameManager.characterClass.killCount + " enemies.";
+            text = text + "\nYou killed " + gameManager.GetCharacterClass().killCount + " enemies.";
         }
                       
         gameOverMenu.transform.GetChild(1).GetChild(1).gameObject.GetComponent<TextMeshProUGUI>().text = text;
@@ -399,14 +430,17 @@ public class UIManager : MonoBehaviour {
 
     // update movement cost on cursor
     public void UpdateCursorMovementCost(int curX, int curY) {
-        if (gameManager.cs == ControlState.Move && Mathf.Abs(mouseCursorSpeed) < 100) {
+        if (gameManager.movementCostOnCursor &&
+            gameManager.cs == ControlState.Move && 
+            Mathf.Abs(mouseCursorSpeed) < 150) {
+
             cursorCostText.SetActive(true);
             
-            List<Node> shortestPath = gameManager.tileMap.DijkstraPath(Mathf.RoundToInt(gameManager.selectedUnit.transform.position.x),
-                                                                        Mathf.RoundToInt(gameManager.selectedUnit.transform.position.z),
-                                                                        curX,
-                                                                        curY,
-                                                                        gameManager.tileMap.fullMapGraph);
+            List<Node> shortestPath = map.DijkstraPath(Mathf.RoundToInt(gameManager.selectedUnit.transform.position.x),
+                                                       Mathf.RoundToInt(gameManager.selectedUnit.transform.position.z),
+                                                       curX,
+                                                       curY,
+                                                       map.fullMapGraph);
             
             if (shortestPath == null) {
                 // no path to target
@@ -417,12 +451,12 @@ public class UIManager : MonoBehaviour {
                 int dist = 0;
 
                 foreach (Node curNode in shortestPath) {
-                    dist += gameManager.tileMap.tileTypes[gameManager.tileMap.tiles[curNode.x, curNode.y]].movementCost;
+                    dist += map.tileTypes[map.tiles[curNode.x, curNode.y]].movementCost;
                 }
 
                 cursorCostText.GetComponent<TextMeshProUGUI>().text = "" + dist;
 
-                if (dist > gameManager.characterClass.AP) {
+                if (dist > gameManager.GetCharacterClass().AP) {
                     cursorCostText.GetComponent<TextMeshProUGUI>().color = Color.red;
                 } else {
                     cursorCostText.GetComponent<TextMeshProUGUI>().color = Color.yellow;

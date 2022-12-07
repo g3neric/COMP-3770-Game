@@ -101,7 +101,7 @@ public class Binoculars : ShopItem {
         this.shopItemObject = shopItemObject;
         name = "Binoculars";
         description = "Adds 1 tile to your view range.";
-        goldCost = Random.Range(15, 20);
+        goldCost = Random.Range(19, 24);
     }
 
     public override bool Purchase(Character playerChar) {
@@ -121,7 +121,7 @@ public class HermesBoots : ShopItem {
         this.shopItemObject = shopItemObject;
         name = "Hermes Boots";
         description = "Increases max AP by 1.";
-        goldCost = Random.Range(20, 25);
+        goldCost = Random.Range(35, 55);
     }
     public override bool Purchase(Character playerChar) {
         if (PurchaseCheck(playerChar)) {
@@ -141,7 +141,7 @@ public class ArmourPiercingRounds : ShopItem {
         this.shopItemObject = shopItemObject;
         name = "Armour Piercing Rounds";
         description = "Increases base damage on all weapons at the time of purchase by 5.";
-        goldCost = Random.Range(15, 25);
+        goldCost = Random.Range(18, 25);
     }
 
     public override bool Purchase(Character playerChar) {
@@ -168,7 +168,7 @@ public class BandOfRegeneration : ShopItem {
         this.shopItemObject = shopItemObject;
         name = "Band Of Regeneration";
         description = "Increases health regeneration by 1 HP/sec.";
-        goldCost = Random.Range(5, 13);
+        goldCost = Random.Range(3, 20);
     }
 
     public override bool Purchase(Character playerChar) {
@@ -188,7 +188,7 @@ public class DiamondShield : ShopItem {
         this.shopItemObject = shopItemObject;
         name = "Diamond Shield";
         description = "Increases max HP by 25.";
-        goldCost = Random.Range(10, 15);
+        goldCost = Random.Range(16, 28);
     }
 
     public override bool Purchase(Character playerChar) {
@@ -209,7 +209,7 @@ public class IncendiaryRounds : ShopItem {
         this.shopItemObject = shopItemObject;
         name = "Incendiary Rounds";
         description = "When you hit an enemy, set them on fire. Fire deals 10 damage/turn for 5 turns";
-        goldCost = Random.Range(20, 25);
+        goldCost = Random.Range(17, 28);
     }
 
     public override bool Purchase(Character playerChar) {
@@ -230,7 +230,7 @@ public class LuckyCharm : ShopItem {
         this.shopItemObject = shopItemObject;
         name = "Lucky Charm";
         description = "Increase crit chance by 1.5x.";
-        goldCost = Random.Range(10, 15);
+        goldCost = Random.Range(30, 40);
     }
 
     public override bool Purchase(Character playerChar) {

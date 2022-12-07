@@ -48,6 +48,10 @@ public class UIManager : MonoBehaviour {
     public Button controlMenuReturnButton;
     public Button settingsMenuReturnButton;
 
+    // shop menu
+    public Button shopMenuReturnButton;
+    public Button shopMenuOpenButton;
+
     public Button gameOverMenuButton;
 
     // menus
@@ -109,6 +113,14 @@ public class UIManager : MonoBehaviour {
         pauseMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
         pauseMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Settings); });
         pauseMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
+
+        // shop menu return button
+        shopMenuReturnButton.GetComponent<Button>().onClick.AddListener(delegate { ToggleShopMenu(); });
+        shopMenuReturnButton.GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
+
+        // shop menu open button
+        shopMenuOpenButton.GetComponent<Button>().onClick.AddListener(delegate { ToggleShopMenu(); });
+        shopMenuOpenButton.GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
 
         // Initiate control menu button
         controlMenuReturnButton.GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Default); });
@@ -193,22 +205,25 @@ public class UIManager : MonoBehaviour {
                 LogMessageList.RemoveAt(0); // remove from list
             }
 
+            /*
             // control transpareny of old messages
             if (LogMessageList.Count > 3) {
                 Transform contentHolder = messageLog.transform.GetChild(0).GetChild(0);
                 for (int i = 0; i < LogMessageList.Count - 3; i++) {
                     // log > viewport > content > child[i] is the desired text object
-                    int newAlpha = Mathf.RoundToInt(255 - ((maxMessages - 3 - i) * 20));
+                    int newAlpha = Mathf.RoundToInt(255 - ((maxMessages - 3 - i) * 10));
                     Color32 newColor = new Color32(255, 255, 255, (byte)newAlpha);
                     contentHolder.GetChild(i).GetComponent<TextMeshProUGUI>().color = newColor;
                 }
             }
+            */
 
             // update enemy UI objects
             for (int i = 0; i < enemyUIObjects.Count; i++) {
                 // update position
                 Vector3 enemyPos = gameManager.enemyManager.enemyGameObjects[i].transform.position;
-                enemyPos += new Vector3(0, 1.4f, 0); // make them appear above enemy
+                float tagVerticalOffset = 1.1f; // offset from the ground that the ui tags appear
+                enemyPos += new Vector3(0, tagVerticalOffset, 0);
                 Vector2 newPos = Camera.main.WorldToScreenPoint(enemyPos);
                 enemyUIObjects[i].transform.position = newPos;
 

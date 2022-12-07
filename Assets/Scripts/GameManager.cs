@@ -238,7 +238,26 @@ public class GameManager : MonoBehaviour {
 		if (characterClass.AP > 0) {
 			playerManager.TakeMovement();
 		}
+
+		// still have AP left
+		// use it to regen extra HP
+		int extraRegenAmount = 0;
+		if (characterClass.AP > 0 && characterClass.HP < characterClass.maxHP) {
+			if (characterClass.HP + characterClass.AP > characterClass.maxHP) {
+				// would be regenerating over the max HP, so correct for this
+				extraRegenAmount = Mathf.RoundToInt(characterClass.maxHP) - Mathf.RoundToInt(characterClass.HP);
+			} else {
+				// would not be regenerating over max HP, so don't correct
+				extraRegenAmount = characterClass.AP;
+			}
+			
+			characterClass.HP += extraRegenAmount;
+			uiManager.SendMessageToLog("Used extra AP to regen an extra " + extraRegenAmount + " HP");
+		}
+
 		characterClass.FinishTurn(); // update character stats
+
+		
 
 		// enemy turns
 		enemyManager.ResolveAllEnemyTurns();
@@ -299,12 +318,12 @@ public class GameManager : MonoBehaviour {
 				characterClass.AP -= currentItem.APcost;
 			} else {
 				// not enough AP
-				uiManager.SendMessageToLog("Not enough AP to attack enemy.");
+				uiManager.SendMessageToLog("Not enough AP to attack enemy");
 				return;
 			}
 		} else {
 			// out of range
-			uiManager.SendMessageToLog("Enemy " + enemyCharacter.className + " out of attack range.");
+			uiManager.SendMessageToLog("Enemy " + enemyCharacter.className + " out of attack range");
 			return;
 		}
 
@@ -322,7 +341,7 @@ public class GameManager : MonoBehaviour {
 			damageAmount += Random.Range(1, 10);
 			message = "Crit! ";
 		}
-		message = message + "Dealt " + damageAmount + " damage to enemy " + enemyManager.enemyList[enemyIndex].className + ".";
+		message = message + "Dealt " + damageAmount + " damage to enemy " + enemyManager.enemyList[enemyIndex].className;
 		// deal damage
 		enemyCharacter.TakeDamage(damageAmount);
 
@@ -361,7 +380,7 @@ public class GameManager : MonoBehaviour {
 					goldAmount = Random.Range(7, 14);
 					break;
 			}
-			uiManager.SendMessageToLog("Gained " + goldAmount + " gold.");
+			uiManager.SendMessageToLog("Gained " + goldAmount + " gold");
 			characterClass.gold += goldAmount;
 		}
 
@@ -393,7 +412,7 @@ public class GameManager : MonoBehaviour {
 				damageAmount += Random.Range(1, 10);
 				message = "Crit! ";
 			}
-			message = message + "Enemy " + enemyCharacter.className + " has dealt " + damageAmount + " damage to you.";
+			message = message + "Enemy " + enemyCharacter.className + " has dealt " + damageAmount + " damage to you";
 			// deal damage
 			characterClass.TakeDamage(damageAmount);
 			if (characterClass.dead) {

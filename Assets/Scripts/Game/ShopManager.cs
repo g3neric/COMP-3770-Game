@@ -123,6 +123,7 @@ public class ShopManager : MonoBehaviour {
 
             // add functionality
             newShopItemObjectButton.onClick.AddListener(delegate { newShopItem.Purchase(gameManager.GetCharacterClass()); });
+            newShopItemObjectButton.onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
 
             newShopItem.UpdateItem(gameManager.GetCharacterClass());
 

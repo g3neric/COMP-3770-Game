@@ -71,15 +71,21 @@ public class ShopItem {
             // purchase successful
             playerChar.gold -= goldCost;
             quantity--;
-            UpdateItem(playerChar);
-
-            foreach (ShopItem item in currentShop.shopItems) {
-                item.UpdateColour(playerChar);
+            
+            if (currentShop != null) {
+                foreach (ShopItem item in currentShop.shopItems) {
+                    if (item != null) {
+                        item.UpdateColour(playerChar);
+                    }
+                }
             }
 
             if (quantity <= 0) {
                 SoldOut();
             }
+
+            UpdateItem(playerChar);
+            UpdateColour(playerChar);
 
             return true;
         } else {
@@ -202,8 +208,8 @@ public class IncendiaryRounds : ShopItem {
         this.quantity = quantity;
         this.shopItemObject = shopItemObject;
         name = "Incendiary Rounds";
-        description = "When you hit an enemy, set them on fire. Fire deals 5 damage/turn for 5 turns";
-        goldCost = Random.Range(15, 25);
+        description = "When you hit an enemy, set them on fire. Fire deals 10 damage/turn for 5 turns";
+        goldCost = Random.Range(20, 25);
     }
 
     public override bool Purchase(Character playerChar) {
@@ -217,3 +223,22 @@ public class IncendiaryRounds : ShopItem {
     }
 }
 
+[SerializeField]
+public class LuckyCharm : ShopItem {
+    public LuckyCharm(int quantity, GameObject shopItemObject) {
+        this.quantity = quantity;
+        this.shopItemObject = shopItemObject;
+        name = "Lucky Charm";
+        description = "Increase crit chance by 1.5x.";
+        goldCost = Random.Range(10, 15);
+    }
+
+    public override bool Purchase(Character playerChar) {
+        if (PurchaseCheck(playerChar)) {
+            playerChar.luckMultiplier *= 1.5f;
+            return true;
+        } else {
+            return false;
+        }
+    }
+}

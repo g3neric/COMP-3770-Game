@@ -42,9 +42,6 @@ public class GameManager : MonoBehaviour {
 
 	[HideInInspector] public int mapSize;
 
-	// settings
-	[HideInInspector] public bool movementCostOnCursor = false;
-
 	// Prefabs
 	[Space]
 	[Header("Prefabs")]
@@ -65,21 +62,26 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector] public bool pauseMenuEnabled = false;
 	[HideInInspector] public bool shopMenuEnabled = false;
 
+	
+
 	void Start() {
 		// Make this game object persistant throughout scenes
 		DontDestroyOnLoad(gameObject);
 		cs = ControlState.Deselected;
 		assetHandler = GameObject.Find("AssetHandler").GetComponent<AssetHandler>();
 		soundManager = GameObject.Find("SoundManager").GetComponent<SoundManager>();
+		soundManager.PlayMainMenuMusic();
 	}
 
 	public void StartNewGame() {
 		// we have to wait a lil for some reason
+		soundManager.PauseMusic();
 		Invoke("InitiateGameSession", .05f);
     }
 
 	// This function is called when a new game is created
 	public void InitiateGameSession() {
+		soundManager.PlayGameMusic();
 		// initiate ui manager
 		uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
 		uiManager.gameManager = this;
@@ -104,6 +106,9 @@ public class GameManager : MonoBehaviour {
 
 		// Create and spawn the player's character
 		CreatePlayerCharacter();
+
+		// check if player spawned on shop tile
+		uiManager.SetShopMenuButtonActive();
 
 		enemyManager.playerManager = playerManager;
 
@@ -359,6 +364,10 @@ public class GameManager : MonoBehaviour {
 				uiManager.SendMessageToLog("Set enemy " + enemyCharacter.className + " on fire!");
 			}
 			enemyCharacter.SetOnFire();
+			Instantiate(assetHandler.fireEffectsPrefab,
+						targetEnemyObject.transform.position,
+						Quaternion.identity,
+						targetEnemyObject.transform);
 		}
 
 		if (enemyCharacter.dead) {
@@ -388,16 +397,7 @@ public class GameManager : MonoBehaviour {
 		// update possible movements because you use AP when you attack
 		playerManager.DrawPossibleMovements();
 
-		// play sound
-		if (currentItem.name == "Assault Rifle") {
-			selectedUnit.GetComponent<AudioSource>().PlayOneShot(soundManager.AssaultRifleFire);
-		} else if (currentItem.name == "Pistol") {
-			selectedUnit.GetComponent<AudioSource>().PlayOneShot(soundManager.PistolFire);
-		} 
-		
-		//else if (currentItem.name == "Sniper Rifle") {
-		//	selectedUnit.GetComponent<AudioSource>().PlayOneShot(soundManager.SniperFire);
-		//}
+		soundManager.PlayGunshot(currentItem.name);
 	}
 
 	// enemy attacking player
@@ -415,10 +415,10 @@ public class GameManager : MonoBehaviour {
 			// 4% chance for crazy crit, 25% for regular crit
 			// joker is 16% for crazy crit, 75% for regular crit
 			int critChance = Random.Range(0, 100);
-			if (critChance < epicCritChance * characterClass.luckMultiplier) {
+			if (critChance < epicCritChance * enemyCharacter.luckMultiplier) {
 				damageAmount += Random.Range(10, 30);
 				message = "Epic crit! ";
-			} else if (critChance < critChance * characterClass.luckMultiplier) {
+			} else if (critChance < critChance * enemyCharacter.luckMultiplier) {
 				damageAmount += Random.Range(1, 10);
 				message = "Crit! ";
 			}
@@ -451,15 +451,6 @@ public class GameManager : MonoBehaviour {
 	// passthrough function
 	public void SendMessageToLog(string message) {
 		uiManager.SendMessageToLog(message);
-	}
-
-	// settings
-	public void ToggleMovementCostOnCursor() {
-		if (movementCostOnCursor) {
-			movementCostOnCursor = false;
-        } else {
-			movementCostOnCursor = true;
-        }
 	}
 
 	public Character GetCharacterClass() {

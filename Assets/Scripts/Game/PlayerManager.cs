@@ -32,12 +32,6 @@ public class PlayerManager : MonoBehaviour {
 		// idk what im doing tbh
 	}
 
-    private void Update() {
-		if (gameManager != null && Input.GetKeyDown("e")) {
-			gameManager.FinishTurn();
-		}
-	}
-
     public void SpawnPlayer(int x, int y) {
 		// instantiate reference to asset handler
 		assetHandler = GameObject.Find("AssetHandler").GetComponent<AssetHandler>();

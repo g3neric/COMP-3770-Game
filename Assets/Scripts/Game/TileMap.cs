@@ -329,19 +329,19 @@ public class TileMap : MonoBehaviour {
 
 		// generate shop tiles
 		for (int i = 0; i < Mathf.RoundToInt(mapSize / 10); i++) {
-			ranX = 0;
-			ranY = 0;
-			while (!tileTypes[tiles[ranY, ranX]].isWalkable || 
-				   (tiles[ranY, ranX] == 6) || 
-				   (tiles[ranY, ranX] == 7) ||
-                   (tiles[ranY, ranX] == waterType)) {
+			while (true) {
 				// generate random point on the land; not on the sand
 				ranY = Random.Range(oceanSize + shoreSize, mapSize - oceanSize - shoreSize);
 				ranX = Random.Range(oceanSize + shoreSize, mapSize - oceanSize - shoreSize);
+				if (tileTypes[tiles[ranY, ranX]].isWalkable &&
+				   (tiles[ranY, ranX] != 6) &&
+				   (tiles[ranY, ranX] != 7) &&
+				   (tiles[ranY, ranX] != waterType)) {
+					// set to shop tile
+					tiles[ranX, ranY] = 7;
+					break;
+                }
 			}
-
-			// set to shop tile
-			tiles[ranX, ranY] = 7;
 
 			GameObject currentTile = Instantiate(tileTypes[7].tilePrefab,
 												 new Vector3(ranX, 0.00925f, ranY),

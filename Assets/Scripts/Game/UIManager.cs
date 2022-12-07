@@ -68,6 +68,11 @@ public class UIManager : MonoBehaviour {
 
     // settings
     public Toggle showMovementCostOnTilesToggle;
+    public Toggle muteSoundFXToggle;
+    public Toggle muteMusicToggle;
+
+    [HideInInspector] public bool movementCostOnCursor = false;
+    
 
     // misc
     private ControlState previousCS;
@@ -85,30 +90,50 @@ public class UIManager : MonoBehaviour {
 
         // Initiate next turn button
         buttonNextTurn.GetComponent<Button>().onClick.AddListener(delegate { gameManager.FinishTurn(); });
+        buttonNextTurn.GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
 
         // Initiate move state button
         toolbarButtons[0].GetComponent<Button>().onClick.AddListener(delegate { ToolbarButtonSelected(0); });
+        toolbarButtons[0].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
 
         // Initiate item buttons
         toolbarButtons[1].GetComponent<Button>().onClick.AddListener(delegate { ToolbarButtonSelected(1); });
+        toolbarButtons[1].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
         toolbarButtons[2].GetComponent<Button>().onClick.AddListener(delegate { ToolbarButtonSelected(2); });
+        toolbarButtons[2].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
 
         // Initiate pause menu buttons
+        pauseMenuButtons[0].GetComponent<Button>().onClick.AddListener(delegate { TogglePauseMenu(); });
+        pauseMenuButtons[0].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
         pauseMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Controls); });
+        pauseMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
         pauseMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Settings); });
+        pauseMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
 
         // Initiate control menu button
         controlMenuReturnButton.GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Default); });
+        controlMenuReturnButton.GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
 
         // Initiate settings menu button
         settingsMenuReturnButton.GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Default); });
+        settingsMenuReturnButton.GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
 
         // initiate settings toggles
-        showMovementCostOnTilesToggle.onValueChanged.AddListener(delegate { gameManager.ToggleMovementCostOnCursor(); });
+        showMovementCostOnTilesToggle.onValueChanged.AddListener(delegate { { movementCostOnCursor ^= true; }; });
+        showMovementCostOnTilesToggle.onValueChanged.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
+        muteSoundFXToggle.onValueChanged.AddListener(delegate { { gameManager.soundManager.soundFXMuted ^= true; ; }; });
+        muteSoundFXToggle.onValueChanged.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
+        muteMusicToggle.onValueChanged.AddListener(delegate { { gameManager.soundManager.musicMuted ^= true; }; });
+        muteMusicToggle.onValueChanged.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
     }
 
     void LateUpdate() {
-        if (gameManager != null) {
+        // pause game
+        if (Input.GetKeyDown("escape")) {
+            TogglePauseMenu();
+        }
+
+        if (gameManager != null && !gameManager.pauseMenuEnabled && !gameManager.shopMenuEnabled) {
             // update text on the screen
             // HP bar
             HPBar.maxValue = gameManager.GetCharacterClass().maxHP;
@@ -132,7 +157,7 @@ public class UIManager : MonoBehaviour {
             goldCountText.text = "Gold: " + gameManager.GetCharacterClass().gold;
 
             // settings
-            showMovementCostOnTilesToggle.isOn = gameManager.movementCostOnCursor;
+            showMovementCostOnTilesToggle.isOn = movementCostOnCursor;
 
             // update toolbar item names for now
             if (gameManager.GetCharacterClass().currentItems.Count == 1) {
@@ -155,9 +180,8 @@ public class UIManager : MonoBehaviour {
                 ToolbarButtonSelected(2);
             }
 
-            // pause game
-            if (Input.GetKeyDown("escape")) {
-                TogglePauseMenu();
+            if (Input.GetKeyDown("e")) {
+                gameManager.FinishTurn();
             }
 
             // delete old messages
@@ -426,12 +450,13 @@ public class UIManager : MonoBehaviour {
 
     public void ReturnToMainMenu() {
         gameManager.SetControlState(ControlState.Deselected);
+        gameManager.soundManager.PlayMainMenuMusic();
         SceneManager.LoadScene("MainMenu");
     }
 
     // update movement cost on cursor
     public void UpdateCursorMovementCost(int curX, int curY) {
-        if (gameManager.movementCostOnCursor &&
+        if (movementCostOnCursor &&
             gameManager.cs == ControlState.Move && 
             Mathf.Abs(mouseCursorSpeed) < 150) {
 
@@ -466,5 +491,5 @@ public class UIManager : MonoBehaviour {
         } else {
             cursorCostText.SetActive(false);
         }
-    }
+    } 
 }

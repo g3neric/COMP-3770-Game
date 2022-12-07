@@ -56,7 +56,7 @@ public class Character {
     public Character() {
         currentItems = new List<Item>();
         killCount = 0;
-        gold = 5;
+        gold = 20;
         dead = false;
         selectedItemIndex = 0;
     }
@@ -72,7 +72,6 @@ public class Character {
 
     public void SetOnFire() {
         onFire = true;
-        fireTimer = 6;
     }
 
     public void FinishTurn() {
@@ -80,15 +79,7 @@ public class Character {
         HP += healRate; // heal a little bit
 
         if (onFire) {
-            if (fireTimer == 0) {
-                // no longer on fire
-                onFire = false;
-                fireTimer = 6;
-            } else {
-                // take 1 hp damage and reduce fire timer by one round
-                HP -= 5;
-                fireTimer--;
-            }
+            TakeDamage(5);
         }
 
         // these are mostly failsafes

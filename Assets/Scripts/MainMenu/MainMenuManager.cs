@@ -49,12 +49,18 @@ public class MainMenuManager : MonoBehaviour {
 
         // initiate main menu button functions
         mainMenuButtons[0].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.NewGame); });
+        mainMenuButtons[0].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
         mainMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Controls); });
+        mainMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
         mainMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Stats); });
+        mainMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
 
         returnToMainMenuButtons[0].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Default); });
+        returnToMainMenuButtons[0].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
         returnToMainMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Default); });
+        returnToMainMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
         returnToMainMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Default); });
+        returnToMainMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
     }
 
 

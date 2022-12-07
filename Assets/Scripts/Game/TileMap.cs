@@ -28,6 +28,17 @@ public class TileMap : MonoBehaviour {
 	[Header("Frequencies in Tile Types MUST add up to 100!")]
 	public TileType[] tileTypes;
 
+	// named types for each tile
+	[HideInInspector] public int swampType = -1;
+	[HideInInspector] public int grassType = -1;
+	[HideInInspector] public int desertType = -1;
+	[HideInInspector] public int hillType = -1;
+	[HideInInspector] public int mountainType = -1;
+	[HideInInspector] public int sandType = -1;
+	[HideInInspector] public int waterType = -1;
+	[HideInInspector] public int roadType = -1;
+	[HideInInspector] public int shopType = -1;
+
 	[Space]
 	[Header("Prefabs")]
 
@@ -73,57 +84,100 @@ public class TileMap : MonoBehaviour {
 		viewableTiles = new List<int[]>(); // instantiate viewable tiles for fog of war
 		roadObjects = new GameObject[mapSize, mapSize];
 
+		// Look for which tile is sand and water because they can be accidentally moved around in editor
+		for (int i = 0; i < tileTypes.Length; i++) {
+			switch (tileTypes[i].name) {
+				case "TileSwamp":
+					swampType = i;
+					break;
+				case "TileGrass":
+					grassType = i;
+					break;
+				case "TileDesert":
+					desertType = i;
+					break;
+				case "TileHill":
+					hillType = i;
+					break;
+				case "TileMountain":
+					mountainType = i;
+					break;
+				case "TileSand":
+					sandType = i;
+					break;
+				case "TileWater":
+					waterType = i;
+					break;
+				case "TileRoad":
+					roadType = i;
+					break;
+				case "TileShop":
+					shopType = i;
+					break;
+			}
+		}
+
 		// set tile frequencies
 		switch (gameManager.biomeSetting) {
 			case BiomeSetting.Default:
 				// swamp tile
-				tileTypes[0].frequency = 15;
+				tileTypes[swampType].frequency = 15;
 				// grass tile
-				tileTypes[1].frequency = 30;
+				tileTypes[grassType].frequency = 40;
+				// desert tile
+				tileTypes[desertType].frequency = 0;
 				// hill tile
-				tileTypes[2].frequency = 25;
+				tileTypes[hillType].frequency = 20;
 				// mountain tile
-				tileTypes[3].frequency = 30;
+				tileTypes[mountainType].frequency = 25;
 				break;
 			case BiomeSetting.Hilly:
 				// swamp tile
-				tileTypes[0].frequency = 10;
+				tileTypes[swampType].frequency = 10;
 				// grass tile
-				tileTypes[1].frequency = 20;
+				tileTypes[grassType].frequency = 20;
+				// desert tile
+				tileTypes[desertType].frequency = 0;
 				// hill tile
-				tileTypes[2].frequency = 35;
+				tileTypes[hillType].frequency = 35;
 				// mountain tile
-				tileTypes[3].frequency = 35;
+				tileTypes[mountainType].frequency = 35;
 				break;
 			case BiomeSetting.Superflat:
 				// swamp tile
-				tileTypes[0].frequency = 50;
+				tileTypes[swampType].frequency = 5;
 				// grass tile
-				tileTypes[1].frequency = 50;
+				tileTypes[grassType].frequency = 15;
+				// desert tile
+				tileTypes[desertType].frequency = 75;
 				// hill tile
-				tileTypes[2].frequency = 0;
+				tileTypes[hillType].frequency = 5;
 				// mountain tile
-				tileTypes[3].frequency = 0;
+				tileTypes[mountainType].frequency = 0;
 				break;
 			case BiomeSetting.Mountaineous:
 				// swamp tile
-				tileTypes[0].frequency = 10;
+				tileTypes[swampType].frequency = 10;
 				// grass tile
-				tileTypes[1].frequency = 15;
+				tileTypes[grassType].frequency = 15;
+				// desert tile
+				tileTypes[desertType].frequency = 0;
 				// hill tile
-				tileTypes[2].frequency = 30;
+				tileTypes[hillType].frequency = 30;
 				// mountain tile
-				tileTypes[3].frequency = 45;
+				tileTypes[mountainType].frequency = 45;
 				break;
 			case BiomeSetting.Swampland:
 				// swamp tile
-				tileTypes[0].frequency = 45;
+				tileTypes[swampType].frequency = 45;
 				// grass tile
-				tileTypes[1].frequency = 25;
+				tileTypes[grassType].frequency = 25;
+				// desert tile
+				tileTypes[desertType].frequency = 0;
 				// hill tile
-				tileTypes[2].frequency = 15;
+				tileTypes[hillType].frequency = 15;
 				// mountain tile
-				tileTypes[3].frequency = 15;
+				tileTypes[mountainType].frequency = 15;
 				break;
 		}
 
@@ -138,20 +192,6 @@ public class TileMap : MonoBehaviour {
 
 		// Throw error if ocean is bigger than map
 		Assert.IsTrue(oceanSize < Mathf.Min(mapSize, mapSize), "Ocean is bigger than the map");
-
-		// Look for which tile is sand and water because they can be accidentally moved around in editor
-		int sandType = -1;
-		int waterType = -1;
-		int mountainType = -1;
-		for (int i = 0; i < tileTypes.Length; i++) {
-			if (tileTypes[i].name == "TileSand") {
-				sandType = i;
-			} else if (tileTypes[i].name == "TileWater") {
-				waterType = i;
-			} else if (tileTypes[i].name == "TileMountain") {
-				mountainType = i;
-			}
-		}
 
 		// Since perlin noise will generate the same values every time, we have to change the
 		// part of the perlin noise map that we use each time. In order to do this we offset
@@ -174,13 +214,7 @@ public class TileMap : MonoBehaviour {
 				if (distance > radius) {
 					// Generate ocean tile
 
-					// Look for which tile is water
-					for (int l = 0; l < tileTypes.Length; l++) {
-
-						if (tileTypes[l].name == "TileWater") {
-							tiles[x, y] = l;
-						}
-					}
+					tiles[x, y] = waterType;
 				} else if (distance > radius - shoreSize) {
 					// Generate sand tile
 					tiles[x, y] = sandType;
@@ -229,9 +263,9 @@ public class TileMap : MonoBehaviour {
 
 					// If current tile touches a water tile, make it sand
 					if ((tiles[x - 1, y] == waterType) ||
-							   (tiles[x + 1, y] == waterType) ||
-							   (tiles[x, y - 1] == waterType) ||
-							   (tiles[x, y + 1] == waterType)) {
+						(tiles[x + 1, y] == waterType) ||
+						(tiles[x, y - 1] == waterType) ||
+						(tiles[x, y + 1] == waterType)) {
 
 						tiles[x, y] = sandType;
 					}
@@ -281,7 +315,8 @@ public class TileMap : MonoBehaviour {
 			// pick random point on the map that is walkable
 			ranY = 0;
 			ranX = 0;
-			while (!tileTypes[tiles[ranY, ranX]].isWalkable || tiles[ranY, ranX] == 6) {
+			while (!tileTypes[tiles[ranY, ranX]].isWalkable || 
+				tiles[ranY, ranX] == roadType) {
 				ranY = Random.Range(oceanSize + 4, mapSize - oceanSize - 4);
 				ranX = Random.Range(oceanSize + 4, mapSize - oceanSize - 4);
 			}
@@ -289,7 +324,7 @@ public class TileMap : MonoBehaviour {
 			for (int x = ranX; x < mapSize - oceanSize - Random.Range(2, 8); x++) {
 				if (tileTypes[tiles[x, ranY]].isWalkable) {
 					// tile is walkable, so set it to road
-					tiles[x, ranY] = 6; // 6 is road
+					tiles[x, ranY] = roadType;
 					if (!tileTypes[tiles[x + Random.Range(2, 5), ranY]].isWalkable) {
 						// mountain in the way, end road
 						break;
@@ -302,7 +337,7 @@ public class TileMap : MonoBehaviour {
 		for (int x = 0; x < mapSize; x++) {
 			for (int y = 0; y < mapSize; y++) {
 				// check every tile if its road
-				if (tiles[x, y] == 6) {
+				if (tiles[x, y] == roadType) {
 					// instantiate road outline a little bit overtop the current tile,
 					// so that you can see the old tile underneath a lil bit
 					GameObject currentTile = Instantiate(assetHandler.straightRoadPrefab,
@@ -334,16 +369,16 @@ public class TileMap : MonoBehaviour {
 				ranY = Random.Range(oceanSize + shoreSize, mapSize - oceanSize - shoreSize);
 				ranX = Random.Range(oceanSize + shoreSize, mapSize - oceanSize - shoreSize);
 				if (tileTypes[tiles[ranY, ranX]].isWalkable &&
-				   (tiles[ranY, ranX] != 6) &&
-				   (tiles[ranY, ranX] != 7) &&
+				   (tiles[ranY, ranX] != roadType) &&
+				   (tiles[ranY, ranX] != shopType) &&
 				   (tiles[ranY, ranX] != waterType)) {
 					// set to shop tile
-					tiles[ranX, ranY] = 7;
+					tiles[ranX, ranY] = shopType;
 					break;
                 }
 			}
 
-			GameObject currentTile = Instantiate(tileTypes[7].tilePrefab,
+			GameObject currentTile = Instantiate(tileTypes[shopType].tilePrefab,
 												 new Vector3(ranX, 0.00925f, ranY),
 											     Quaternion.identity,
 												 GameObject.Find("TileContainer").transform);
@@ -382,10 +417,10 @@ public class TileMap : MonoBehaviour {
 	public void ChangeTileToFog(int x, int y) {
 		// change material to fog
 		// update overlay tiles
-		if (tiles[x,y] == 6) {
+		if (tiles[x,y] == roadType) {
 			// road
 			roadObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = assetHandler.fogOfWarOutlineMaterial;
-		} else if (tiles[x,y] == 7) {
+		} else if (tiles[x,y] == shopType) {
 			// shop tile
 
 			// find the shop tile at current position and change its material
@@ -405,15 +440,15 @@ public class TileMap : MonoBehaviour {
 	public void RevertTileToDefault(int x, int y) {
 		// revert material
 		// update overlay tiles
-		if (tiles[x, y] == 6) {
+		if (tiles[x, y] == roadType) {
 			// road
 			roadObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = assetHandler.straightRoadPrefab.GetComponent<MeshRenderer>().sharedMaterial;
-		} else if (tiles[x, y] == 7) {
+		} else if (tiles[x, y] == shopType) {
 			// shop tile
 
 			// find the shop tile at current position and change its material
 			gameManager.shopManager.FindShopAtPosition(x, y).shopTileObject.GetComponent<MeshRenderer>().sharedMaterial = 
-				tileTypes[7].tilePrefab.GetComponent<MeshRenderer>().sharedMaterial;
+				tileTypes[shopType].tilePrefab.GetComponent<MeshRenderer>().sharedMaterial;
 		}
 		// update tile underneath
 		tilesObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = tileTypes[originalTiles[x, y]].tilePrefab.GetComponent<MeshRenderer>().sharedMaterial;

@@ -7,13 +7,7 @@ public class AssetHandler : MonoBehaviour {
 
     // character prefabs
     [Header("Character prefabs")]
-    public GameObject EngineerPrefab;
-    public GameObject GruntPrefab;
-    public GameObject JokerPrefab;
-    public GameObject ScoutPrefab;
-    public GameObject SharpshooterPrefab;
-    public GameObject SurgeonPrefab;
-    public GameObject TankPrefab;
+    public GameObject[] classPrefabs = new GameObject[7];
 
     [Space]
     [Header("Tile outline & line prefabs")]
@@ -43,7 +37,8 @@ public class AssetHandler : MonoBehaviour {
     [Header("Particle Effects")]
     public GameObject fireEffectsPrefab;
 
-    void Start() {
+    void Awake() {
         DontDestroyOnLoad(gameObject);
+
     }
 }

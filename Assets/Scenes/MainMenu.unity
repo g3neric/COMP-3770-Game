@@ -1172,7 +1172,7 @@ AudioSource:
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -2967,7 +2967,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &768146414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5104,13 +5104,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 386812e49eb57024e8670b1a950bd376, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EngineerPrefab: {fileID: 9214890647027803876, guid: bfb7334471802504bb9a93c45831092d, type: 3}
-  GruntPrefab: {fileID: 9214890647027803876, guid: bfb7334471802504bb9a93c45831092d, type: 3}
-  JokerPrefab: {fileID: 9214890647027803876, guid: bfb7334471802504bb9a93c45831092d, type: 3}
-  ScoutPrefab: {fileID: 9214890647027803876, guid: bfb7334471802504bb9a93c45831092d, type: 3}
-  SharpshooterPrefab: {fileID: 9214890647027803876, guid: bfb7334471802504bb9a93c45831092d, type: 3}
-  SurgeonPrefab: {fileID: 9214890647027803876, guid: bfb7334471802504bb9a93c45831092d, type: 3}
-  TankPrefab: {fileID: 9214890647027803876, guid: bfb7334471802504bb9a93c45831092d, type: 3}
+  classPrefabs:
+  - {fileID: 356176522426160958, guid: 4f6df3e04b90ab14493f8820019083e6, type: 3}
+  - {fileID: 5855741025970613754, guid: b4b82fad65394ca43b88c9b2e74320da, type: 3}
+  - {fileID: 9214890647027803876, guid: b31f6596a0be836459fa193cbb5e0316, type: 3}
+  - {fileID: 8698143509705474845, guid: 3bffdb8f581091240b4956c9618f01b3, type: 3}
+  - {fileID: 9214890647027803876, guid: b31f6596a0be836459fa193cbb5e0316, type: 3}
+  - {fileID: 5656518312497855291, guid: d786757996c1d4f478c1eea3bf51434e, type: 3}
+  - {fileID: 9214890647027803876, guid: b31f6596a0be836459fa193cbb5e0316, type: 3}
   linePrefab: {fileID: 1232140211224243061, guid: e134a70f78b489041913528af49ee671, type: 3}
   tileOutlinePrefab: {fileID: 2760457026279230676, guid: 32cb9ae5fcfb837419d4fd66843cdaac, type: 3}
   tileHoverOutlinePrefab: {fileID: 2760457026279230676, guid: 1f1bc39c245c084448960fa33aecc9d2, type: 3}

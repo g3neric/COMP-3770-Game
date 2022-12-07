@@ -62,11 +62,11 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector] public bool pauseMenuEnabled = false;
 	[HideInInspector] public bool shopMenuEnabled = false;
 
-	
-
-	void Start() {
+	void Awake() {
 		// Make this game object persistant throughout scenes
+
 		DontDestroyOnLoad(gameObject);
+		
 		cs = ControlState.Deselected;
 		assetHandler = GameObject.Find("AssetHandler").GetComponent<AssetHandler>();
 		soundManager = GameObject.Find("SoundManager").GetComponent<SoundManager>();
@@ -205,38 +205,9 @@ public class GameManager : MonoBehaviour {
 
     // I seperated this class for easy viewing
     public void CreatePlayerCharacter() {
-		
-		GameObject prefab;
-		// get correct prefab
-		switch (characterClass.className) {
-			case "Grunt":
-				prefab = assetHandler.GruntPrefab;
-				break;
-			case "Engineer":
-				prefab = assetHandler.EngineerPrefab;
-				break;
-			case "Joker":
-				prefab = assetHandler.JokerPrefab;
-				break;
-			case "Scout":
-				prefab = assetHandler.ScoutPrefab;
-				break;
-			case "Sharpshooter":
-				prefab = assetHandler.SharpshooterPrefab;
-				break;
-			case "Surgeon":
-				prefab = assetHandler.SurgeonPrefab;
-				break;
-			case "Tank":
-				prefab = assetHandler.TankPrefab;
-				break;
-			default:
-				print("error selecting class");
-				return;
-		}
-
 		// Create the player's unit model
-		selectedUnit = Instantiate(prefab, new Vector3(0f, 0f, 0f), Quaternion.identity);
+		selectedUnit = Instantiate(assetHandler.classPrefabs[characterClassInt], new Vector3(0f, 0f, 0f), Quaternion.identity);
+		selectedUnit.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
 		selectedUnit.tag = "Player";
 
 		// Give the player's character a pathfinding script

@@ -78,7 +78,7 @@ public class UIManager : MonoBehaviour {
     private ControlState previousCS;
 
     private void Start() {
-        // initiate reference to tilemapcontroller
+        // initiate references
         map = GameObject.Find("TileMapController").GetComponent<TileMap>();
 
         // default all menus to inactive
@@ -123,8 +123,10 @@ public class UIManager : MonoBehaviour {
         showMovementCostOnTilesToggle.onValueChanged.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
         muteSoundFXToggle.onValueChanged.AddListener(delegate { { gameManager.soundManager.soundFXMuted ^= true; ; }; });
         muteSoundFXToggle.onValueChanged.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
-        muteMusicToggle.onValueChanged.AddListener(delegate { { gameManager.soundManager.musicMuted ^= true; }; });
+        muteMusicToggle.onValueChanged.AddListener(delegate { { gameManager.soundManager.ToggleMuteMusic(); }; });
         muteMusicToggle.onValueChanged.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
+
+        
     }
 
     void LateUpdate() {
@@ -206,7 +208,7 @@ public class UIManager : MonoBehaviour {
             for (int i = 0; i < enemyUIObjects.Count; i++) {
                 // update position
                 Vector3 enemyPos = gameManager.enemyManager.enemyGameObjects[i].transform.position;
-                enemyPos += new Vector3(0, 0.5f, 0); // make them appear above enemy
+                enemyPos += new Vector3(0, 1.4f, 0); // make them appear above enemy
                 Vector2 newPos = Camera.main.WorldToScreenPoint(enemyPos);
                 enemyUIObjects[i].transform.position = newPos;
 
@@ -321,6 +323,7 @@ public class UIManager : MonoBehaviour {
                     break;
                 // open settings panel
                 case PauseMenuState.Settings:
+                    muteMusicToggle.isOn = gameManager.soundManager.musicMuted;
                     settingsMenu.SetActive(true);
                     break;
                 // return to pause menu
@@ -337,7 +340,7 @@ public class UIManager : MonoBehaviour {
     public void SetShopMenuButtonActive() {
         // update shop button every time you move
         // update shop menu visibility
-        if (map.tiles[gameManager.GetCharacterClass().currentX, gameManager.GetCharacterClass().currentY] == 7 &&
+        if (map.tiles[gameManager.GetCharacterClass().currentX, gameManager.GetCharacterClass().currentY] == map.shopType &&
             !gameManager.shopMenuEnabled &&
             !gameManager.pauseMenuEnabled) {
             // set button to active if shop menu isn't open and player is on shop tile

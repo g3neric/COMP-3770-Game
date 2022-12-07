@@ -14,42 +14,62 @@ public class SoundManager : MonoBehaviour {
 	public AudioClip battleMusic;
 	public AudioClip sometimesMusic;
 
-	[HideInInspector] public bool soundFXMuted = false;
-	[HideInInspector] public bool musicMuted = false;
+	public bool soundFXMuted = false;
+	public bool musicMuted = false;
 
 	[HideInInspector] private AudioSource aS;
 
-	void Start() {
+
+	void Awake() {
 		// Make this game object persistant throughout scenes
 		aS = GetComponent<AudioSource>();
+
 		DontDestroyOnLoad(gameObject);
+
 	}
 
     public void Update() {
 		aS.mute = musicMuted;
     }
 
-    public void PlayMainMenuMusic() {
-		aS.clip = messiSong;
-		aS.Play();
+	public void ToggleMuteMusic() {
+		if (musicMuted) {
+			musicMuted = false;
+			PlayGameMusic();
+		} else if (!musicMuted) {
+			PauseMusic();
+			musicMuted = true;
+			aS.clip = null;
+		}
     }
+
+    public void PlayMainMenuMusic() {
+		PauseMusic();
+		if (!musicMuted) {
+			PauseMusic();
+			aS.clip = messiSong;
+			aS.Play();
+		}
+    }
+
+	public void PlayGameMusic() {	
+		if (!musicMuted) {
+			int ran = Random.Range(1, 101);
+			if (ran <= 35) {
+				aS.clip = sometimesMusic;
+			} else {
+				aS.clip = battleMusic;
+			}
+			aS.Play();
+		}
+	}
 
 	public void PlayButtonClick() {
 		aS.PlayOneShot(buttonClick);
     }
 
-	public void PlayGameMusic() {
-		int ran = Random.Range(1, 101);
-		if (ran <= 10) {
-			aS.clip = sometimesMusic;
-        } else {
-			aS.clip = battleMusic;
-        }
-		aS.Play();
-    }
-
 	public void PauseMusic() {
-		aS.Pause();
+		aS.Stop();
     }
 
 	public void PlayGunshot(string name) {

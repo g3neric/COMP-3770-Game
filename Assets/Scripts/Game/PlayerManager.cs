@@ -27,7 +27,7 @@ public class PlayerManager : MonoBehaviour {
 		transform.position = Vector3.Lerp(transform.position, 
 										  TileMap.TileCoordToWorldCoord(gameManager.GetCharacterClass().currentX, 
 																		gameManager.GetCharacterClass().currentY,
-																		0.125f), 
+																		0f), 
 										   10f * Time.fixedDeltaTime);
 		// idk what im doing tbh
 	}
@@ -46,7 +46,7 @@ public class PlayerManager : MonoBehaviour {
 		// instantiate reference to target
 		gameManager.GetCharacterClass().currentX = x;
 		gameManager.GetCharacterClass().currentY = y;
-		transform.position = TileMap.TileCoordToWorldCoord(x, y, 0.125f);
+		transform.position = TileMap.TileCoordToWorldCoord(x, y, 0f);
 
 		// create the lists
 		createdMovementOutlines = new List<GameObject>();
@@ -148,12 +148,6 @@ public class PlayerManager : MonoBehaviour {
 		map.tilesObjects[currentPath[0].x, currentPath[0].y].GetComponent<ClickableTile>().currentCharacterOnTile = null;
 		// set next tile's current character to us
 		map.tilesObjects[currentPath[1].x, currentPath[1].y].GetComponent<ClickableTile>().currentCharacterOnTile = gameObject;
-
-		// Teleport us to our correct "current" position, in case we
-		// haven't finished the animation yet.
-		transform.position = TileMap.TileCoordToWorldCoord(gameManager.GetCharacterClass().currentX,
-													       gameManager.GetCharacterClass().currentY, 
-														   0.125f);
 
 		// Move us to the next tile in the sequence
 		gameManager.GetCharacterClass().currentX = currentPath[1].x;

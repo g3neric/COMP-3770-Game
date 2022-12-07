@@ -1669,14 +1669,6 @@ MonoBehaviour:
   tileMapControllerObject: {fileID: 1081531526}
   map: {fileID: 0}
   playerManager: {fileID: 0}
-  enemyPrefabs:
-  - {fileID: 919132149155446097, guid: ad99d0fbcb5a45c458009e4c45b8c4f4, type: 3}
-  - {fileID: 919132149155446097, guid: 367f341d2c6f90f4981ef1a1f39e3823, type: 3}
-  - {fileID: 9214890647027803876, guid: b31f6596a0be836459fa193cbb5e0316, type: 3}
-  - {fileID: 9214890647027803876, guid: b31f6596a0be836459fa193cbb5e0316, type: 3}
-  - {fileID: 9214890647027803876, guid: b31f6596a0be836459fa193cbb5e0316, type: 3}
-  - {fileID: 919132149155446097, guid: f928683c9575adb40ada9b3fb4329444, type: 3}
-  - {fileID: 9214890647027803876, guid: b31f6596a0be836459fa193cbb5e0316, type: 3}
   enemyGameObjects: []
   enemyList: []
   spottedEnemies: 
@@ -5405,29 +5397,35 @@ MonoBehaviour:
   shoreVariation: 1.5
   biomeSize: 5
   oceanSize: 15
-  numOfRandomlyGeneratedTiles: 4
+  numOfRandomlyGeneratedTiles: 5
   tileTypes:
   - name: TileSwamp
     tilePrefab: {fileID: 1561500678141819050, guid: f7e4c28b14f1e7e479bd6efff93fe237, type: 3}
-    frequency: 15
+    frequency: 0
     isWalkable: 1
     blocksVision: 0
     movementCost: 3
   - name: TileGrass
     tilePrefab: {fileID: 1561500678141819050, guid: 5bfcc5ff93c6bae40871ffb50a85224b, type: 3}
-    frequency: 30
+    frequency: 0
+    isWalkable: 1
+    blocksVision: 0
+    movementCost: 2
+  - name: TileDesert
+    tilePrefab: {fileID: 1561500678141819050, guid: 604399de34c559f488bfbee31598979d, type: 3}
+    frequency: 0
     isWalkable: 1
     blocksVision: 0
     movementCost: 2
   - name: TileHill
     tilePrefab: {fileID: 1561500678141819050, guid: 450872f303fb93542a63d99f2d92f2e1, type: 3}
-    frequency: 25
+    frequency: 0
     isWalkable: 1
     blocksVision: 0
     movementCost: 4
   - name: TileMountain
     tilePrefab: {fileID: 1561500678141819050, guid: 4286be4e03f01cb4d87ed39307b7ba42, type: 3}
-    frequency: 30
+    frequency: 0
     isWalkable: 0
     blocksVision: 1
     movementCost: 0
@@ -5444,7 +5442,7 @@ MonoBehaviour:
     blocksVision: 0
     movementCost: 0
   - name: TileRoad
-    tilePrefab: {fileID: 1561500678141819050, guid: e247765d5302ab646af4a26655174545, type: 3}
+    tilePrefab: {fileID: 1561500678141819050, guid: 5aa1447f5c7a7a441998da091c1fce15, type: 3}
     frequency: 0
     isWalkable: 1
     blocksVision: 0
@@ -5455,6 +5453,15 @@ MonoBehaviour:
     isWalkable: 1
     blocksVision: 0
     movementCost: 2
+  swampType: -1
+  grassType: -1
+  desertType: -1
+  hillType: -1
+  mountainType: -1
+  sandType: -1
+  waterType: -1
+  roadType: -1
+  shopType: -1
 --- !u!4 &1081531528
 Transform:
   m_ObjectHideFlags: 0
@@ -8061,6 +8068,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1579127195}
   m_CullTransparentMesh: 1
+--- !u!1 &1619914898
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1619914899}
+  m_Layer: 0
+  m_Name: EnemyContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1619914899
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1619914898}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 82.981224, y: -15.449961, z: 102.904236}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 15
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1646162385
 GameObject:
   m_ObjectHideFlags: 0

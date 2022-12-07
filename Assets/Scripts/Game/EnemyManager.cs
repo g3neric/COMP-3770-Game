@@ -15,9 +15,6 @@ public class EnemyManager : MonoBehaviour {
     [HideInInspector] public TileMap map;
     [HideInInspector] public PlayerManager playerManager;
 
-    // enemy prefabs
-    public GameObject[] enemyPrefabs = new GameObject[1]; // 1 for now
-
     // list of enemy game objects
     [HideInInspector] public List<GameObject> enemyGameObjects = new List<GameObject>(); // up to maxEnemyCount
 
@@ -149,10 +146,10 @@ public class EnemyManager : MonoBehaviour {
                     int randomClass = Random.Range(0, 7);
                     switch(randomClass) {
                         case 0:
-                            enemyCharacter = new Engineer();
+                            enemyCharacter = new Grunt();
                             break;
                         case 1:
-                            enemyCharacter = new Grunt();
+                            enemyCharacter = new Engineer();
                             break;
                         case 2:
                             enemyCharacter = new Joker();
@@ -176,8 +173,11 @@ public class EnemyManager : MonoBehaviour {
 
                     // spawn enemy at (x, y)
                     // instantiate enemy
-                    GameObject enemyObject = Instantiate(enemyPrefabs[randomClass], TileMap.TileCoordToWorldCoord(x, y, 0.125f), Quaternion.identity);
-
+                    GameObject enemyObject = Instantiate(gameManager.assetHandler.classPrefabs[randomClass], 
+                                                         TileMap.TileCoordToWorldCoord(x, y, 0f), 
+                                                         Quaternion.identity,
+                                                         GameObject.Find("EnemyContainer").transform);
+                    enemyObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
                     // set reference to enemy in the tile its on
                     map.tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile = enemyObject;
 
@@ -348,7 +348,7 @@ public class EnemyManager : MonoBehaviour {
         enemy.currentX = enemy.currentPath[1].x;
         enemy.currentY = enemy.currentPath[1].y;
         // teleport enemy object to end position
-        enemyObject.transform.position = TileMap.TileCoordToWorldCoord(enemy.currentX, enemy.currentY, 0.125f);
+        enemyObject.transform.position = TileMap.TileCoordToWorldCoord(enemy.currentX, enemy.currentY, 0f);
 
         // Remove the old current tile from the pathfinding list
         enemy.currentPath.RemoveAt(0);

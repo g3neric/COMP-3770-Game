@@ -20,12 +20,8 @@ public class SoundManager : MonoBehaviour {
 	[HideInInspector] private AudioSource aS;
 
 
-	void Awake() {
-		// Make this game object persistant throughout scenes
+	public void Initialize() {
 		aS = GetComponent<AudioSource>();
-
-		DontDestroyOnLoad(gameObject);
-
 	}
 
     public void Update() {

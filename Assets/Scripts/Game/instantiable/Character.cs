@@ -24,6 +24,9 @@ public class Character {
     public int AP;
     public int maxAP;
 
+    // accuracy
+    public float accuracy; // percentage to hit
+
     // other base stats
     public int viewRange; // for fog of war
     public float luckMultiplier; // used by joker class
@@ -101,6 +104,7 @@ public class Character {
                       viewRange + " tiles\n" +
                       (GameManager.critChance * luckMultiplier) + "% per shot\n" +
                       (GameManager.epicCritChance * luckMultiplier) + "% per shot\n" +
+                      accuracy.ToString("F2") + "%\n" +
                       currentItems[0].name;
         if (currentItems.Count > 1) {
             text = text + ", " + currentItems[1].name;
@@ -123,6 +127,7 @@ public class Grunt : Character {
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
+        accuracy = 90f;
         currentItems.Add(new AssaultRifle());
         currentItems.Add(new Pistol());
     }
@@ -138,6 +143,7 @@ public class Engineer : Character {
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
+        accuracy = 80f;
         currentItems.Add(new Pistol());
 
     }
@@ -153,6 +159,7 @@ public class Joker : Character {
         luckMultiplier = 3f;
         HP = maxHP;
         AP = maxAP;
+        accuracy = 60f;
         currentItems.Add(new Pistol());
     }
 }
@@ -168,6 +175,7 @@ public class Scout : Character {
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
+        accuracy = 90f;
         currentItems.Add(new Pistol());
     }
 }
@@ -182,6 +190,7 @@ public class Sharpshooter : Character {
         luckMultiplier = .75f;
         HP = maxHP;
         AP = maxAP;
+        accuracy = 95f;
         currentItems.Add(new SniperRifle());
         currentItems.Add(new Pistol());
     }
@@ -197,6 +206,7 @@ public class Surgeon : Character {
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
+        accuracy = 80f;
         currentItems.Add(new Pistol());
     }
 }
@@ -211,6 +221,7 @@ public class Tank : Character {
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
+        accuracy = 85f;
         currentItems.Add(new AssaultRifle());
         currentItems.Add(new Pistol());
     }

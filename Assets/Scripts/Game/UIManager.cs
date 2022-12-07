@@ -147,7 +147,7 @@ public class UIManager : MonoBehaviour {
             TogglePauseMenu();
         }
 
-        if (gameManager != null && !gameManager.pauseMenuEnabled && !gameManager.shopMenuEnabled) {
+        if (gameManager != null && !gameManager.pauseMenuEnabled) {
             // update text on the screen
             // HP bar
             HPBar.maxValue = gameManager.GetCharacterClass().maxHP;
@@ -338,7 +338,6 @@ public class UIManager : MonoBehaviour {
                     break;
                 // open settings panel
                 case PauseMenuState.Settings:
-                    muteMusicToggle.isOn = gameManager.soundManager.musicMuted;
                     settingsMenu.SetActive(true);
                     break;
                 // return to pause menu

@@ -36,9 +36,4 @@ public class AssetHandler : MonoBehaviour {
     [Space]
     [Header("Particle Effects")]
     public GameObject fireEffectsPrefab;
-
-    void Awake() {
-        DontDestroyOnLoad(gameObject);
-
-    }
 }

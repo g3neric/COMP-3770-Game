@@ -120,7 +120,7 @@ public class HermesBoots : ShopItem {
         this.quantity = quantity;
         this.shopItemObject = shopItemObject;
         name = "Hermes Boots";
-        description = "Increases max AP by 1.";
+        description = "Increases max AP by 1. Gain 1 AP immediately.";
         goldCost = Random.Range(35, 55);
     }
     public override bool Purchase(Character playerChar) {
@@ -140,7 +140,7 @@ public class ArmourPiercingRounds : ShopItem {
         this.quantity = quantity;
         this.shopItemObject = shopItemObject;
         name = "Armour Piercing Rounds";
-        description = "Increases base damage on all weapons at the time of purchase by 5.";
+        description = "Increases base damage on all weapons by 5.";
         goldCost = Random.Range(18, 25);
     }
 
@@ -187,14 +187,14 @@ public class DiamondShield : ShopItem {
         this.quantity = quantity;
         this.shopItemObject = shopItemObject;
         name = "Diamond Shield";
-        description = "Increases max HP by 25.";
+        description = "Increases max HP by 10. Regen 10 HP immediately.";
         goldCost = Random.Range(16, 28);
     }
 
     public override bool Purchase(Character playerChar) {
         if (PurchaseCheck(playerChar)) {
-            playerChar.maxHP += 25;
-            playerChar.HP += 25;
+            playerChar.maxHP += 10;
+            playerChar.HP += 10;
             return true;
         } else {
             return false;
@@ -208,7 +208,7 @@ public class IncendiaryRounds : ShopItem {
         this.quantity = quantity;
         this.shopItemObject = shopItemObject;
         name = "Incendiary Rounds";
-        description = "When you hit an enemy, set them on fire. Fire deals 10 damage/turn for 5 turns";
+        description = "When you hit an enemy, set them on fire. Fire deals 10 damage/turn.";
         goldCost = Random.Range(17, 28);
     }
 
@@ -238,6 +238,32 @@ public class LuckyCharm : ShopItem {
             playerChar.luckMultiplier *= 1.5f;
             return true;
         } else {
+            return false;
+        }
+    }
+}
+
+[SerializeField]
+public class BionicArm : ShopItem
+{
+    public BionicArm(int quantity, GameObject shopItemObject)
+    {
+        this.quantity = quantity;
+        this.shopItemObject = shopItemObject;
+        name = "Bionic Arm";
+        description = "Increase base accuracy to 100%.";
+        goldCost = Random.Range(30, 40);
+    }
+
+    public override bool Purchase(Character playerChar)
+    {
+        if (PurchaseCheck(playerChar))
+        {
+            playerChar.accuracy = 100f;
+            return true;
+        }
+        else
+        {
             return false;
         }
     }

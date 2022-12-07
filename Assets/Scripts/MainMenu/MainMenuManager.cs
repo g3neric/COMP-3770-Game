@@ -47,6 +47,8 @@ public class MainMenuManager : MonoBehaviour {
         controlsMenu.SetActive(false);
         statsMenu.SetActive(false);
 
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+
         // initiate main menu button functions
         mainMenuButtons[0].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.NewGame); });
         mainMenuButtons[0].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });

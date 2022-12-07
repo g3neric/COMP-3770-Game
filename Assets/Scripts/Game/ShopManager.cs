@@ -70,7 +70,7 @@ public class ShopManager : MonoBehaviour {
     }
 
     public ShopItem RandomShopItem(int quantity, GameObject newShopItemObject) {
-        int ranNum = Random.Range(1, 8);
+        int ranNum = Random.Range(1, 9);
         switch (ranNum) {
             case 1:
                 return new Binoculars(quantity, newShopItemObject);
@@ -86,6 +86,8 @@ public class ShopManager : MonoBehaviour {
                 return new IncendiaryRounds(quantity, newShopItemObject);
             case 7:
                 return new LuckyCharm(quantity, newShopItemObject);
+            case 8:
+                return new BionicArm(quantity, newShopItemObject);
             default:
                 print("error populating shop");
                 return null;

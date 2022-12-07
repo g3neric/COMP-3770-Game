@@ -63,14 +63,24 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector] public bool shopMenuEnabled = false;
 
 	void Awake() {
-		// Make this game object persistant throughout scenes
-
-		DontDestroyOnLoad(gameObject);
-		
 		cs = ControlState.Deselected;
+
+		// Make this game object persistant throughout scenes
+		DontDestroyOnLoad(gameObject);
+
+		// initialize asset handler
 		assetHandler = GameObject.Find("AssetHandler").GetComponent<AssetHandler>();
+		DontDestroyOnLoad(assetHandler.gameObject);
+
+		// initialize sound manager
 		soundManager = GameObject.Find("SoundManager").GetComponent<SoundManager>();
+		DontDestroyOnLoad(soundManager.gameObject);
+		soundManager.Initialize();
+
 		soundManager.PlayMainMenuMusic();
+		SceneManager.LoadScene("MainMenu");
+
+		
 	}
 
 	public void StartNewGame() {
@@ -134,6 +144,10 @@ public class GameManager : MonoBehaviour {
 		}
 		enemyManager.UpdateEnemiesVisibility();
 
+		// reset pause bools
+		pauseMenuEnabled = false;
+		shopMenuEnabled = false;
+
 		// create camera controller
 		camController = GameObject.Find("Main Camera").AddComponent<CameraController>();
 		camController.gameManager = this;
@@ -141,7 +155,7 @@ public class GameManager : MonoBehaviour {
 		camController.CamTargetSpeed = 7;
 		camController.CamTargetRadius = 3.7f;
 		camController.ObjectCamTargetMaxSpeed = 4;
-		camController.CamRotationSpeed = 40;
+		camController.CamRotationSpeed = 20;
 		camController.zoomSpeed = 0.2f;
 		camController.camTargetDrag = 5;
 		camController.maxZoom = 5;
@@ -327,61 +341,82 @@ public class GameManager : MonoBehaviour {
 			return;
 		}
 
-		// base message
-		string message = "";
+		// roll for accuracy
+		int accuracyRoll = Random.Range(0, 100);
+		// calculate distance between player and enemy
+		float shotDistance = TileMap.DistanceBetweenTiles(characterClass.currentX,
+														  characterClass.currentY,
+														  enemyCharacter.currentX,
+														  enemyCharacter.currentY);
+		// lower character's accuracy the further away the enemy is
+		if (accuracyRoll < characterClass.accuracy - (shotDistance * 2)) {
+			// hit
+			// base message
+			string message = "";
 
-		// crit?
-		// 4% chance for crazy crit, 25% for regular crit
-		// joker is 16% for crazy crit, 75% for regular crit
-		int critChance = Random.Range(0, 100);
-		if (critChance < epicCritChance * characterClass.luckMultiplier) {
-			damageAmount += Random.Range(10, 30);
-			message = "Epic crit! ";
-        } else if (critChance < critChance * characterClass.luckMultiplier) {
-			damageAmount += Random.Range(1, 10);
-			message = "Crit! ";
-		}
-		message = message + "Dealt " + damageAmount + " damage to enemy " + enemyManager.enemyList[enemyIndex].className;
-		// deal damage
-		enemyCharacter.TakeDamage(damageAmount);
-
-		// send damage message to log
-		uiManager.SendMessageToLog(message);
-
-		// check if player has incendiary rounds
-		if (characterClass.incendiaryRounds) {
-			if (!enemyCharacter.onFire) {
-				uiManager.SendMessageToLog("Set enemy " + enemyCharacter.className + " on fire!");
+			// crit?
+			// 4% chance for crazy crit, 25% for regular crit
+			// joker is 16% for crazy crit, 75% for regular crit
+			int critChance = Random.Range(0, 100);
+			if (critChance < epicCritChance * characterClass.luckMultiplier)
+			{
+				damageAmount += Random.Range(10, 30);
+				message = "Epic crit! ";
 			}
-			enemyCharacter.SetOnFire();
-			Instantiate(assetHandler.fireEffectsPrefab,
-						targetEnemyObject.transform.position,
-						Quaternion.identity,
-						targetEnemyObject.transform);
-		}
-
-		if (enemyCharacter.dead) {
-			// clean up enemy - delete it, reset its stats, etc.
-			enemyManager.CleanUpEnemy(enemyManager.enemyList.IndexOf(enemyCharacter));
-
-			// we killed the enemy pog
-			characterClass.killCount++;
-			int goldAmount = 0;
-
-			// determine amount of gold to reward upon death
-			switch (difficulty) {
-				case DifficultyState.Ez:
-					goldAmount = Random.Range(3, 10);
-					break;
-				case DifficultyState.Mid:
-					goldAmount = Random.Range(5, 12);
-					break;
-				case DifficultyState.Impossible:
-					goldAmount = Random.Range(7, 14);
-					break;
+			else if (critChance < critChance * characterClass.luckMultiplier)
+			{
+				damageAmount += Random.Range(1, 10);
+				message = "Crit! ";
 			}
-			uiManager.SendMessageToLog("Gained " + goldAmount + " gold");
-			characterClass.gold += goldAmount;
+			message = message + "Dealt " + damageAmount + " damage to enemy " + enemyManager.enemyList[enemyIndex].className;
+			// deal damage
+			enemyCharacter.TakeDamage(damageAmount);
+
+			// send damage message to log
+			uiManager.SendMessageToLog(message);
+
+			// check if player has incendiary rounds
+			if (characterClass.incendiaryRounds)
+			{
+				if (!enemyCharacter.onFire)
+				{
+					uiManager.SendMessageToLog("Set enemy " + enemyCharacter.className + " on fire!");
+				}
+				enemyCharacter.SetOnFire();
+				Instantiate(assetHandler.fireEffectsPrefab,
+							targetEnemyObject.transform.position,
+							Quaternion.identity,
+							targetEnemyObject.transform);
+			}
+
+			if (enemyCharacter.dead)
+			{
+				// clean up enemy - delete it, reset its stats, etc.
+				enemyManager.CleanUpEnemy(enemyManager.enemyList.IndexOf(enemyCharacter));
+
+				// we killed the enemy pog
+				characterClass.killCount++;
+				int goldAmount = 0;
+
+				// determine amount of gold to reward upon death
+				switch (difficulty)
+				{
+					case DifficultyState.Ez:
+						goldAmount = Random.Range(3, 10);
+						break;
+					case DifficultyState.Mid:
+						goldAmount = Random.Range(5, 12);
+						break;
+					case DifficultyState.Impossible:
+						goldAmount = Random.Range(7, 14);
+						break;
+				}
+				uiManager.SendMessageToLog("Gained " + goldAmount + " gold");
+				characterClass.gold += goldAmount;
+			}
+		} else {
+			// miss
+			uiManager.SendMessageToLog("Shot missed enemy at range " + shotDistance.ToString("F2") + " tiles");
 		}
 
 		// update possible movements because you use AP when you attack
@@ -399,28 +434,46 @@ public class GameManager : MonoBehaviour {
 			// subtract ap cost of current weapon
 			enemyCharacter.AP -= enemyCharacter.currentItems[itemIndex].APcost;
 
-			string message = "";
+			int accuracyRoll = Random.Range(0, 100);
+			// calculate distance between player and enemy
+			float shotDistance = TileMap.DistanceBetweenTiles(characterClass.currentX,
+															  characterClass.currentY,
+															  enemyCharacter.currentX,
+															  enemyCharacter.currentY);
+			if (accuracyRoll < (enemyCharacter.accuracy - shotDistance * 2)) {
+				// hit
+				string message = "";
 
-			// crit?
-			// 4% chance for crazy crit, 25% for regular crit
-			// joker is 16% for crazy crit, 75% for regular crit
-			int critChance = Random.Range(0, 100);
-			if (critChance < epicCritChance * enemyCharacter.luckMultiplier) {
-				damageAmount += Random.Range(10, 30);
-				message = "Epic crit! ";
-			} else if (critChance < critChance * enemyCharacter.luckMultiplier) {
-				damageAmount += Random.Range(1, 10);
-				message = "Crit! ";
+				// crit?
+				// 4% chance for crazy crit, 25% for regular crit
+				// joker is 16% for crazy crit, 75% for regular crit
+				int critChance = Random.Range(0, 100);
+				if (critChance < epicCritChance * enemyCharacter.luckMultiplier)
+				{
+					damageAmount += Random.Range(10, 30);
+					message = "Epic crit! ";
+				}
+				else if (critChance < critChance * enemyCharacter.luckMultiplier)
+				{
+					damageAmount += Random.Range(1, 10);
+					message = "Crit! ";
+				}
+				message = message + "Enemy " + enemyCharacter.className + " has dealt " + damageAmount + " damage to you";
+				// send message to log
+				uiManager.SendMessageToLog(message);
+
+				// deal damage
+				characterClass.TakeDamage(damageAmount);
+				if (characterClass.dead) {
+					uiManager.SendMessageToLog("You have died");
+					uiManager.GameOverMenu(damageAmount, enemyCharacter);
+				}
+
+				
+			} else {
+				// miss
+				uiManager.SendMessageToLog("Enemy " + enemyCharacter.className + " missed shot at range " + shotDistance.ToString("F2") + " tiles");
 			}
-			message = message + "Enemy " + enemyCharacter.className + " has dealt " + damageAmount + " damage to you";
-			// deal damage
-			characterClass.TakeDamage(damageAmount);
-			if (characterClass.dead) {
-				uiManager.GameOverMenu(damageAmount, enemyCharacter);
-            }
-
-			// send message to log
-			uiManager.SendMessageToLog(message);
 		}
 	}
 

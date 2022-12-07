@@ -11,7 +11,6 @@ public class ShopManager : MonoBehaviour {
     public GameObject shopPanel;
     public GameObject shopItemPrefab;
 
-
     // find shop at (x, y)
     public Shop FindShopAtPosition(int x, int y) {
         if (shopList.Count > 0) {

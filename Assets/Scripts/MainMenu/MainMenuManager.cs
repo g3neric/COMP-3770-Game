@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 using TMPro;
 
 
-public enum MainMenuState { Default, NewGame, LoadGame, Controls, Settings };
+public enum MainMenuState { Default, NewGame, Controls, Stats };
 
 public class MainMenuManager : MonoBehaviour {
     public GameManager gameManager;
@@ -14,20 +14,18 @@ public class MainMenuManager : MonoBehaviour {
     [HideInInspector] public MainMenuState currentMMState = MainMenuState.Default;
 
     // mainMenuButtons[0] = new game
-    // mainMenuButtons[1] = load game
-    // mainMenuButtons[2] = controls
-    // mainMenuButtons[3] = stats
-    // mainMenuButtons[4] = exit game
-    public Button[] mainMenuButtons = new Button[5];
+    // mainMenuButtons[1] = controls
+    // mainMenuButtons[2] = stats
+    // mainMenuButtons[3] = exit game
+    public Button[] mainMenuButtons = new Button[4];
 
-    public Button[] returnToMainMenuButtons = new Button[4];
+    public Button[] returnToMainMenuButtons = new Button[3];
 
     public Button startNewGameButton;
 
     // all the tabs - these are canvases
     public GameObject mainMenu;
     public GameObject newGameMenu;
-    public GameObject loadGameMenu;
     public GameObject controlsMenu;
     public GameObject statsMenu;
 
@@ -37,27 +35,28 @@ public class MainMenuManager : MonoBehaviour {
     // dropDowns[3] = map size dropdown
     public GameObject[] dropDowns = new GameObject[4];
 
+    public Sprite[] classImages = new Sprite[7];
+    public GameObject classImageObject;
+
     public TextMeshProUGUI classStatsText;
 
     private void Start() {
         // initiate main menu
         mainMenu.SetActive(true);
         newGameMenu.SetActive(false);
-        loadGameMenu.SetActive(false);
         controlsMenu.SetActive(false);
         statsMenu.SetActive(false);
 
         // initiate main menu button functions
         mainMenuButtons[0].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.NewGame); });
-        mainMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.LoadGame); });
-        mainMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Controls); });
-        mainMenuButtons[3].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Settings); });
+        mainMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Controls); });
+        mainMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Stats); });
 
         returnToMainMenuButtons[0].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Default); });
         returnToMainMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Default); });
         returnToMainMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Default); });
-        returnToMainMenuButtons[3].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Default); });
     }
+
 
     public void SwitchMainMenuPanel(MainMenuState newState) {
         // make sure pause menu is enabled before doing anything
@@ -69,19 +68,15 @@ public class MainMenuManager : MonoBehaviour {
                 // initiate character stats text
                 UpdateCharacterStats();
                 break;
-            case MainMenuState.LoadGame:
-                loadGameMenu.SetActive(true);
-                break;
             case MainMenuState.Controls:
                 controlsMenu.SetActive(true);
                 break;
-            case MainMenuState.Settings:
+            case MainMenuState.Stats:
                 statsMenu.SetActive(true);
                 break;
             default:
                 mainMenu.SetActive(true);
                 newGameMenu.SetActive(false);
-                loadGameMenu.SetActive(false);
                 controlsMenu.SetActive(false);
                 statsMenu.SetActive(false);
                 break;
@@ -147,20 +142,12 @@ public class MainMenuManager : MonoBehaviour {
 
     public void UpdateCharacterStats() {
         Character newChar = GameManager.ClassIntToClass(dropDowns[0].GetComponent<TMP_Dropdown>().value);
-        string text = newChar.className + " stats:\n\n" +
-                      "Max AP: " + newChar.maxAP + " \n" +
-                      "Max HP: " + newChar.maxHP + " \n" +
-                      "Heal Rate: " + newChar.healRate + " HP per turn\n" +
-                      "View Range: " + newChar.viewRange + " tiles\n" +
-                      "Crit chance: " + (GameManager.critChance * newChar.luckMultiplier) + "% per shot\n" +
-                      "Epic crit chance: " + (GameManager.epicCritChance * newChar.luckMultiplier) + "% per shot\n" +
-                      "Starting Items: " + newChar.currentItems[0].name;
-        if (newChar.currentItems.Count > 1) {
-            text = text + ", " + newChar.currentItems[1].name;
-        }
-        classStatsText.text = text;
-    }
+        classStatsText.text = newChar.GetStringCharacterStats();
 
+        // update images
+        classImageObject.GetComponent<Image>().sprite = classImages[dropDowns[0].GetComponent<TMP_Dropdown>().value];
+    }
+    // grunt, engie, joker, scout, sharpshooter, surgeon, tank
     // exit the game completely
     public void CloseGame() {
 #if UNITY_EDITOR

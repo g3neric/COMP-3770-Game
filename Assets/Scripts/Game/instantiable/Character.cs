@@ -102,6 +102,24 @@ public class Character {
     public void Death() {
         dead = true;
     }
+
+    public string GetStringCharacterStats() {
+        string text = maxAP + " \n" +
+                      maxHP + " \n" +
+                      healRate + " HP per turn\n" +
+                      viewRange + " tiles\n" +
+                      (GameManager.critChance * luckMultiplier) + "% per shot\n" +
+                      (GameManager.epicCritChance * luckMultiplier) + "% per shot\n" +
+                      currentItems[0].name;
+        if (currentItems.Count > 1) {
+            text = text + ", " + currentItems[1].name;
+        }
+        return text;
+
+
+        
+        
+    }
 }
 [System.Serializable]
 public class Grunt : Character {

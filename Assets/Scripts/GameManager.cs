@@ -170,25 +170,34 @@ public class GameManager : MonoBehaviour {
 		TileMap.DestroyOutlines(playerManager.createdRangeOutlines);
 		TileMap.DestroyOutlines(playerManager.createdMovementOutlines);
 		// check which state was clicked
-		
 		if (cs == newCS || newCS == ControlState.Deselected) {
 			// deselect control state
 			cs = ControlState.Deselected;
+			selectedUnit.GetComponent<Animator>().SetBool("idleRifle", false);
 		} else if (newCS == ControlState.Move) {
 			// switch to move state
 			cs = ControlState.Move;
+			selectedUnit.GetComponent<Animator>().SetBool("idleRifle", false);
+			// update outline
 			playerManager.DrawPossibleMovements();
 		} else if (newCS == ControlState.Item1) {
 			// switch to item 1
 			cs = ControlState.Item1;
+			// update animation
+			selectedUnit.GetComponent<Animator>().SetBool("idleRifle", true);
+			// update selected item
 			characterClass.selectedItemIndex = 0;
+			// update outlines
 			playerManager.DrawTilesInRange();
 			playerManager.DrawPossibleMovements();
-
 		} else if (newCS == ControlState.Item2) {
 			// switch to item 2
 			cs = ControlState.Item2;
+			// update animation
+			selectedUnit.GetComponent<Animator>().SetBool("idleRifle", true);
+			// update selected item
 			characterClass.selectedItemIndex = 1;
+			// update outlines
 			playerManager.DrawTilesInRange();
 			playerManager.DrawPossibleMovements();
 		}
@@ -221,8 +230,9 @@ public class GameManager : MonoBehaviour {
     public void CreatePlayerCharacter() {
 		// Create the player's unit model
 		selectedUnit = Instantiate(assetHandler.classPrefabs[characterClassInt], new Vector3(0f, 0f, 0f), Quaternion.identity);
-		selectedUnit.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+		selectedUnit.transform.localScale = new Vector3(0.45f, 0.45f, 0.45f);
 		selectedUnit.tag = "Player";
+		selectedUnit.GetComponent<Animator>().SetBool("idleRifle", false);
 
 		// Give the player's character a pathfinding script
 		playerManager = selectedUnit.AddComponent<PlayerManager>();
@@ -389,6 +399,9 @@ public class GameManager : MonoBehaviour {
 							targetEnemyObject.transform);
 			}
 
+			// update animation
+			selectedUnit.GetComponent<Animator>().SetTrigger("Shoot");
+
 			if (enemyCharacter.dead)
 			{
 				// clean up enemy - delete it, reset its stats, etc.
@@ -480,6 +493,7 @@ public class GameManager : MonoBehaviour {
 	void LateUpdate() {
 		// update cursor based on game state
 		if (cs == ControlState.Move) {
+			
 			// update cursor to move cursor
 			Cursor.SetCursor(assetHandler.moveCursorTexture, new Vector2(assetHandler.moveCursorTexture.width / 2, assetHandler.moveCursorTexture.height / 2), CursorMode.Auto);
 		} else if (cs == ControlState.Item1 || cs == ControlState.Item2) {

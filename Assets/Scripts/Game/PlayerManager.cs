@@ -24,11 +24,26 @@ public class PlayerManager : MonoBehaviour {
 	private AssetHandler assetHandler;
 
 	private void FixedUpdate() {
-		transform.position = Vector3.Lerp(transform.position, 
-										  TileMap.TileCoordToWorldCoord(gameManager.GetCharacterClass().currentX, 
+		// calculate new position
+		Vector3 oldPos = transform.position;
+		Vector3 newPos = Vector3.Lerp(transform.position, 
+										   TileMap.TileCoordToWorldCoord(gameManager.GetCharacterClass().currentX, 
 																		gameManager.GetCharacterClass().currentY,
 																		0f), 
-										   10f * Time.fixedDeltaTime);
+										   6f * Time.fixedDeltaTime);
+		// update position
+		transform.position = newPos;
+
+		// update animation bool
+		Vector3 desiredPos = new Vector3(gameManager.GetCharacterClass().currentX, 0, gameManager.GetCharacterClass().currentY);
+		if (Vector3.Distance(gameManager.selectedUnit.transform.position, desiredPos) > 0.0001f) {
+			// currently running
+			gameManager.selectedUnit.GetComponent<Animator>().SetBool("isMoving", true);
+			// update rotation
+			transform.rotation = Quaternion.LookRotation((newPos - oldPos).normalized);
+		} else {
+			gameManager.selectedUnit.GetComponent<Animator>().SetBool("isMoving", false);
+		}
 		// idk what im doing tbh
 	}
 

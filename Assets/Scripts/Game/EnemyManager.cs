@@ -177,10 +177,13 @@ public class EnemyManager : MonoBehaviour {
                                                          TileMap.TileCoordToWorldCoord(x, y, 0f), 
                                                          Quaternion.identity,
                                                          GameObject.Find("EnemyContainer").transform);
-                    enemyObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+                    // set scale
+                    enemyObject.transform.localScale = new Vector3(0.45f, 0.45f, 0.45f);
                     // set reference to enemy in the tile its on
                     map.tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile = enemyObject;
 
+                    // set animation
+                    enemyObject.GetComponent<Animator>().SetBool("idleRifle", true);
 
                     // update target variables
                     enemyCharacter.currentX = x;
@@ -347,8 +350,13 @@ public class EnemyManager : MonoBehaviour {
         // Move us to the next tile in the sequence
         enemy.currentX = enemy.currentPath[1].x;
         enemy.currentY = enemy.currentPath[1].y;
+
+        Vector3 oldPos = enemyObject.transform.position;
         // teleport enemy object to end position
         enemyObject.transform.position = TileMap.TileCoordToWorldCoord(enemy.currentX, enemy.currentY, 0f);
+
+        // update rotation
+        enemyObject.transform.rotation = Quaternion.LookRotation((enemyObject.transform.position - oldPos).normalized);
 
         // Remove the old current tile from the pathfinding list
         enemy.currentPath.RemoveAt(0);

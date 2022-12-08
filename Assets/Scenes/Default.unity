@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.37311915, g: 0.3807396, b: 0.35872662, a: 1}
+  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.3587274, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -364,13 +364,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   classPrefabs:
-  - {fileID: 356176522426160958, guid: 4f6df3e04b90ab14493f8820019083e6, type: 3}
-  - {fileID: 5855741025970613754, guid: b4b82fad65394ca43b88c9b2e74320da, type: 3}
-  - {fileID: 9214890647027803876, guid: b31f6596a0be836459fa193cbb5e0316, type: 3}
-  - {fileID: 8698143509705474845, guid: 3bffdb8f581091240b4956c9618f01b3, type: 3}
-  - {fileID: 9214890647027803876, guid: b31f6596a0be836459fa193cbb5e0316, type: 3}
-  - {fileID: 5656518312497855291, guid: d786757996c1d4f478c1eea3bf51434e, type: 3}
-  - {fileID: 9214890647027803876, guid: b31f6596a0be836459fa193cbb5e0316, type: 3}
+  - {fileID: 3677672046730385610, guid: c542f876720e038418ab4e7caef83662, type: 3}
+  - {fileID: 7513034889300019222, guid: db662b3cd85a8684498a4d6cddf4afd0, type: 3}
+  - {fileID: 7643286863256210315, guid: c9c464188c705294092710f5aa51dfa5, type: 3}
+  - {fileID: 7592397485052556439, guid: fabadf1d49b703f42b910198b74d4d86, type: 3}
+  - {fileID: 6376623719113929020, guid: d0fbf4378d1b6214d822578e5bb3a90b, type: 3}
+  - {fileID: 8713193540041864511, guid: b33cd33ca975d52408f1bd8d5c92916c, type: 3}
+  - {fileID: 7766229561631366374, guid: fb8d8597f6c060a4fb7fed398192fdc7, type: 3}
   linePrefab: {fileID: 1232140211224243061, guid: e134a70f78b489041913528af49ee671, type: 3}
   tileOutlinePrefab: {fileID: 2760457026279230676, guid: 32cb9ae5fcfb837419d4fd66843cdaac, type: 3}
   tileHoverOutlinePrefab: {fileID: 2760457026279230676, guid: 1f1bc39c245c084448960fa33aecc9d2, type: 3}

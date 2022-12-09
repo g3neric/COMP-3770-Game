@@ -55,7 +55,7 @@ public class CameraController : MonoBehaviour {
         if (snappedToUnit) {
             snappedToUnit = false;
         } else if (!snappedToUnit) {
-            ObjectCamTarget.transform.position = gameManager.selectedUnit.transform.position;
+            ObjectCamTarget.transform.position = gameManager.GetCharacterObject().transform.position;
             snappedToUnit = true;
         }
     }
@@ -86,7 +86,7 @@ public class CameraController : MonoBehaviour {
             }
 
             if (snappedToUnit) {
-                ObjectCamTarget.transform.position = gameManager.selectedUnit.transform.position;
+                ObjectCamTarget.transform.position = gameManager.GetCharacterObject().transform.position;
             } else {
                 // backward
                 if (Input.GetAxisRaw("Vertical") < -0.2f) {

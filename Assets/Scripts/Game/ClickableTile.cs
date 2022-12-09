@@ -22,7 +22,7 @@ public class ClickableTile : MonoBehaviour {
 
     // When mouse is released, calculate the tile being clicked
     void OnMouseUp() {
-		playerManager = gameManager.selectedUnit.GetComponent<PlayerManager>();
+		playerManager = gameManager.GetCharacterObject().GetComponent<PlayerManager>();
 		// check if UI object in the way
 		if (!EventSystem.current.IsPointerOverGameObject()) {
 			if (gameManager.cs == ControlState.Move) {
@@ -41,7 +41,7 @@ public class ClickableTile : MonoBehaviour {
 
 	// Move hover outline to current tile
     void OnMouseEnter() {
-		playerManager = gameManager.selectedUnit.GetComponent<PlayerManager>();
+		playerManager = gameManager.GetCharacterObject().GetComponent<PlayerManager>();
 		if (!EventSystem.current.IsPointerOverGameObject() && !completed) {
 			playerManager.tileHoverOutline.transform.position = transform.position + new Vector3(0, 0.012f, 0);
 			completed = true;
@@ -56,7 +56,7 @@ public class ClickableTile : MonoBehaviour {
 
 	// Banish hover outline to the void
     void OnMouseExit() {
-		playerManager = gameManager.selectedUnit.GetComponent<PlayerManager>();
+		playerManager = gameManager.GetCharacterObject().GetComponent<PlayerManager>();
 		if (!EventSystem.current.IsPointerOverGameObject()) {
 			completed = false;
 			playerManager.tileHoverOutline.transform.position = new Vector3(-100f, -100f, -100f);

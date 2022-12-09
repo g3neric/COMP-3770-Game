@@ -57,7 +57,7 @@ public class EnemyManager : MonoBehaviour {
         gameManager.uiManager.RemoveEnemyUIObject(enemyIndex);
 
         // send death message to log
-        gameManager.uiManager.SendMessageToLog("Killed enemy " + enemyCharacter.className + ".");
+        gameManager.SendMessageToLog("Killed enemy " + enemyCharacter.className + ".");
 
         // update possible movements when enemy dies because you can now move to where they were
         gameManager.playerManager.DrawPossibleMovements();
@@ -83,7 +83,7 @@ public class EnemyManager : MonoBehaviour {
                 // update health bar visibility
 
                 // send message to log that enemy has been spotted if it hasn't already been sent
-                if (!spottedEnemies.Contains(enemyIndex)) {
+                if (!spottedEnemies.Contains(enemyIndex) && !gameManager.GetCharacterClass().dead) {
                     gameManager.SendMessageToLog("Spotted enemy " + enemyList[enemyIndex].className + ".");
                     spottedEnemies.Add(enemyIndex);
                 }
@@ -177,6 +177,7 @@ public class EnemyManager : MonoBehaviour {
                                                          TileMap.TileCoordToWorldCoord(x, y, 0f), 
                                                          Quaternion.identity,
                                                          GameObject.Find("EnemyContainer").transform);
+                    enemyCharacter.characterObject = enemyObject;
                     // set scale
                     enemyObject.transform.localScale = new Vector3(0.45f, 0.45f, 0.45f);
                     // set reference to enemy in the tile its on

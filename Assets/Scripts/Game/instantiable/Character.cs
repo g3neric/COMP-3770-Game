@@ -10,7 +10,7 @@ using System.Collections.Generic;
 // inherited from this Character base class
 public class Character {
     // character model
-    public GameObject characterPrefab;
+    public GameObject characterObject;
 
     public string className;
 

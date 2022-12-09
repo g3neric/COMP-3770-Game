@@ -36,13 +36,13 @@ public class PlayerManager : MonoBehaviour {
 
 		// update animation bool
 		Vector3 desiredPos = new Vector3(gameManager.GetCharacterClass().currentX, 0, gameManager.GetCharacterClass().currentY);
-		if (Vector3.Distance(gameManager.selectedUnit.transform.position, desiredPos) > 0.0001f) {
+		if (Vector3.Distance(gameManager.GetCharacterObject().transform.position, desiredPos) > 0.75f) {
 			// currently running
-			gameManager.selectedUnit.GetComponent<Animator>().SetBool("isMoving", true);
+			gameManager.GetCharacterObject().GetComponent<Animator>().SetBool("isMoving", true);
 			// update rotation
 			transform.rotation = Quaternion.LookRotation((newPos - oldPos).normalized);
 		} else {
-			gameManager.selectedUnit.GetComponent<Animator>().SetBool("isMoving", false);
+			gameManager.GetCharacterObject().GetComponent<Animator>().SetBool("isMoving", false);
 		}
 		// idk what im doing tbh
 	}

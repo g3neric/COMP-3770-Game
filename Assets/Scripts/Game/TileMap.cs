@@ -292,6 +292,17 @@ public class TileMap : MonoBehaviour {
 					currentTile.transform.Rotate(0f, 90f * phase, 0f, Space.World);
 				}
 
+				// add some random variation to object heights
+				if (currentTile.transform.childCount > 0) {
+					foreach (Transform child in currentTile.transform) {
+						float ranYScaleVariation = Random.Range(0.8f, 1.4f);
+						child.transform.localScale = new Vector3(child.transform.localScale.x,
+																 child.transform.localScale.y * ranYScaleVariation,
+																 child.transform.localScale.z);
+					}
+				}
+				
+
 				// add script to tile
 				ClickableTile ct = currentTile.AddComponent<ClickableTile>();
 				ct.map = this;
@@ -680,7 +691,7 @@ public class TileMap : MonoBehaviour {
 
 				if (shortestPath != null && 
 					(tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile == null ||
-					tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile == gameManager.selectedUnit)) {
+					tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile == gameManager.GetCharacterObject())) {
 					// Put the current tile position in list
 					int[] temp = new int[2];
 					temp[0] = x;

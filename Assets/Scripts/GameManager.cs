@@ -29,9 +29,6 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector] public EnemyManager enemyManager;
 	[HideInInspector] public ShopManager shopManager;
 	[HideInInspector] public CameraController camController;
-	
-
-	public GameObject selectedUnit; // currently selected unit
 
 	[HideInInspector] public int turnCount = 1;
 
@@ -173,18 +170,18 @@ public class GameManager : MonoBehaviour {
 		if (cs == newCS || newCS == ControlState.Deselected) {
 			// deselect control state
 			cs = ControlState.Deselected;
-			selectedUnit.GetComponent<Animator>().SetBool("idleRifle", false);
+			GetCharacterObject().GetComponent<Animator>().SetBool("idleRifle", false);
 		} else if (newCS == ControlState.Move) {
 			// switch to move state
 			cs = ControlState.Move;
-			selectedUnit.GetComponent<Animator>().SetBool("idleRifle", false);
+			GetCharacterObject().GetComponent<Animator>().SetBool("idleRifle", false);
 			// update outline
 			playerManager.DrawPossibleMovements();
 		} else if (newCS == ControlState.Item1) {
 			// switch to item 1
 			cs = ControlState.Item1;
 			// update animation
-			selectedUnit.GetComponent<Animator>().SetBool("idleRifle", true);
+			GetCharacterObject().GetComponent<Animator>().SetBool("idleRifle", true);
 			// update selected item
 			characterClass.selectedItemIndex = 0;
 			// update outlines
@@ -194,7 +191,7 @@ public class GameManager : MonoBehaviour {
 			// switch to item 2
 			cs = ControlState.Item2;
 			// update animation
-			selectedUnit.GetComponent<Animator>().SetBool("idleRifle", true);
+			GetCharacterObject().GetComponent<Animator>().SetBool("idleRifle", true);
 			// update selected item
 			characterClass.selectedItemIndex = 1;
 			// update outlines
@@ -229,18 +226,18 @@ public class GameManager : MonoBehaviour {
     // I seperated this class for easy viewing
     public void CreatePlayerCharacter() {
 		// Create the player's unit model
-		selectedUnit = Instantiate(assetHandler.classPrefabs[characterClassInt], new Vector3(0f, 0f, 0f), Quaternion.identity);
-		selectedUnit.transform.localScale = new Vector3(0.45f, 0.45f, 0.45f);
-		selectedUnit.tag = "Player";
-		selectedUnit.GetComponent<Animator>().SetBool("idleRifle", false);
+		characterClass.characterObject = Instantiate(assetHandler.classPrefabs[characterClassInt], new Vector3(0f, 0f, 0f), Quaternion.identity);
+		GetCharacterObject().transform.localScale = new Vector3(0.45f, 0.45f, 0.45f);
+		GetCharacterObject().tag = "Player";
+		GetCharacterObject().GetComponent<Animator>().SetBool("idleRifle", false);
 
 		// Give the player's character a pathfinding script
-		playerManager = selectedUnit.AddComponent<PlayerManager>();
+		playerManager = GetCharacterObject().AddComponent<PlayerManager>();
 		playerManager.gameManager = this;
 		playerManager.map = tileMap;
 
 		// setup audio source
-		var audioSource = selectedUnit.AddComponent<AudioSource>();
+		var audioSource = GetCharacterObject().AddComponent<AudioSource>();
 		audioSource.loop = false;
 
 		// Start at middle of map and keep moving until we find a walkable spawn
@@ -276,12 +273,10 @@ public class GameManager : MonoBehaviour {
 			}
 			
 			characterClass.HP += extraRegenAmount;
-			uiManager.SendMessageToLog("Used extra AP to regen an extra " + extraRegenAmount + " HP");
+			SendMessageToLog("Used extra AP to regen an extra " + extraRegenAmount + " HP");
 		}
 
 		characterClass.FinishTurn(); // update character stats
-
-		
 
 		// enemy turns
 		enemyManager.ResolveAllEnemyTurns();
@@ -342,12 +337,12 @@ public class GameManager : MonoBehaviour {
 				characterClass.AP -= currentItem.APcost;
 			} else {
 				// not enough AP
-				uiManager.SendMessageToLog("Not enough AP to attack enemy");
+				SendMessageToLog("Not enough AP to attack enemy");
 				return;
 			}
 		} else {
 			// out of range
-			uiManager.SendMessageToLog("Enemy " + enemyCharacter.className + " out of attack range");
+			SendMessageToLog("Enemy " + enemyCharacter.className + " out of attack range");
 			return;
 		}
 
@@ -383,14 +378,14 @@ public class GameManager : MonoBehaviour {
 			enemyCharacter.TakeDamage(damageAmount);
 
 			// send damage message to log
-			uiManager.SendMessageToLog(message);
+			SendMessageToLog(message);
 
 			// check if player has incendiary rounds
 			if (characterClass.incendiaryRounds)
 			{
 				if (!enemyCharacter.onFire)
 				{
-					uiManager.SendMessageToLog("Set enemy " + enemyCharacter.className + " on fire!");
+					SendMessageToLog("Set enemy " + enemyCharacter.className + " on fire!");
 				}
 				enemyCharacter.SetOnFire();
 				Instantiate(assetHandler.fireEffectsPrefab,
@@ -399,8 +394,12 @@ public class GameManager : MonoBehaviour {
 							targetEnemyObject.transform);
 			}
 
-			// update animation
-			selectedUnit.GetComponent<Animator>().SetTrigger("Shoot");
+			// play shooting animation
+			GetCharacterObject().GetComponent<Animator>().SetTrigger("Shoot");
+
+			// rotate towards enemy
+			GetCharacterObject().transform.rotation = 
+				Quaternion.LookRotation((enemyCharacter.characterObject.transform.position - GetCharacterObject().transform.position).normalized);
 
 			if (enemyCharacter.dead)
 			{
@@ -424,12 +423,12 @@ public class GameManager : MonoBehaviour {
 						goldAmount = Random.Range(7, 14);
 						break;
 				}
-				uiManager.SendMessageToLog("Gained " + goldAmount + " gold");
+				SendMessageToLog("Gained " + goldAmount + " gold");
 				characterClass.gold += goldAmount;
 			}
 		} else {
 			// miss
-			uiManager.SendMessageToLog("Shot missed enemy at range " + shotDistance.ToString("F2") + " tiles");
+			SendMessageToLog("Shot missed enemy at range " + shotDistance.ToString("F2") + " tiles");
 		}
 
 		// update possible movements because you use AP when you attack
@@ -442,10 +441,18 @@ public class GameManager : MonoBehaviour {
 	public void AttackPlayer(Character enemyCharacter) {
 		int itemIndex = enemyCharacter.selectedItemIndex;
 		float damageAmount = enemyCharacter.currentItems[itemIndex].damage;
+
 		// check if enough AP 
 		if (enemyCharacter.AP - enemyCharacter.currentItems[itemIndex].APcost >= 0) {
 			// subtract ap cost of current weapon
 			enemyCharacter.AP -= enemyCharacter.currentItems[itemIndex].APcost;
+
+			// play shooting animation
+			enemyCharacter.characterObject.GetComponent<Animator>().SetTrigger("Shoot");
+
+			// rotate towards player
+			enemyCharacter.characterObject.transform.rotation =
+				Quaternion.LookRotation((GetCharacterObject().transform.position - enemyCharacter.characterObject.transform.position).normalized);
 
 			int accuracyRoll = Random.Range(0, 100);
 			// calculate distance between player and enemy
@@ -473,19 +480,20 @@ public class GameManager : MonoBehaviour {
 				}
 				message = message + "Enemy " + enemyCharacter.className + " has dealt " + damageAmount + " damage to you";
 				// send message to log
-				uiManager.SendMessageToLog(message);
+				SendMessageToLog(message);
 
 				// deal damage
 				characterClass.TakeDamage(damageAmount);
 				if (characterClass.dead) {
 					uiManager.SendMessageToLog("You have died");
+					GetCharacterObject().GetComponent<Animator>().SetBool("isMoving", false);
 					uiManager.GameOverMenu(damageAmount, enemyCharacter);
 				}
 
 				
 			} else {
 				// miss
-				uiManager.SendMessageToLog("Enemy " + enemyCharacter.className + " missed shot at range " + shotDistance.ToString("F2") + " tiles");
+				SendMessageToLog("Enemy " + enemyCharacter.className + " missed shot at range " + shotDistance.ToString("F2") + " tiles");
 			}
 		}
 	}
@@ -517,5 +525,9 @@ public class GameManager : MonoBehaviour {
 			characterClass = null;
 			return null;
 		}
+    }
+
+	public GameObject GetCharacterObject() {
+		return GetCharacterClass().characterObject;
     }
 }

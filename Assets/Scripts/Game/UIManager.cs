@@ -479,8 +479,8 @@ public class UIManager : MonoBehaviour {
 
             cursorCostText.SetActive(true);
             
-            List<Node> shortestPath = map.DijkstraPath(Mathf.RoundToInt(gameManager.selectedUnit.transform.position.x),
-                                                       Mathf.RoundToInt(gameManager.selectedUnit.transform.position.z),
+            List<Node> shortestPath = map.DijkstraPath(Mathf.RoundToInt(gameManager.GetCharacterObject().transform.position.x),
+                                                       Mathf.RoundToInt(gameManager.GetCharacterObject().transform.position.z),
                                                        curX,
                                                        curY,
                                                        map.fullMapGraph);

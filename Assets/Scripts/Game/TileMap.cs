@@ -295,7 +295,7 @@ public class TileMap : MonoBehaviour {
 				// add some random variation to object heights
 				if (currentTile.transform.childCount > 0) {
 					foreach (Transform child in currentTile.transform) {
-						float ranYScaleVariation = Random.Range(0.8f, 1.4f);
+						float ranYScaleVariation = Random.Range(0.7f, 1.2f);
 						child.transform.localScale = new Vector3(child.transform.localScale.x,
 																 child.transform.localScale.y * ranYScaleVariation,
 																 child.transform.localScale.z);

@@ -15,6 +15,9 @@ public class ShopItem {
     public GameObject shopItemObject;
     public Shop currentShop; // parent
 
+    // reference
+    public UIManager uIManager;
+
     public ShopItem() {
         soldOut = false;
     }
@@ -71,6 +74,8 @@ public class ShopItem {
             // purchase successful
             playerChar.gold -= goldCost;
             quantity--;
+
+            uIManager.SendMessageToLog("Purchased <color=#e19cff><b>" + name + "</b>");
             
             if (currentShop != null) {
                 foreach (ShopItem item in currentShop.shopItems) {

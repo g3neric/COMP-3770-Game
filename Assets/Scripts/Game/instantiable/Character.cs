@@ -35,6 +35,10 @@ public class Character {
     public int gold;
     public int killCount;
 
+    // gold reward upon death
+    // only for enemies
+    public int goldOnDeath;
+
     // current pathfinding path
     public List<Node> currentPath = null;
 
@@ -121,13 +125,14 @@ public class Grunt : Character {
     public Grunt() {
         className = "Grunt";
         maxAP = 7;
-        maxHP = 40;
+        maxHP = 60;
         healRate = 3;
         viewRange = 10;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
         accuracy = 90f;
+        goldOnDeath = Random.Range(5, 12);
         currentItems.Add(new AssaultRifle());
         currentItems.Add(new Pistol());
     }
@@ -137,13 +142,14 @@ public class Engineer : Character {
     public Engineer() {
         className = "Engineer";
         maxAP = 7;
-        maxHP = 45;
+        maxHP = 65;
         healRate = 3;
         viewRange = 10;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
         accuracy = 80f;
+        goldOnDeath = Random.Range(5, 12);
         currentItems.Add(new Pistol());
 
     }
@@ -153,13 +159,14 @@ public class Joker : Character {
     public Joker() {
         className = "Joker";
         maxAP = 7;
-        maxHP = 35;
+        maxHP = 55;
         healRate = 3;
         viewRange = 9;
         luckMultiplier = 3f;
         HP = maxHP;
         AP = maxAP;
         accuracy = 60f;
+        goldOnDeath = Random.Range(5, 12);
         currentItems.Add(new Pistol());
     }
 }
@@ -169,13 +176,14 @@ public class Scout : Character {
     public Scout() {
         className = "Scout";
         maxAP = 9;
-        maxHP = 45;
+        maxHP = 55;
         healRate = 3;
         viewRange = 12;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
         accuracy = 90f;
+        goldOnDeath = Random.Range(5, 12);
         currentItems.Add(new Pistol());
     }
 }
@@ -184,13 +192,14 @@ public class Sharpshooter : Character {
     public Sharpshooter() {
         className = "Sharpshooter";
         maxAP = 6;
-        maxHP = 30;
+        maxHP = 45;
         healRate = 3;
         viewRange = 15;
         luckMultiplier = .75f;
         HP = maxHP;
         AP = maxAP;
         accuracy = 95f;
+        goldOnDeath = Random.Range(5, 12);
         currentItems.Add(new SniperRifle());
         currentItems.Add(new Pistol());
     }
@@ -200,13 +209,14 @@ public class Surgeon : Character {
     public Surgeon() {
         className = "Surgeon";
         maxAP = 6;
-        maxHP = 70;
+        maxHP = 90;
         healRate = 7;
         viewRange = 10;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
         accuracy = 80f;
+        goldOnDeath = Random.Range(5, 12);
         currentItems.Add(new Pistol());
     }
 }
@@ -215,14 +225,47 @@ public class Tank : Character {
     public Tank() {
         className = "Tank";
         maxAP = 7;
-        maxHP = 80;
+        maxHP = 100;
         healRate = 2;
         viewRange = 10;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
         accuracy = 85f;
+        goldOnDeath = Random.Range(5, 12);
         currentItems.Add(new AssaultRifle());
+        currentItems.Add(new Pistol());
+    }
+}
+
+public class Goblin : Character {
+    public Goblin() {
+        className = "Goblin";
+        maxAP = 5;
+        maxHP = 50;
+        healRate = 0;
+        viewRange = 8;
+        luckMultiplier = 1f;
+        HP = maxHP;
+        AP = maxAP;
+        accuracy = 75f;
+        goldOnDeath = Random.Range(3, 6);
+        currentItems.Add(new Pistol());
+    }
+}
+
+public class Ghoul : Character {
+    public Ghoul() {
+        className = "Ghoul";
+        maxAP = 4;
+        maxHP = 35;
+        healRate = 0;
+        viewRange = 8;
+        luckMultiplier = 1f;
+        HP = maxHP;
+        AP = maxAP;
+        accuracy = 75f;
+        goldOnDeath = Random.Range(2, 3);
         currentItems.Add(new Pistol());
     }
 }

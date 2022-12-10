@@ -7,7 +7,7 @@ public class AssetHandler : MonoBehaviour {
 
     // character prefabs
     [Header("Character prefabs")]
-    public GameObject[] classPrefabs = new GameObject[7];
+    public GameObject[] classPrefabs = new GameObject[9];
 
     [Space]
     [Header("Tile outline & line prefabs")]

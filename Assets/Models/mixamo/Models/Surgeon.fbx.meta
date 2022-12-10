@@ -1,52 +1,59 @@
 fileFormatVersion: 2
-guid: d4f7f75e65f2a194281c1edd06834445
+guid: 0d4064ade9689ef4d9a74d7e9a13b06f
 ModelImporter:
-  serializedVersion: 21300
-  internalIDToNameTable:
-  - first:
-      74: -203655887218126122
-    second: mixamo.com
+  serializedVersion: 22103
+  internalIDToNameTable: []
   externalObjects:
   - first:
-      type: UnityEngine:Texture2D
+      type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Ch16_1001_Diffuse
-    second: {fileID: 2800000, guid: 2c4f73ef4b8ad3945833a344ea1b2e73, type: 3}
+      name: Ch11_body
+    second: {fileID: 2100000, guid: d88c52b839ece2249b7028e26d47177a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Ch11_body1
+    second: {fileID: 2100000, guid: 4d1f9056048b87b43ba8d80e22a82754, type: 2}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: Ch16_1001_Glossiness
-    second: {fileID: 2800000, guid: c363696583fae8447b170528153932ad, type: 3}
+      name: Ch11_1001_Diffuse
+    second: {fileID: 2800000, guid: 831632eb7bc4878428c3f714bd23f7cf, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: Ch16_1001_Normal
-    second: {fileID: 2800000, guid: cc4b29bd457de8743b4c05ee6f3d9098, type: 3}
+      name: Ch11_1001_Glossiness
+    second: {fileID: 2800000, guid: 68815dce1a8a79e4db9a3a1ed9f40f9e, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: Ch16_1001_Specular
-    second: {fileID: 2800000, guid: f3c8a03d26103104aba55f12b4a47a4e, type: 3}
+      name: Ch11_1001_Normal
+    second: {fileID: 2800000, guid: 7c2970e4b8112094cb7955bf3d1353b8, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: Ch16_1002_Diffuse
-    second: {fileID: 2800000, guid: 21fa9b8f78a678746a8a6c76638d8bda, type: 3}
+      name: Ch11_1001_Specular
+    second: {fileID: 2800000, guid: 499596fb21f291e43805bcac6b63daa6, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: Ch16_1002_Glossiness
-    second: {fileID: 2800000, guid: 5b4bcdc03a5426046b0ffef3fe68d717, type: 3}
+      name: Ch11_1002_Diffuse
+    second: {fileID: 2800000, guid: 83c10c1d359979440af7a7b2d7107608, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: Ch16_1002_Normal
-    second: {fileID: 2800000, guid: aa7daf8ef52aa2e4ea4b2f603b097741, type: 3}
+      name: Ch11_1002_Glossiness
+    second: {fileID: 2800000, guid: 10e7250b1b7e78c43aaa6334398fcc29, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: Ch16_1002_Specular
-    second: {fileID: 2800000, guid: a791e998bcbee2f498784503614962b1, type: 3}
+      name: Ch11_1002_Normal
+    second: {fileID: 2800000, guid: 53deb347bafa8734b95171597b76cf16, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Ch11_1002_Specular
+    second: {fileID: 2800000, guid: 1981cd441bc1642449cb7ecf3ee42b7d, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -57,7 +64,7 @@ ModelImporter:
     bakeSimulation: 0
     resampleCurves: 1
     optimizeGameObjects: 0
-    removeConstantScaleCurves: 1
+    removeConstantScaleCurves: 0
     motionNodeName: 
     rigImportErrors: 
     rigImportWarnings: 
@@ -110,6 +117,7 @@ ModelImporter:
     secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 1
+    strictVertexDataChecks: 0
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
@@ -142,6 +150,7 @@ ModelImporter:
   humanoidOversampling: 1
   avatarSetup: 0
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  importBlendShapeDeformPercent: 1
   remapMaterialsIfMaterialImportModeIsNone: 0
   additionalBone: 0
   userData: 

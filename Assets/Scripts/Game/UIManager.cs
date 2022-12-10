@@ -143,11 +143,11 @@ public class UIManager : MonoBehaviour {
 
     void LateUpdate() {
         // pause game
-        if (Input.GetKeyDown("escape")) {
+        if (Input.GetKeyDown("escape") && !gameManager.gameOverMenuEnabled) {
             TogglePauseMenu();
         }
 
-        if (gameManager != null && !gameManager.pauseMenuEnabled) {
+        if (gameManager != null && !gameManager.pauseMenuEnabled && !gameManager.gameOverMenuEnabled) {
             // update text on the screen
             // HP bar
             HPBar.maxValue = gameManager.GetCharacterClass().maxHP;
@@ -222,7 +222,7 @@ public class UIManager : MonoBehaviour {
             for (int i = 0; i < enemyUIObjects.Count; i++) {
                 // update position
                 Vector3 enemyPos = gameManager.enemyManager.enemyGameObjects[i].transform.position;
-                float tagVerticalOffset = 1.1f; // offset from the ground that the ui tags appear
+                float tagVerticalOffset = 1f; // offset from the ground that the ui tags appear
                 enemyPos += new Vector3(0, tagVerticalOffset, 0);
                 Vector2 newPos = Camera.main.WorldToScreenPoint(enemyPos);
                 enemyUIObjects[i].transform.position = newPos;
@@ -399,12 +399,12 @@ public class UIManager : MonoBehaviour {
 
     // create new message
     public void SendMessageToLog(string message) {
-        string text = "[" + gameManager.turnCount + "] " + message;
+        string text = "<color=#b5b5b5>[" + gameManager.turnCount + "] <color=#ffffff>" + message;
 
         // create the message's object
         GameObject messageObject = Instantiate(messagePrefab, GameObject.Find("Content").transform);
         // set message's text
-        messageObject.GetComponent<TextMeshProUGUI>().text = text;
+        messageObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = text;
 
         // create new message
         Message newMessage = new Message(gameManager.turnCount, messageObject);
@@ -451,10 +451,11 @@ public class UIManager : MonoBehaviour {
 
     public void GameOverMenu(float damageAmount, Character enemyCharacter) {
         gameOverMenu.SetActive(true);
+        gameManager.gameOverMenuEnabled = true;
         gameManager.pauseMenuEnabled = true;
         gameManager.SetControlState(ControlState.Deselected);
-        string text = "Enemy " + enemyCharacter.className + " killed you with a " + damageAmount +
-                      "\ndamage shot. GG.\n";
+        string text = "Enemy <color=#ff928a><b>" + enemyCharacter.className + "</b><color=#ffffff> killed you with a <color=#85f1ff>" 
+                      + damageAmount + " damage<color=#ffffff> shot.\n\nGG.\n";
 
         if (gameManager.GetCharacterClass().killCount == 1) {
             text = text + "\nYou killed 1 enemy.";
@@ -466,6 +467,7 @@ public class UIManager : MonoBehaviour {
     }
 
     public void ReturnToMainMenu() {
+        gameManager.gameOverMenuEnabled = false;
         gameManager.SetControlState(ControlState.Deselected);
         gameManager.soundManager.PlayMainMenuMusic();
         SceneManager.LoadScene("MainMenu");

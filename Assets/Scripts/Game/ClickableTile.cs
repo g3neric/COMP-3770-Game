@@ -24,7 +24,10 @@ public class ClickableTile : MonoBehaviour {
     void OnMouseUp() {
 		playerManager = gameManager.GetCharacterObject().GetComponent<PlayerManager>();
 		// check if UI object in the way
-		if (!EventSystem.current.IsPointerOverGameObject()) {
+		if (!EventSystem.current.IsPointerOverGameObject() &&
+			!gameManager.gameOverMenuEnabled &&
+			!gameManager.pauseMenuEnabled &&
+			!gameManager.shopMenuEnabled) {
 			if (gameManager.cs == ControlState.Move) {
 				// move state
 				playerManager.PathToLocation(x, y);
@@ -42,7 +45,11 @@ public class ClickableTile : MonoBehaviour {
 	// Move hover outline to current tile
     void OnMouseEnter() {
 		playerManager = gameManager.GetCharacterObject().GetComponent<PlayerManager>();
-		if (!EventSystem.current.IsPointerOverGameObject() && !completed) {
+		if (!EventSystem.current.IsPointerOverGameObject() && 
+			!completed && 
+			!gameManager.gameOverMenuEnabled && 
+			!gameManager.pauseMenuEnabled &&
+			!gameManager.shopMenuEnabled) {
 			playerManager.tileHoverOutline.transform.position = transform.position + new Vector3(0, 0.012f, 0);
 			completed = true;
 

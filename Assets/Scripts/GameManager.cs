@@ -58,6 +58,8 @@ public class GameManager : MonoBehaviour {
 	// misc
 	[HideInInspector] public bool pauseMenuEnabled = false;
 	[HideInInspector] public bool shopMenuEnabled = false;
+	[HideInInspector] public bool gameOverMenuEnabled = false;
+
 
 	void Awake() {
 		cs = ControlState.Deselected;
@@ -79,6 +81,7 @@ public class GameManager : MonoBehaviour {
 
 		
 	}
+
 
 	public void StartNewGame() {
 		// we have to wait a lil for some reason
@@ -149,11 +152,11 @@ public class GameManager : MonoBehaviour {
 		camController = GameObject.Find("Main Camera").AddComponent<CameraController>();
 		camController.gameManager = this;
 		// set camera variables
-		camController.CamTargetSpeed = 7;
+		camController.CamTargetSpeed = 5;
 		camController.CamTargetRadius = 3.7f;
-		camController.ObjectCamTargetMaxSpeed = 4;
+		camController.ObjectCamTargetMaxSpeed = 6;
 		camController.CamRotationSpeed = 20;
-		camController.zoomSpeed = 0.2f;
+		camController.zoomSpeed = 0.1f;
 		camController.camTargetDrag = 5;
 		camController.maxZoom = 5;
 
@@ -227,7 +230,9 @@ public class GameManager : MonoBehaviour {
     public void CreatePlayerCharacter() {
 		// Create the player's unit model
 		characterClass.characterObject = Instantiate(assetHandler.classPrefabs[characterClassInt], new Vector3(0f, 0f, 0f), Quaternion.identity);
-		GetCharacterObject().transform.localScale = new Vector3(0.45f, 0.45f, 0.45f);
+		GetCharacterObject().transform.localScale = new Vector3(GetCharacterObject().transform.localScale.x * 0.5f,
+																GetCharacterObject().transform.localScale.y * 0.5f,
+																GetCharacterObject().transform.localScale.z * 0.5f);
 		GetCharacterObject().tag = "Player";
 		GetCharacterObject().GetComponent<Animator>().SetBool("idleRifle", false);
 
@@ -236,8 +241,21 @@ public class GameManager : MonoBehaviour {
 		playerManager.gameManager = this;
 		playerManager.map = tileMap;
 
-		// setup audio source
-		var audioSource = GetCharacterObject().AddComponent<AudioSource>();
+		// adjust player HP for difficulty
+        switch (difficulty) {
+			case DifficultyState.Ez:
+				characterClass.maxHP += 20;
+				characterClass.HP += 20;
+				break;
+			case DifficultyState.Impossible:
+				characterClass.maxHP -= 10;
+				characterClass.HP -= 10;
+				break;
+        }
+
+
+        // setup audio source
+        var audioSource = GetCharacterObject().AddComponent<AudioSource>();
 		audioSource.loop = false;
 
 		// Start at middle of map and keep moving until we find a walkable spawn
@@ -273,7 +291,7 @@ public class GameManager : MonoBehaviour {
 			}
 			
 			characterClass.HP += extraRegenAmount;
-			SendMessageToLog("Used extra AP to regen an extra " + extraRegenAmount + " HP");
+			SendMessageToLog("Used extra AP to regen <color=#99ffa2>" + extraRegenAmount + " HP");
 		}
 
 		characterClass.FinishTurn(); // update character stats
@@ -311,40 +329,56 @@ public class GameManager : MonoBehaviour {
 		if (cs == ControlState.Move) {
 			playerManager.DrawPossibleMovements();
 		}
-		
-
 	}
 
 	// player attacking enemy
 	// includes checks for current item held so you dont have to check when you call this function
 	public void AttackEnemy(GameObject targetEnemyObject) {
-		float damageAmount = 0; // 0 temporarily
+		float damageAmount;
 		int enemyIndex = enemyManager.enemyGameObjects.IndexOf(targetEnemyObject);
 		Character enemyCharacter = enemyManager.enemyList[enemyIndex];
 
-		int selectedItemIndex = characterClass.selectedItemIndex;
+		int selectedItemIndex;
+		switch(cs) {
+			case ControlState.Item1:
+				selectedItemIndex = 0;
+				break;
+			case ControlState.Item2:
+				selectedItemIndex = 1;
+				break;
+			default:
+				return;
+        }
+
 		Item currentItem = characterClass.currentItems[selectedItemIndex];
+
 		// check if in range
-		if (tileMap.IsTileInAttackRange(enemyCharacter.currentX, 
-										enemyCharacter.currentY, 
+		if (tileMap.IsTileInAttackRange(enemyCharacter.currentX,
+										enemyCharacter.currentY,
 										characterClass.currentX,
 										characterClass.currentY,
 										currentItem.range)) {
 			// check if enough AP
-			if (characterClass.AP - currentItem.APcost >= 0) {
+			if (GetCharacterClass().AP - currentItem.APcost >= 0) {
 				// use item 1
 				damageAmount = currentItem.damage;
-				characterClass.AP -= currentItem.APcost;
 			} else {
 				// not enough AP
-				SendMessageToLog("Not enough AP to attack enemy");
+				SendMessageToLog("Not enough AP to attack enemy <color=#ff928a><b>" + enemyCharacter.className);
 				return;
 			}
 		} else {
 			// out of range
-			SendMessageToLog("Enemy " + enemyCharacter.className + " out of attack range");
+			SendMessageToLog("Enemy <color=#ff928a><b>" + enemyCharacter.className + "</b><color=#ffffff> out of attack range");
 			return;
 		}
+
+		// subtract AP cost
+		characterClass.AP -= currentItem.APcost;
+
+		// rotate towards enemy
+		GetCharacterObject().transform.rotation =
+			Quaternion.LookRotation((enemyCharacter.characterObject.transform.position - GetCharacterObject().transform.position).normalized);
 
 		// roll for accuracy
 		int accuracyRoll = Random.Range(0, 100);
@@ -354,7 +388,8 @@ public class GameManager : MonoBehaviour {
 														  enemyCharacter.currentX,
 														  enemyCharacter.currentY);
 		// lower character's accuracy the further away the enemy is
-		if (accuracyRoll < characterClass.accuracy - (shotDistance * 2)) {
+		if (accuracyRoll < (characterClass.accuracy - (shotDistance * 2))) {
+
 			// hit
 			// base message
 			string message = "";
@@ -373,7 +408,8 @@ public class GameManager : MonoBehaviour {
 				damageAmount += Random.Range(1, 10);
 				message = "Crit! ";
 			}
-			message = message + "Dealt " + damageAmount + " damage to enemy " + enemyManager.enemyList[enemyIndex].className;
+			message = message + "Dealt <color=#85f1ff>" + damageAmount + " damage<color=#ffffff> to enemy <color=#ff928a><b>" + enemyManager.enemyList[enemyIndex].className + "</b>";
+			
 			// deal damage
 			enemyCharacter.TakeDamage(damageAmount);
 
@@ -381,11 +417,9 @@ public class GameManager : MonoBehaviour {
 			SendMessageToLog(message);
 
 			// check if player has incendiary rounds
-			if (characterClass.incendiaryRounds)
-			{
-				if (!enemyCharacter.onFire)
-				{
-					SendMessageToLog("Set enemy " + enemyCharacter.className + " on fire!");
+			if (characterClass.incendiaryRounds) {
+				if (!enemyCharacter.onFire) {
+					SendMessageToLog("Set enemy <color=#ff928a><b>" + enemyCharacter.className + "</b><color=#ffffff> on fire!");
 				}
 				enemyCharacter.SetOnFire();
 				Instantiate(assetHandler.fireEffectsPrefab,
@@ -397,33 +431,28 @@ public class GameManager : MonoBehaviour {
 			// play shooting animation
 			GetCharacterObject().GetComponent<Animator>().SetTrigger("Shoot");
 
-			// rotate towards enemy
-			GetCharacterObject().transform.rotation = 
-				Quaternion.LookRotation((enemyCharacter.characterObject.transform.position - GetCharacterObject().transform.position).normalized);
+			
 
-			if (enemyCharacter.dead)
-			{
+			// check if we killed the enemy
+			if (enemyCharacter.dead) {
 				// clean up enemy - delete it, reset its stats, etc.
 				enemyManager.CleanUpEnemy(enemyManager.enemyList.IndexOf(enemyCharacter));
 
 				// we killed the enemy pog
 				characterClass.killCount++;
-				int goldAmount = 0;
 
 				// determine amount of gold to reward upon death
-				switch (difficulty)
-				{
+				int goldAmount = enemyCharacter.goldOnDeath;
+				// give less gold on ez mode, and more gold on impossible mode
+				switch (difficulty) {
 					case DifficultyState.Ez:
-						goldAmount = Random.Range(3, 10);
-						break;
-					case DifficultyState.Mid:
-						goldAmount = Random.Range(5, 12);
+						goldAmount -= 2;
 						break;
 					case DifficultyState.Impossible:
-						goldAmount = Random.Range(7, 14);
+						goldAmount += 2;
 						break;
 				}
-				SendMessageToLog("Gained " + goldAmount + " gold");
+				SendMessageToLog("Gained <color=#fffb9c>" + goldAmount + " gold");
 				characterClass.gold += goldAmount;
 			}
 		} else {
@@ -460,7 +489,7 @@ public class GameManager : MonoBehaviour {
 															  characterClass.currentY,
 															  enemyCharacter.currentX,
 															  enemyCharacter.currentY);
-			if (accuracyRoll < (enemyCharacter.accuracy - shotDistance * 2)) {
+			if (accuracyRoll < (enemyCharacter.accuracy - (shotDistance * 2))) {
 				// hit
 				string message = "";
 
@@ -478,22 +507,21 @@ public class GameManager : MonoBehaviour {
 					damageAmount += Random.Range(1, 10);
 					message = "Crit! ";
 				}
-				message = message + "Enemy " + enemyCharacter.className + " has dealt " + damageAmount + " damage to you";
+				message = message + "Enemy <color=#ff928a><b>" + enemyCharacter.className + "</b><color=#ffffff> has dealt <color=#85f1ff>" + damageAmount + " damage<color=#ffffff> to you";
 				// send message to log
 				SendMessageToLog(message);
 
 				// deal damage
 				characterClass.TakeDamage(damageAmount);
 				if (characterClass.dead) {
-					uiManager.SendMessageToLog("You have died");
+					SendMessageToLog("You have died");
 					GetCharacterObject().GetComponent<Animator>().SetBool("isMoving", false);
 					uiManager.GameOverMenu(damageAmount, enemyCharacter);
-				}
-
-				
+					return;
+				}		
 			} else {
 				// miss
-				SendMessageToLog("Enemy " + enemyCharacter.className + " missed shot at range " + shotDistance.ToString("F2") + " tiles");
+				SendMessageToLog("Enemy <color=#ff928a><b>" + enemyCharacter.className + "</b><color=#ffffff> missed shot at range " + shotDistance.ToString("F2") + " tiles");
 			}
 		}
 	}

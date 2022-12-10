@@ -118,6 +118,9 @@ public class ShopManager : MonoBehaviour {
                 newShopItem = RandomShopItem(quantity, newShopItemObject);
             }
 
+            // initialize reference for messages
+            newShopItem.uIManager = gameManager.uiManager;
+
             newShop.shopItems.Add(newShopItem);
 
             // set up button

@@ -74,20 +74,25 @@ public class CameraController : MonoBehaviour {
     }
     void LateUpdate() {
         // check if game is paused before doing anything
-        if (gameManager != null && !gameManager.pauseMenuEnabled && !gameManager.shopMenuEnabled) {
+        if (gameManager != null && !gameManager.pauseMenuEnabled && !gameManager.shopMenuEnabled && !gameManager.gameOverMenuEnabled) {
             // game is not paused
             CamTarget = ObjectCamTarget.transform.position; // saves alot of time 
                                                             // target movement
             ObjectCamTarget.transform.rotation = Quaternion.Euler(0, CamTrans.localEulerAngles.y, 0);
-
+            
             // toggle camera snap to unit
             if (Input.GetKeyDown(KeyCode.Space)) {
                 ToggleSnapToUnit();
             }
 
+
+            
+
+            // check if snap enabled
             if (snappedToUnit) {
                 ObjectCamTarget.transform.position = gameManager.GetCharacterObject().transform.position;
             } else {
+                // inside bounds - accept input
                 // backward
                 if (Input.GetAxisRaw("Vertical") < -0.2f) {
                     ObjectCamTargetRigidbody.AddRelativeForce(Vector3.back * CamTargetSpeed);
@@ -106,6 +111,20 @@ public class CameraController : MonoBehaviour {
                     ObjectCamTargetRigidbody.AddRelativeForce(Vector3.left * CamTargetSpeed);
                 };
             }
+
+            int viewRange = gameManager.GetCharacterClass().viewRange;
+
+            // clamp target to view range
+            // clamp x 
+            var camTargetx = Mathf.Clamp(CamTarget.x,
+                                         gameManager.GetCharacterClass().currentX - viewRange,
+                                         gameManager.GetCharacterClass().currentX + viewRange);
+            // clamp z (y)
+            var camTargetz = Mathf.Clamp(CamTarget.z,
+                                         gameManager.GetCharacterClass().currentY - viewRange,
+                                         gameManager.GetCharacterClass().currentY + viewRange);
+
+            CamTarget = new Vector3(camTargetx, CamTarget.y, camTargetz);
 
             // enforce speed limit
             if (ObjectCamTargetRigidbody.velocity.magnitude > ObjectCamTargetMaxSpeed) {
@@ -150,26 +169,12 @@ public class CameraController : MonoBehaviour {
             LastFrameMousePos.x = Input.mousePosition.x;
             LastFrameMousePos.y = Input.mousePosition.y;
 
-            // clamp target to map size
-            // idk why tf this shit doesnt work
-            /*
-            if (CamTrans.position.x < constraints[0]) {
-                ObjectCamTargetRigidbody.AddForce(new Vector3(10, 0, 0));
-            } else if (CamTrans.position.x > constraints[1]) {
-                ObjectCamTargetRigidbody.AddForce(new Vector3(-10, 0, 0));
-            }
-
-            if (CamTrans.position.y < constraints[0]) {
-                ObjectCamTargetRigidbody.AddForce(new Vector3(0, 0, 10));
-            } else if (CamTrans.position.y > constraints[1]) {
-                ObjectCamTargetRigidbody.AddForce(new Vector3(0, 0, -10));
-            }*/
-
             // set camera position
             var xCamPos = Mathf.Lerp((Mathf.Sin(CamRotation) * CamTargetRadius) + CamTarget.x, CamTrans.position.x, Time.deltaTime);
-            var yCamPos = Mathf.Lerp(CamTrans.position.y, Mathf.Pow(ZoomLevel, 2) + 2, Time.deltaTime * 5);
+            var yCamPos = Mathf.Lerp(CamTrans.position.y, Mathf.Pow(ZoomLevel, 1.5f) + 1, Time.deltaTime * 5);
             var zCamPos = Mathf.Lerp((Mathf.Cos(CamRotation) * CamTargetRadius) + CamTarget.z, CamTrans.position.z, Time.deltaTime);
-
+            
+            // set pos
             CamTrans.position = new Vector3(xCamPos, yCamPos, zCamPos);
 
             // make camera look at the camera target

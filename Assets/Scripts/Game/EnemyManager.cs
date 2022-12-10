@@ -57,7 +57,7 @@ public class EnemyManager : MonoBehaviour {
         gameManager.uiManager.RemoveEnemyUIObject(enemyIndex);
 
         // send death message to log
-        gameManager.SendMessageToLog("Killed enemy " + enemyCharacter.className + ".");
+        gameManager.SendMessageToLog("Killed enemy <color=#ff928a><b>" + enemyCharacter.className + "</b>");
 
         // update possible movements when enemy dies because you can now move to where they were
         gameManager.playerManager.DrawPossibleMovements();
@@ -84,7 +84,7 @@ public class EnemyManager : MonoBehaviour {
 
                 // send message to log that enemy has been spotted if it hasn't already been sent
                 if (!spottedEnemies.Contains(enemyIndex) && !gameManager.GetCharacterClass().dead) {
-                    gameManager.SendMessageToLog("Spotted enemy " + enemyList[enemyIndex].className + ".");
+                    gameManager.SendMessageToLog("Spotted enemy <color=#ff928a><b>" + enemyList[enemyIndex].className + "</b>");
                     spottedEnemies.Add(enemyIndex);
                 }
             } else {
@@ -143,7 +143,7 @@ public class EnemyManager : MonoBehaviour {
 
                     // randomly choose one of the classes
                     // it's a shame i have to do it this way but it's the only way :(
-                    int randomClass = Random.Range(0, 7);
+                    int randomClass = Random.Range(0, 9);
                     switch(randomClass) {
                         case 0:
                             enemyCharacter = new Grunt();
@@ -166,6 +166,12 @@ public class EnemyManager : MonoBehaviour {
                         case 6:
                             enemyCharacter = new Tank();
                             break;
+                        case 7:
+                            enemyCharacter = new Goblin();
+                            break;
+                        case 8:
+                            enemyCharacter = new Ghoul();
+                            break;
                         default:
                             print("error selecting enemy class");
                             break;
@@ -179,7 +185,9 @@ public class EnemyManager : MonoBehaviour {
                                                          GameObject.Find("EnemyContainer").transform);
                     enemyCharacter.characterObject = enemyObject;
                     // set scale
-                    enemyObject.transform.localScale = new Vector3(0.45f, 0.45f, 0.45f);
+                    enemyObject.transform.localScale = new Vector3(enemyObject.transform.localScale.x * 0.5f,
+                                                                   enemyObject.transform.localScale.y * 0.5f,
+                                                                   enemyObject.transform.localScale.z * 0.5f);
                     // set reference to enemy in the tile its on
                     map.tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile = enemyObject;
 

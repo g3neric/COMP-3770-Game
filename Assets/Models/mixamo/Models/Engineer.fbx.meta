@@ -1,27 +1,49 @@
 fileFormatVersion: 2
-guid: a2bb053504298fd4493dd73ed94daf0f
+guid: e4aea8b9212d9ce408964c026f14bf42
 ModelImporter:
-  serializedVersion: 21300
-  internalIDToNameTable:
-  - first:
-      74: -203655887218126122
-    second: mixamo.com
+  serializedVersion: 22103
+  internalIDToNameTable: []
   externalObjects:
   - first:
-      type: UnityEngine:Texture2D
+      type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Guard_02__diffuse
-    second: {fileID: 2800000, guid: 7e524646ef6a23f4da4154e4bef50b67, type: 3}
+      name: Soldier_body1
+    second: {fileID: 2100000, guid: 696bbf8126e5c4544a3c083b53a5cd84, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Soldier_head6
+    second: {fileID: 2100000, guid: 0fa77b5af82fe3441bfc2966e92addde, type: 2}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: Guard_02__normal
-    second: {fileID: 2800000, guid: ae876a203438c2e4abc142484d75f523, type: 3}
+      name: Soldier_Body_diffuse
+    second: {fileID: 2800000, guid: 35ebbc85cfdc249408dfbb1c58f04407, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: Guard_02__specular
-    second: {fileID: 2800000, guid: e3405c28779f28846b28406c45d8509a, type: 3}
+      name: Soldier_Body_normal
+    second: {fileID: 2800000, guid: db2af2f641637674580150235b58e3f7, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Soldier_Body_specular
+    second: {fileID: 2800000, guid: 49f1cb46466a7b442b2ad4da207aee47, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Soldier_head_diffuse
+    second: {fileID: 2800000, guid: bc12322f20e6b0d43af79dabfd416749, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Soldier_head_normal
+    second: {fileID: 2800000, guid: 84ac0a9fad40b1641ad79e371c7990b5, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Soldier_head_specular
+    second: {fileID: 2800000, guid: 87eaaebaf8771cf47ae37fa10fe8990e, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -32,7 +54,7 @@ ModelImporter:
     bakeSimulation: 0
     resampleCurves: 1
     optimizeGameObjects: 0
-    removeConstantScaleCurves: 1
+    removeConstantScaleCurves: 0
     motionNodeName: 
     rigImportErrors: 
     rigImportWarnings: 
@@ -85,6 +107,7 @@ ModelImporter:
     secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 1
+    strictVertexDataChecks: 0
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
@@ -117,6 +140,7 @@ ModelImporter:
   humanoidOversampling: 1
   avatarSetup: 0
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  importBlendShapeDeformPercent: 1
   remapMaterialsIfMaterialImportModeIsNone: 0
   additionalBone: 0
   userData: 

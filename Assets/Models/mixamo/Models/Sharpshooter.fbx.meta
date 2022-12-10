@@ -1,37 +1,69 @@
 fileFormatVersion: 2
-guid: 859b0c22767ab274b8864bdfb8502801
+guid: 111079d5caeefbe47b4927601968d01e
 ModelImporter:
-  serializedVersion: 21300
-  internalIDToNameTable:
-  - first:
-      74: -203655887218126122
-    second: mixamo.com
+  serializedVersion: 22103
+  internalIDToNameTable: []
   externalObjects:
   - first:
-      type: UnityEngine:Texture2D
+      type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Erika_Archer_Clothes_diffuse
-    second: {fileID: 2800000, guid: 6debfc5effa5762469d89dad26ec3b35, type: 3}
+      name: Ch44_Body
+    second: {fileID: 2100000, guid: df9c322719eb589499adad953c8d7602, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Ch44_body1
+    second: {fileID: 2100000, guid: 056ddfeeffee04640bbb6facf496990f, type: 2}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: Erika_Archer_Clothes_normal
-    second: {fileID: 2800000, guid: 70fa886cce0cd9d468d89dc7db104847, type: 3}
+      name: Ch44_1001_Diffuse
+    second: {fileID: 2800000, guid: c88e078ec72641344b672ef46677c011, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: FemaleFitA_Body_diffuse
-    second: {fileID: 2800000, guid: 0fbc2f3ab6e6ca847b7d77c5040b8714, type: 3}
+      name: Ch44_1001_Emissive
+    second: {fileID: 2800000, guid: 201a02100f57418469a589f759668c18, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: FemaleFitA_StdNM
-    second: {fileID: 2800000, guid: a235b25ea8a373a428ae307fc1e88a07, type: 3}
+      name: Ch44_1001_Glossiness
+    second: {fileID: 2800000, guid: a6c20378253bc1040923a5d1a584ffae, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: FemaleFitA_eyelash_diffuse
-    second: {fileID: 2800000, guid: 85cd19e0e1d64044bb177c14c6d72110, type: 3}
+      name: Ch44_1001_Normal
+    second: {fileID: 2800000, guid: dcf4faa02ed0cff4887f43e3c271ba44, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Ch44_1001_Specular
+    second: {fileID: 2800000, guid: 5db0af201a92be54e9e102b3ecfe305e, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Ch44_1002_Diffuse
+    second: {fileID: 2800000, guid: d5e9d9ec1e96d724580c23a800646ed8, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Ch44_1002_Emissive
+    second: {fileID: 2800000, guid: 092581d66e7eaea449de59555c051530, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Ch44_1002_Glossiness
+    second: {fileID: 2800000, guid: 4f6f9cd75fe32614ca8b4f3dc765b875, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Ch44_1002_Normal
+    second: {fileID: 2800000, guid: a6d53de2df855e94b8098709b9c155e0, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Ch44_1002_Specular
+    second: {fileID: 2800000, guid: 4f779b46f3fcc7f41988e8a57a65ab77, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -42,7 +74,7 @@ ModelImporter:
     bakeSimulation: 0
     resampleCurves: 1
     optimizeGameObjects: 0
-    removeConstantScaleCurves: 1
+    removeConstantScaleCurves: 0
     motionNodeName: 
     rigImportErrors: 
     rigImportWarnings: 
@@ -95,6 +127,7 @@ ModelImporter:
     secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 1
+    strictVertexDataChecks: 0
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
@@ -127,6 +160,7 @@ ModelImporter:
   humanoidOversampling: 1
   avatarSetup: 0
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  importBlendShapeDeformPercent: 1
   remapMaterialsIfMaterialImportModeIsNone: 0
   additionalBone: 0
   userData: 

@@ -17,6 +17,7 @@ public class EnemyManager : MonoBehaviour {
 
     // list of enemy game objects
     [HideInInspector] public List<GameObject> enemyGameObjects = new List<GameObject>(); // up to maxEnemyCount
+    [HideInInspector] public int maxEnemyCount;
 
     // list of enemy objects
     [HideInInspector] public List<Character> enemyList = new List<Character>();
@@ -110,22 +111,7 @@ public class EnemyManager : MonoBehaviour {
     // spawn a single enemy at a random pos
     public void SpawnEnemy(int enemyPrefabIndex) {
         // make sure we dont have too many enemies already
-        int maxEnemies;
-        switch(gameManager.difficulty) {
-            case DifficultyState.Ez:
-                maxEnemies = 20;
-                break;
-            case DifficultyState.Mid:
-                maxEnemies = 25;
-                break;
-            case DifficultyState.Impossible:
-                maxEnemies = 40;
-                break;
-            default:
-                return;
-        }
-
-        if (enemyList.Count >= maxEnemies) {
+        if (enemyList.Count >= maxEnemyCount) {
             return;
         }
 

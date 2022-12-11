@@ -377,7 +377,7 @@ public class UIManager : MonoBehaviour {
     public void SetShopMenuButtonActive() {
         // update shop button every time you move
         // update shop menu visibility
-        if (map.tiles[gameManager.GetCharacterClass().currentX, gameManager.GetCharacterClass().currentY] == map.shopType &&
+        if (map.tiles[gameManager.GetCharacterClass().currentX, gameManager.GetCharacterClass().currentY] == map.tileTypeIndexes["TileShop"] &&
             !gameManager.shopMenuEnabled &&
             !gameManager.pauseMenuEnabled) {
             // set button to active if shop menu isn't open and player is on shop tile

@@ -131,13 +131,26 @@ public class GameManager : MonoBehaviour {
 				enemyCount = 18;
 				break;
 			case DifficultyState.Impossible:
-				enemyCount = 30;
+				enemyCount = 25;
 				break;
 			default:
 				// this section should never be reached
 				print("error spawning enemies - difficulty state not set");
 				return;
         }
+		// spawn more enemies on the bigger maps
+		switch (mapSize) {
+			case 150:
+				enemyCount += 5;
+				break;
+			case 175:
+				enemyCount += 10;
+				break;
+		}
+		// max enemies is +5 the starting amount
+		enemyManager.maxEnemyCount = enemyCount + 5;
+
+		// spawn enemyCount enemies
 		for (int i = 0; i < enemyCount; i++) {
 			enemyManager.SpawnEnemy(0);
 		}

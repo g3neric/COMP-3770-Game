@@ -113,19 +113,19 @@ public class MainMenuManager : MonoBehaviour {
         // biome setting dropdown
         switch(dropDowns[2].GetComponent<TMP_Dropdown>().value) {
             case 0:
-                gameManager.biomeSetting = BiomeSetting.Default;
+                gameManager.biomeSetting = BiomeSetting.Tundra;
                 break;
             case 1:
-                gameManager.biomeSetting = BiomeSetting.Hilly;
+                gameManager.biomeSetting = BiomeSetting.Arctic;
                 break;
             case 2:
-                gameManager.biomeSetting = BiomeSetting.Superflat;
+                gameManager.biomeSetting = BiomeSetting.Desert;
                 break;
             case 3:
-                gameManager.biomeSetting = BiomeSetting.Mountaineous;
+                gameManager.biomeSetting = BiomeSetting.Mountain;
                 break;
             case 4:
-                gameManager.biomeSetting = BiomeSetting.Swampland;
+                gameManager.biomeSetting = BiomeSetting.Marshland;
                 break;
         }
 

@@ -3,6 +3,7 @@
 
 using UnityEngine;
 using System.Collections.Generic;
+
 public class PlayerManager : MonoBehaviour {
 	// link to game manager
 	[HideInInspector] public GameManager gameManager;
@@ -30,7 +31,7 @@ public class PlayerManager : MonoBehaviour {
 										   TileMap.TileCoordToWorldCoord(gameManager.GetCharacterClass().currentX, 
 																		gameManager.GetCharacterClass().currentY,
 																		0f), 
-										   6f * Time.fixedDeltaTime);
+										   5f * Time.fixedDeltaTime);
 		// update position
 		transform.position = newPos;
 
@@ -44,6 +45,7 @@ public class PlayerManager : MonoBehaviour {
 		} else {
 			gameManager.GetCharacterObject().GetComponent<Animator>().SetBool("isMoving", false);
 		}
+
 		// idk what im doing tbh
 	}
 
@@ -145,6 +147,8 @@ public class PlayerManager : MonoBehaviour {
 													  true);
 
 		foreach (int[] tile in map.viewableTiles) {
+			tile[0] = Mathf.Clamp(tile[0], 0, gameManager.mapSize);
+			tile[1] = Mathf.Clamp(tile[1], 0, gameManager.mapSize);
 			map.RevertTileToDefault(tile[0], tile[1]);
 		}
 	}
@@ -263,7 +267,9 @@ public class PlayerManager : MonoBehaviour {
 				createdLines.Add(CreateVisualPathfindingLine(start, end, startDelayCount, last));
 				startDelayCount += 0.25f;
 			}
-		}
+		} else {
+			return;
+        }
 
 		TakeMovement();
 	}

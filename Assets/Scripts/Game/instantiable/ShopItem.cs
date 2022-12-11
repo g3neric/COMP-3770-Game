@@ -257,7 +257,7 @@ public class BionicArm : ShopItem
         this.shopItemObject = shopItemObject;
         name = "Bionic Arm";
         description = "Increase base accuracy to 100%.";
-        goldCost = Random.Range(30, 40);
+        goldCost = Random.Range(20, 30);
     }
 
     public override bool Purchase(Character playerChar)

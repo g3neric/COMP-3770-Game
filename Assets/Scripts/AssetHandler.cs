@@ -36,4 +36,10 @@ public class AssetHandler : MonoBehaviour {
     [Space]
     [Header("Particle Effects")]
     public GameObject fireEffectsPrefab;
+
+    [Space]
+    [Header("Skyboxes and lighting")]
+    public Material redSky;
+    public Material nightSky;
+    public Material clearSky;
 }

@@ -11,7 +11,7 @@ using UnityEngine.SceneManagement;
 public enum ControlState { Move, Item1, Item2, Deselected };
 public enum DifficultyState { Ez, Mid, Impossible };
 
-public enum BiomeSetting { Default, Hilly, Superflat, Mountaineous, Swampland };
+
 
 public class GameManager : MonoBehaviour {
 	// I KNOW THIS IS A LIL MESSY I'LL CLEAN IT UP LATER
@@ -82,8 +82,7 @@ public class GameManager : MonoBehaviour {
 		
 	}
 
-
-	public void StartNewGame() {
+    public void StartNewGame() {
 		// we have to wait a lil for some reason
 		soundManager.PauseMusic();
 		Invoke("InitiateGameSession", .05f);
@@ -92,13 +91,10 @@ public class GameManager : MonoBehaviour {
 	// This function is called when a new game is created
 	public void InitiateGameSession() {
 		soundManager.PlayGameMusic();
+
 		// initiate ui manager
 		uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
 		uiManager.gameManager = this;
-
-		// initiate enemy manager
-		enemyManager = GameObject.Find("EnemyManager").GetComponent<EnemyManager>();
-		enemyManager.gameManager = this;
 
 		// initiate shop manager
 		// have to do it this way cuz it breaks if i dont create a new one each time lmao
@@ -114,25 +110,28 @@ public class GameManager : MonoBehaviour {
 		tileMap.gameManager = this;
 		tileMap.InitiateTileMap();
 
+		
 		// Create and spawn the player's character
 		CreatePlayerCharacter();
 
 		// check if player spawned on shop tile
 		uiManager.SetShopMenuButtonActive();
 
+		// initiate enemy manager
+		enemyManager = GameObject.Find("EnemyManager").GetComponent<EnemyManager>();
+		enemyManager.gameManager = this;
 		enemyManager.playerManager = playerManager;
-
 		// spawn enemies
 		int enemyCount; // amount of enemies at start of game
 		switch(difficulty) {
 			case DifficultyState.Ez:
-				enemyCount = 15;
+				enemyCount = 10;
 				break;
 			case DifficultyState.Mid:
-				enemyCount = 25;
+				enemyCount = 18;
 				break;
 			case DifficultyState.Impossible:
-				enemyCount = 35;
+				enemyCount = 30;
 				break;
 			default:
 				// this section should never be reached
@@ -151,14 +150,6 @@ public class GameManager : MonoBehaviour {
 		// create camera controller
 		camController = GameObject.Find("Main Camera").AddComponent<CameraController>();
 		camController.gameManager = this;
-		// set camera variables
-		camController.CamTargetSpeed = 5;
-		camController.CamTargetRadius = 3.7f;
-		camController.ObjectCamTargetMaxSpeed = 6;
-		camController.CamRotationSpeed = 20;
-		camController.zoomSpeed = 0.1f;
-		camController.camTargetDrag = 5;
-		camController.maxZoom = 5;
 
 		camController.InititateCamera();
 
@@ -263,8 +254,8 @@ public class GameManager : MonoBehaviour {
 		int tempY = Mathf.FloorToInt(mapSize / 2);
 		while (!tileMap.tileTypes[tileMap.tiles[tempX, tempY]].isWalkable) {
 			// Keep moving spawn position until spawn is walkable
-			tempX += 1;
-			tempY += 1;
+			tempX += Random.Range(-3, 4);
+			tempY += Random.Range(-3, 4);
 		}
 		playerManager.SpawnPlayer(tempX, tempY);
 	}

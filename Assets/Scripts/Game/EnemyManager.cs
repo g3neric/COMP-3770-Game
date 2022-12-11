@@ -113,13 +113,13 @@ public class EnemyManager : MonoBehaviour {
         int maxEnemies;
         switch(gameManager.difficulty) {
             case DifficultyState.Ez:
-                maxEnemies = 25;
+                maxEnemies = 20;
                 break;
             case DifficultyState.Mid:
-                maxEnemies = 35;
+                maxEnemies = 25;
                 break;
             case DifficultyState.Impossible:
-                maxEnemies = 45;
+                maxEnemies = 40;
                 break;
             default:
                 return;
@@ -266,7 +266,7 @@ public class EnemyManager : MonoBehaviour {
         int[] playerCoordIfInRange = IsPlayerInRange(curEnemy, curEnemy.viewRange);
         if (playerCoordIfInRange != null) {
             // player is in view range
-            
+
             // calculate distance between enemy and player
             float dist = TileMap.DistanceBetweenTiles(curEnemy.currentX, curEnemy.currentY, playerCoordIfInRange[0], playerCoordIfInRange[1]);
 
@@ -307,9 +307,17 @@ public class EnemyManager : MonoBehaviour {
             int attackRange = curEnemy.currentItems[curEnemy.selectedItemIndex].range;
             Vector2 result = ((attackRange - 2) * (Vector2)Vector3.Normalize(directionVector)) + end; // have to cast to vector2
 
-            // path to chosen location
-            PathEnemyToLocation(Mathf.RoundToInt(result.x), Mathf.RoundToInt(result.y), curEnemy, curEnemyObject);
+            // generate end path destinations until one is valid
+            // destination cannot be current tile
+            int x = Mathf.Clamp(Mathf.RoundToInt(result.x), 
+                                map.oceanSize + map.shoreVariation, 
+                                gameManager.mapSize - map.oceanSize - map.shoreVariation);
+            int y = Mathf.Clamp(Mathf.RoundToInt(result.y), 
+                                map.oceanSize + map.shoreVariation, 
+                                gameManager.mapSize - map.oceanSize - map.shoreVariation);
 
+            // path to chosen location
+            PathEnemyToLocation(x, y, curEnemy, curEnemyObject);
         } else {
             // wander; player not in view range
 
@@ -317,15 +325,19 @@ public class EnemyManager : MonoBehaviour {
             if (curEnemy.currentPath == null) {
                 // no path right now, so lets pick a point to path to
                 // generate initital random point
-                int x = 0;
-                int y = 0;
 
                 // generate end path destinations until one is valid
                 // destination cannot be current tile
-                while (!map.UnitCanEnterTile(x, y) || (curEnemy.currentX == x && curEnemy.currentY == y)) {
+                int x = 0;
+                int y = 0;
+                while (!map.UnitCanEnterTile(x, y)) {
                     // pick new point and try again
-                    x = Mathf.Clamp(curEnemy.currentX + Random.Range(-5, 6), map.oceanSize, gameManager.mapSize - map.oceanSize);
-                    y = Mathf.Clamp(curEnemy.currentY + Random.Range(-5, 6), map.oceanSize, gameManager.mapSize - map.oceanSize);
+                    x = Mathf.Clamp(curEnemy.currentX + Random.Range(-4, 5), 
+                                    map.oceanSize + map.shoreVariation, 
+                                    gameManager.mapSize - map.oceanSize - map.shoreVariation);
+                    y = Mathf.Clamp(curEnemy.currentY + Random.Range(-4, 5), 
+                                    map.oceanSize + Mathf.RoundToInt(map.shoreVariation), 
+                                    gameManager.mapSize - map.oceanSize - map.shoreVariation);
                 }
                 // create path to location
                 PathEnemyToLocation(x, y, curEnemy, curEnemyObject);

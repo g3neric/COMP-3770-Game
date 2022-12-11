@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.Assertions;
 
+public enum BiomeSetting { Tundra, Arctic, Desert, Mountain, Marshland };
+
 public class TileMap : MonoBehaviour {
 	// link to game manager
 	[HideInInspector] public GameManager gameManager;
@@ -13,8 +15,8 @@ public class TileMap : MonoBehaviour {
 	// Map generation variables
 	[Space]
 	[Header("Map settings")]
-	public int shoreSize;
-	public float shoreVariation;
+	[HideInInspector] public int shoreSize;
+	[HideInInspector] public int shoreVariation;
 	[Range(5, 20)] public float biomeSize;
 	[Range(15, 100)] public int oceanSize;
 	[Space()]
@@ -32,12 +34,17 @@ public class TileMap : MonoBehaviour {
 	[HideInInspector] public int swampType = -1;
 	[HideInInspector] public int grassType = -1;
 	[HideInInspector] public int desertType = -1;
+	[HideInInspector] public int grasslandSnowyType = -1;
+	[HideInInspector] public int grasslandDryType = -1;
 	[HideInInspector] public int hillType = -1;
 	[HideInInspector] public int mountainType = -1;
+	[HideInInspector] public int hillSnowyType = -1;
 	[HideInInspector] public int sandType = -1;
 	[HideInInspector] public int waterType = -1;
 	[HideInInspector] public int roadType = -1;
 	[HideInInspector] public int shopType = -1;
+	[HideInInspector] public int snowType = -1;
+	[HideInInspector] public int iceType = -1;
 
 	[Space]
 	[Header("Prefabs")]
@@ -114,62 +121,145 @@ public class TileMap : MonoBehaviour {
 				case "TileShop":
 					shopType = i;
 					break;
+				case "TileHillSnowy":
+					hillSnowyType = i;
+					break;
+				case "TileGrasslandSnowy":
+					grasslandSnowyType = i;
+					break;
+				case "TileGrasslandDry":
+					grasslandDryType = i;
+					break;
+				case "TileSnow":
+					snowType = i;
+					break;
+				case "TileIce":
+					iceType = i;
+					break;
 			}
 		}
 
 		// set tile frequencies
 		switch (gameManager.biomeSetting) {
-			case BiomeSetting.Default:
-				// swamp tile
-				tileTypes[swampType].frequency = 15;
-				// grass tile
-				tileTypes[grassType].frequency = 40;
-				// desert tile
-				tileTypes[desertType].frequency = 0;
-				// hill tile
-				tileTypes[hillType].frequency = 20;
-				// mountain tile
-				tileTypes[mountainType].frequency = 25;
-				break;
-			case BiomeSetting.Hilly:
-				// swamp tile
-				tileTypes[swampType].frequency = 10;
-				// grass tile
-				tileTypes[grassType].frequency = 20;
-				// desert tile
-				tileTypes[desertType].frequency = 0;
-				// hill tile
-				tileTypes[hillType].frequency = 35;
-				// mountain tile
-				tileTypes[mountainType].frequency = 35;
-				break;
-			case BiomeSetting.Superflat:
+			case BiomeSetting.Tundra:
+				// water tile
+				tileTypes[waterType].frequency = 5;
+				// ice tile
+				tileTypes[iceType].frequency = 3;
 				// swamp tile
 				tileTypes[swampType].frequency = 5;
 				// grass tile
-				tileTypes[grassType].frequency = 15;
+				tileTypes[grassType].frequency = 5;
 				// desert tile
-				tileTypes[desertType].frequency = 75;
+				tileTypes[desertType].frequency = 0;
+				// hill tile
+				tileTypes[hillType].frequency = 10;
+				// mountain tile
+				tileTypes[mountainType].frequency = 15;
+				// hill Snowy tile
+				tileTypes[hillSnowyType].frequency = 15;
+				// grassland Snowy tile
+				tileTypes[grasslandSnowyType].frequency = 20;
+				// grassland dry tile
+				tileTypes[grasslandDryType].frequency = 10;
+				// snow tile
+				tileTypes[snowType].frequency = 12;
+				RenderSettings.skybox = assetHandler.clearSky;
+				GameObject.Find("SunLight").GetComponent<Light>().color = new Color32(25, 56, 160, 255);
+				shoreSize = 8;
+				shoreVariation = 5;
+				break;
+			case BiomeSetting.Arctic:
+				// water tile
+				tileTypes[waterType].frequency = 10;
+				// ice tile
+				tileTypes[iceType].frequency = 0;
+				// swamp tile
+				tileTypes[swampType].frequency = 0;
+				// grass tile
+				tileTypes[grassType].frequency = 0;
+				// desert tile
+				tileTypes[desertType].frequency = 0;
+				// hill tile
+				tileTypes[hillType].frequency = 5;
+				// mountain tile
+				tileTypes[mountainType].frequency = 15;
+				// hill Snowy tile
+				tileTypes[hillSnowyType].frequency = 15;
+				// grassland Snowy tile
+				tileTypes[grasslandSnowyType].frequency = 20;
+				// grassland dry tile
+				tileTypes[grasslandDryType].frequency = 15;
+				// snow tile
+				tileTypes[snowType].frequency = 20;
+				RenderSettings.skybox = assetHandler.nightSky;
+				GameObject.Find("SunLight").GetComponent<Light>().color = new Color32(25, 56, 190, 255);
+				shoreSize = 10;
+				shoreVariation = 7;
+				break;
+			case BiomeSetting.Desert:
+				// water tile
+				tileTypes[waterType].frequency = 15;
+				// ice tile
+				tileTypes[iceType].frequency = 0;
+				// swamp tile
+				tileTypes[swampType].frequency = 0;
+				// grass tile
+				tileTypes[grassType].frequency = 5;
+				// desert tile
+				tileTypes[desertType].frequency = 60;
 				// hill tile
 				tileTypes[hillType].frequency = 5;
 				// mountain tile
 				tileTypes[mountainType].frequency = 0;
+				// hill Snowy tile
+				tileTypes[hillSnowyType].frequency = 0;
+				// grassland Snowy tile
+				tileTypes[grasslandSnowyType].frequency = 0;
+				// grassland dry tile
+				tileTypes[grasslandDryType].frequency = 15;
+				// snow tile
+				tileTypes[snowType].frequency = 0;
+				RenderSettings.skybox = assetHandler.redSky;
+				GameObject.Find("SunLight").GetComponent<Light>().color = new Color32(191, 139, 143, 255);
+				shoreSize = 6;
+				shoreVariation = 2;
 				break;
-			case BiomeSetting.Mountaineous:
+			case BiomeSetting.Mountain:
+				// water tile
+				tileTypes[waterType].frequency = 5;
+				// ice tile
+				tileTypes[iceType].frequency = 2;
 				// swamp tile
-				tileTypes[swampType].frequency = 10;
+				tileTypes[swampType].frequency = 0;
 				// grass tile
-				tileTypes[grassType].frequency = 15;
+				tileTypes[grassType].frequency = 0;
 				// desert tile
 				tileTypes[desertType].frequency = 0;
 				// hill tile
-				tileTypes[hillType].frequency = 30;
+				tileTypes[hillType].frequency = 0;
 				// mountain tile
-				tileTypes[mountainType].frequency = 45;
+				tileTypes[mountainType].frequency = 43;
+				// hill Snowy tile
+				tileTypes[hillSnowyType].frequency = 20;
+				// grassland Snowy tile
+				tileTypes[grasslandSnowyType].frequency = 15;
+				// grassland dry tile
+				tileTypes[grasslandDryType].frequency = 5;
+				// snow tile
+				tileTypes[snowType].frequency = 10;
+				RenderSettings.skybox = assetHandler.nightSky;
+				GameObject.Find("SunLight").GetComponent<Light>().color = new Color32(25, 56, 160, 255);
+				shoreSize = 5;
+				shoreVariation = 3;
 				break;
-			case BiomeSetting.Swampland:
+			case BiomeSetting.Marshland:
+				// water tile
+				tileTypes[waterType].frequency = 10;
+				// ice tile
+				tileTypes[iceType].frequency = 0;
 				// swamp tile
-				tileTypes[swampType].frequency = 45;
+				tileTypes[swampType].frequency = 40;
 				// grass tile
 				tileTypes[grassType].frequency = 25;
 				// desert tile
@@ -177,7 +267,19 @@ public class TileMap : MonoBehaviour {
 				// hill tile
 				tileTypes[hillType].frequency = 15;
 				// mountain tile
-				tileTypes[mountainType].frequency = 15;
+				tileTypes[mountainType].frequency = 10;
+				// hill Snowy tile
+				tileTypes[hillSnowyType].frequency = 0;
+				// grassland Snowy tile
+				tileTypes[grasslandSnowyType].frequency = 0;
+				// grassland dry tile
+				tileTypes[grasslandDryType].frequency = 0;
+				// snow tile
+				tileTypes[snowType].frequency = 0;
+				RenderSettings.skybox = assetHandler.clearSky;
+				GameObject.Find("SunLight").GetComponent<Light>().color = new Color32(108, 163, 119, 255);
+				shoreSize = 5;
+				shoreVariation = 2;
 				break;
 		}
 
@@ -216,8 +318,14 @@ public class TileMap : MonoBehaviour {
 
 					tiles[x, y] = waterType;
 				} else if (distance > radius - shoreSize) {
-					// Generate sand tile
-					tiles[x, y] = sandType;
+					// Generate edge tile
+					if (gameManager.biomeSetting == BiomeSetting.Arctic || 
+						gameManager.biomeSetting == BiomeSetting.Mountain ||
+						gameManager.biomeSetting == BiomeSetting.Tundra) {
+						tiles[x, y] = iceType;
+					} else {
+						tiles[x, y] = sandType;
+					}
 				} else {
 					// Generate remaining tiles
 
@@ -261,13 +369,20 @@ public class TileMap : MonoBehaviour {
 						tiles[x, y] = mountainType;
 					}
 
-					// If current tile touches a water tile, make it sand
+					// If current tile touches a water tile, make it an edge tile
 					if ((tiles[x - 1, y] == waterType) ||
 						(tiles[x + 1, y] == waterType) ||
 						(tiles[x, y - 1] == waterType) ||
 						(tiles[x, y + 1] == waterType)) {
 
-						tiles[x, y] = sandType;
+						// Generate edge tile
+						if (gameManager.biomeSetting == BiomeSetting.Arctic ||
+							gameManager.biomeSetting == BiomeSetting.Mountain ||
+							gameManager.biomeSetting == BiomeSetting.Tundra) {
+							tiles[x, y] = iceType;
+						} else {
+							tiles[x, y] = sandType;
+						}
 					}
 				}
 			}
@@ -382,7 +497,8 @@ public class TileMap : MonoBehaviour {
 				if (tileTypes[tiles[ranY, ranX]].isWalkable &&
 				   (tiles[ranY, ranX] != roadType) &&
 				   (tiles[ranY, ranX] != shopType) &&
-				   (tiles[ranY, ranX] != waterType)) {
+				   (tiles[ranY, ranX] != waterType) &&
+				   (tiles[ranY, ranX] != mountainType)) {
 					// set to shop tile
 					tiles[ranX, ranY] = shopType;
 					break;
@@ -491,7 +607,7 @@ public class TileMap : MonoBehaviour {
 	public int CostToEnterTile(int x, int y) {
 		if (UnitCanEnterTile(x, y) == false) {
 			// unit cannot enter tile, so return big number
-			return gameManager.mapSize;
+			return gameManager.mapSize * 2;
 		} else {
 			return tileTypes[tiles[x, y]].movementCost;
 		}
@@ -676,6 +792,15 @@ public class TileMap : MonoBehaviour {
 		// So we need to invert it!
 		currentPath.Reverse();
 
+		// check if unreachable
+		float sum = 0;
+		foreach (Node node in currentPath) {
+			sum += dist[node];
+		}
+		if (sum > gameManager.mapSize) {
+			return null;
+        }
+
 		return currentPath;
 	}
 
@@ -807,11 +932,13 @@ public class TileMap : MonoBehaviour {
 			// determine which neighbours are also in movement range
 			int[] temp = new int[2];
 
-			// [0] = above, [1] = right, [2] = left, [3] = below
-			bool[] neighbourValues = new bool[4];
+			// [4] = here	[0] = above		[5] = here
+			// [2] = left					[1] = right
+			// [6] = here	[3] = below		[7] = here
+
+			bool[] neighbourValues = new bool[8];
 
 			// check if neighbours are also in the list of possible movements
-
 			foreach (int[] j in tilesInRange) {
 				// above neighbour
 				if (j[0] == i[0] && j[1] == i[1] + 1) {
@@ -829,6 +956,25 @@ public class TileMap : MonoBehaviour {
 				if (j[0] == i[0] && j[1] == i[1] - 1) {
 					neighbourValues[3] = true;
 				}
+
+				//diagonals
+				// top left neighbour
+				if (j[0] == i[0] - 1 && j[1] == i[1] + 1) {
+					neighbourValues[4] = true;
+				}
+				// top right neighbour
+				if (j[0] == i[0] + 1 && j[1] == i[1] + 1) {
+					neighbourValues[5] = true;
+				}
+				// bottom left neighbour
+				if (j[0] == i[0] - 1 && j[1] == i[1] - 1) {
+					neighbourValues[6] = true;
+				}
+				// bottom right neighbour
+				if (j[0] == i[0] + 1 && j[1] == i[1] - 1) {
+					neighbourValues[7] = true;
+				}
+
 			}
 
 			// count how many neighbours are in movement list
@@ -839,11 +985,12 @@ public class TileMap : MonoBehaviour {
 				}
 			}
 
+			Vector3 pos = new Vector3(i[0], yOffset, i[1]);
 			// instantiate outline - make sure current tile has between 1 and 3 neighbours in list.
 			// if it doesn't, then we dont instantiate it
 			if (tempSum <= 3 && tempSum > 0) {
 				// position of outline
-				Vector3 pos = new Vector3(i[0], yOffset, i[1]);
+				
 				// rotation of outline
 				float yRotation = 0f;
 				// default
@@ -918,6 +1065,37 @@ public class TileMap : MonoBehaviour {
 				tempObj.transform.Rotate(0f, yRotation, 0f, Space.World);
 				// add outline to list of all created outlines
 				createdOutlines.Add(tempObj);
+			}
+
+			// now do corner pieces
+			if (neighbourValues[0] && neighbourValues[2] && !neighbourValues[4]) {
+				// left and above
+				var newCornerPiece = Instantiate(outlinePrefabs[4], pos, Quaternion.identity, GameObject.Find("TileContainer").transform);
+				newCornerPiece.transform.Rotate(0f, 180f, 0f, Space.World);
+				createdOutlines.Add(newCornerPiece);
+			}
+
+			if (neighbourValues[1] && neighbourValues[0] && !neighbourValues[5]) {
+				// above and right
+				var newCornerPiece = Instantiate(outlinePrefabs[4], pos, Quaternion.identity, GameObject.Find("TileContainer").transform);
+				newCornerPiece.transform.Rotate(0f, 270f, 0f, Space.World);
+				createdOutlines.Add(newCornerPiece);
+			}
+
+			if (neighbourValues[1] && neighbourValues[3] && !neighbourValues[7]) {
+				// right and below
+				var newCornerPiece = Instantiate(outlinePrefabs[4], pos, Quaternion.identity, GameObject.Find("TileContainer").transform);
+				newCornerPiece.transform.Rotate(0f, 0f, 0f, Space.World);
+				createdOutlines.Add(newCornerPiece);
+				
+			}
+
+			if (neighbourValues[2] && neighbourValues[3] && !neighbourValues[6]) {
+				// left and below
+				var newCornerPiece = Instantiate(outlinePrefabs[4], pos, Quaternion.identity, GameObject.Find("TileContainer").transform);
+				newCornerPiece.transform.Rotate(0f, 90f, 0f, Space.World);
+				createdOutlines.Add(newCornerPiece);
+				
 			}
 		}
 		return createdOutlines;

@@ -20,13 +20,13 @@ RenderSettings:
   m_FogDensity: 0.49
   m_LinearFogStart: 5
   m_LinearFogEnd: 35
-  m_AmbientSkyColor: {r: 0.7884656, g: 0.840299, b: 0.9245283, a: 1}
+  m_AmbientSkyColor: {r: 0.9433962, g: 0.8668565, b: 0.870931, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 8
   m_AmbientMode: 3
-  m_SubtractiveShadowColor: {r: 0.3674617, g: 0.3872463, b: 0.49056602, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: 85cf0b004bc4a654b9e501efcce47902, type: 2}
+  m_SubtractiveShadowColor: {r: 0.49019608, g: 0.36862746, b: 0.37475756, a: 1}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 91f753e1c61c6384caead14ef8b77a51, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -1069,7 +1069,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -3067,7 +3067,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -3353,7 +3353,7 @@ GameObject:
   - component: {fileID: 705507995}
   - component: {fileID: 705507994}
   m_Layer: 0
-  m_Name: Directional Light
+  m_Name: SunLight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3370,17 +3370,17 @@ Light:
   serializedVersion: 10
   m_Type: 1
   m_Shape: 0
-  m_Color: {r: 0.5686275, g: 0.6509804, b: 0.8, a: 1}
-  m_Intensity: 1.3
+  m_Color: {r: 0.745283, g: 0.5441972, b: 0.56022865, a: 1}
+  m_Intensity: 1.2
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
     m_Type: 2
-    m_Resolution: 1
+    m_Resolution: 3
     m_CustomResolution: -1
-    m_Strength: 0.824
+    m_Strength: 1
     m_Bias: 0.05
     m_NormalBias: 0.4
     m_NearPlane: 0.2
@@ -4648,7 +4648,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.392}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.6039216}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4684,6 +4684,8 @@ GameObject:
   - component: {fileID: 963194228}
   - component: {fileID: 963194227}
   - component: {fileID: 963194226}
+  - component: {fileID: 963194230}
+  - component: {fileID: 963194229}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -4757,6 +4759,83 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: -25, y: -27, z: 51}
+--- !u!114 &963194229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963194225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b9a305e18de0c04dbd257a21cd47087, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sharedProfile: {fileID: 11400000, guid: 95ab68994cd612e4f89d58d01a2ae869, type: 2}
+  isGlobal: 1
+  blendDistance: 0
+  weight: 1
+  priority: 0
+--- !u!114 &963194230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963194225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 948f4100a11a5c24981795d21301da5c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  volumeTrigger: {fileID: 963194228}
+  volumeLayer:
+    serializedVersion: 2
+    m_Bits: 2147483647
+  stopNaNPropagation: 1
+  finalBlitToCameraTarget: 0
+  antialiasingMode: 1
+  temporalAntialiasing:
+    jitterSpread: 0.75
+    sharpness: 0.25
+    stationaryBlending: 0.95
+    motionBlending: 0.85
+  subpixelMorphologicalAntialiasing:
+    quality: 2
+  fastApproximateAntialiasing:
+    fastMode: 0
+    keepAlpha: 0
+  fog:
+    enabled: 1
+    excludeSkybox: 1
+  debugLayer:
+    lightMeter:
+      width: 512
+      height: 256
+      showCurves: 1
+    histogram:
+      width: 512
+      height: 256
+      channel: 3
+    waveform:
+      exposure: 0.12
+      height: 256
+    vectorscope:
+      size: 256
+      exposure: 0.12
+    overlaySettings:
+      linearDepth: 0
+      motionColorIntensity: 4
+      motionGridSize: 64
+      colorBlindnessType: 0
+      colorBlindnessStrength: 1
+  m_Resources: {fileID: 11400000, guid: d82512f9c8e5d4a4d938b575d47f88d4, type: 2}
+  m_ShowToolkit: 0
+  m_ShowCustomSorter: 0
+  breakBeforeColorGrading: 0
+  m_BeforeTransparentBundles: []
+  m_BeforeStackBundles: []
+  m_AfterStackBundles: []
 --- !u!1 &966511539
 GameObject:
   m_ObjectHideFlags: 0
@@ -5382,10 +5461,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameManager: {fileID: 0}
   shoreSize: 7
-  shoreVariation: 1.5
+  shoreVariation: 1
   biomeSize: 5
   oceanSize: 15
-  numOfRandomlyGeneratedTiles: 5
+  numOfRandomlyGeneratedTiles: 11
   tileTypes:
   - name: TileSwamp
     tilePrefab: {fileID: 1561500678141819050, guid: f7e4c28b14f1e7e479bd6efff93fe237, type: 3}
@@ -5399,14 +5478,50 @@ MonoBehaviour:
     isWalkable: 1
     blocksVision: 0
     movementCost: 2
+  - name: TileGrasslandDry
+    tilePrefab: {fileID: 1561500678141819050, guid: df9331245fc4c864c9cc246a2d4908fa, type: 3}
+    frequency: 0
+    isWalkable: 1
+    blocksVision: 0
+    movementCost: 2
   - name: TileDesert
     tilePrefab: {fileID: 1561500678141819050, guid: 604399de34c559f488bfbee31598979d, type: 3}
     frequency: 0
     isWalkable: 1
     blocksVision: 0
     movementCost: 2
+  - name: TileWater
+    tilePrefab: {fileID: 1561500678141819050, guid: e247765d5302ab646af4a26655174545, type: 3}
+    frequency: 0
+    isWalkable: 0
+    blocksVision: 0
+    movementCost: 0
+  - name: TileIce
+    tilePrefab: {fileID: 1561500678141819050, guid: 0ed243734caf6f04caaebc008a487d7b, type: 3}
+    frequency: 0
+    isWalkable: 1
+    blocksVision: 0
+    movementCost: 2
+  - name: TileGrasslandSnowy
+    tilePrefab: {fileID: 1561500678141819050, guid: cdd76e54f778a0a4b857fe1ba3dd1739, type: 3}
+    frequency: 0
+    isWalkable: 1
+    blocksVision: 0
+    movementCost: 2
   - name: TileHill
     tilePrefab: {fileID: 1561500678141819050, guid: 450872f303fb93542a63d99f2d92f2e1, type: 3}
+    frequency: 0
+    isWalkable: 1
+    blocksVision: 0
+    movementCost: 4
+  - name: TileSnow
+    tilePrefab: {fileID: 1561500678141819050, guid: 9747acb3b9e91f44eb18b5ebd6252818, type: 3}
+    frequency: 0
+    isWalkable: 1
+    blocksVision: 0
+    movementCost: 2
+  - name: TileHillSnowy
+    tilePrefab: {fileID: 1561500678141819050, guid: eba06947be0841d43bd923190e308ee3, type: 3}
     frequency: 0
     isWalkable: 1
     blocksVision: 0
@@ -5423,12 +5538,6 @@ MonoBehaviour:
     isWalkable: 1
     blocksVision: 0
     movementCost: 2
-  - name: TileWater
-    tilePrefab: {fileID: 1561500678141819050, guid: e247765d5302ab646af4a26655174545, type: 3}
-    frequency: 0
-    isWalkable: 0
-    blocksVision: 0
-    movementCost: 0
   - name: TileRoad
     tilePrefab: {fileID: 1561500678141819050, guid: 5aa1447f5c7a7a441998da091c1fce15, type: 3}
     frequency: 0
@@ -5444,12 +5553,17 @@ MonoBehaviour:
   swampType: -1
   grassType: -1
   desertType: -1
+  grasslandSnowyType: -1
+  grasslandDryType: -1
   hillType: -1
   mountainType: -1
+  hillSnowyType: -1
   sandType: -1
   waterType: -1
   roadType: -1
   shopType: -1
+  snowType: -1
+  iceType: -1
 --- !u!4 &1081531528
 Transform:
   m_ObjectHideFlags: 0
@@ -5795,7 +5909,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -8145,7 +8259,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -8356,7 +8470,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1

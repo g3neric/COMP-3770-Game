@@ -13,17 +13,19 @@ public class CameraController : MonoBehaviour {
     Camera m_MainCamera;
     private Transform CamTrans;
 
-    // public variables (mostly just speed of everything)
-    public float CamTargetSpeed;
-    public float CamTargetRadius;
-    public float ObjectCamTargetMaxSpeed;
-    public float CamRotationSpeed;
-    public float zoomSpeed;
-    public float camTargetDrag; // affects how slide-y the camera feels - when you let go how much does it move
+    // constants
+    public const float CamTargetRadius = 3.7f;
+    public const float CamRotationSpeed = 20;
+    public const float zoomSpeed = 0.1f;
+    public const float camTargetDrag = 5; // affects how slide-y the camera feels - when you let go how much does it move
+    public const float maxZoom = 7;
+
+    // cam target
+    public float CamTargetSpeed = 5;
+    public float ObjectCamTargetMaxSpeed = 6;
 
     // zoom
     private float zoomLevel;
-    public float maxZoom;
 
     private GameObject ObjectCamTarget;
     private Rigidbody ObjectCamTargetRigidbody;

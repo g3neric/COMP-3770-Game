@@ -63,7 +63,7 @@ public class Character {
     public Character() {
         currentItems = new List<Item>();
         killCount = 0;
-        gold = 20;
+        gold = 5;
         dead = false;
         selectedItemIndex = 0;
     }
@@ -105,7 +105,7 @@ public class Character {
         string text = maxAP + " AP\n" +
                       maxHP + " HP\n" +
                       healRate + " HP per turn\n" +
-                      viewRange + " tiles\n" +
+                      (viewRange - 1) + " tiles\n" +
                       (GameManager.critChance * luckMultiplier) + "% per shot\n" +
                       (GameManager.epicCritChance * luckMultiplier) + "% per shot\n" +
                       accuracy.ToString("F2") + "%\n" +
@@ -127,7 +127,7 @@ public class Grunt : Character {
         maxAP = 7;
         maxHP = 60;
         healRate = 3;
-        viewRange = 10;
+        viewRange = 8;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
@@ -144,7 +144,7 @@ public class Engineer : Character {
         maxAP = 7;
         maxHP = 65;
         healRate = 3;
-        viewRange = 10;
+        viewRange = 8;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
@@ -161,7 +161,7 @@ public class Joker : Character {
         maxAP = 7;
         maxHP = 55;
         healRate = 3;
-        viewRange = 9;
+        viewRange = 7;
         luckMultiplier = 3f;
         HP = maxHP;
         AP = maxAP;
@@ -178,7 +178,7 @@ public class Scout : Character {
         maxAP = 9;
         maxHP = 55;
         healRate = 3;
-        viewRange = 12;
+        viewRange = 9;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
@@ -194,7 +194,7 @@ public class Sharpshooter : Character {
         maxAP = 6;
         maxHP = 45;
         healRate = 3;
-        viewRange = 15;
+        viewRange = 11;
         luckMultiplier = .75f;
         HP = maxHP;
         AP = maxAP;
@@ -209,9 +209,9 @@ public class Surgeon : Character {
     public Surgeon() {
         className = "Surgeon";
         maxAP = 6;
-        maxHP = 90;
+        maxHP = 80;
         healRate = 7;
-        viewRange = 10;
+        viewRange = 7;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
@@ -227,7 +227,7 @@ public class Tank : Character {
         maxAP = 7;
         maxHP = 100;
         healRate = 2;
-        viewRange = 10;
+        viewRange = 7;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
@@ -244,7 +244,7 @@ public class Goblin : Character {
         maxAP = 5;
         maxHP = 50;
         healRate = 0;
-        viewRange = 8;
+        viewRange = 6;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;
@@ -260,7 +260,7 @@ public class Ghoul : Character {
         maxAP = 4;
         maxHP = 35;
         healRate = 0;
-        viewRange = 8;
+        viewRange = 6;
         luckMultiplier = 1f;
         HP = maxHP;
         AP = maxAP;

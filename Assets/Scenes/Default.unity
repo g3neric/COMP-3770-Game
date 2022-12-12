@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 671.69055, g: 793.7175, b: 985.6089, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -436,6 +436,7 @@ MonoBehaviour:
   - {fileID: 2760457026279230676, guid: e176936fdd68c1e4cac826a26cdae6ac, type: 3}
   - {fileID: 2760457026279230676, guid: 420dbd642438b534fb86aee6f45de64d, type: 3}
   - {fileID: 2760457026279230676, guid: 4455050b4d237864f89a189f7040f990, type: 3}
+  tileOutline: {fileID: 1561500678141819050, guid: c2c9dc4c833c3d74abdf0c49b533b953, type: 3}
   straightRoadPrefab: {fileID: 1561500678141819050, guid: 5aa1447f5c7a7a441998da091c1fce15, type: 3}
   crossroadPrefab: {fileID: 1561500678141819050, guid: fdaba329f4ffb1949915f6e974a72a84, type: 3}
   fogOfWarOutlineMaterial: {fileID: 2100000, guid: 3c85945dd0ac93049b6498eee7c3dd44, type: 2}
@@ -446,6 +447,8 @@ MonoBehaviour:
   redSky: {fileID: 2100000, guid: 5d133deeaa66ed445853e946ff25e073, type: 2}
   nightSky: {fileID: 2100000, guid: d4454f71d85928744be7771e2143dab7, type: 2}
   clearSky: {fileID: 2100000, guid: 4e154bf235e41704bbd6bbc6fd6c63f6, type: 2}
+  darkWater: {fileID: 2100000, guid: 85cb1dd88820e214e8fe125a59fad88a, type: 2}
+  clearWater: {fileID: 2100000, guid: 1a66761663b703b47b20b3e8d7f57c6d, type: 2}
 --- !u!4 &878711059
 Transform:
   m_ObjectHideFlags: 0

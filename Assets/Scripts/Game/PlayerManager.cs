@@ -185,8 +185,9 @@ public class PlayerManager : MonoBehaviour {
 			currentPath = null;
 		}
 
-		// update shop button
+		// check if we need to display buttons
 		gameManager.uiManager.SetShopMenuButtonActive();
+		gameManager.uiManager.SetExtractionButtonActive();
 	}
 	
 	// Helper function to create animated line to end target

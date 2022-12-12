@@ -37,6 +37,9 @@ public class TileMap : MonoBehaviour {
 	public GameObject[,] tilesObjects;
 	public GameObject[,] roadObjects;
 
+	// extraction tile
+	public GameObject extractionTile;
+
 	// graph of map for pathfinding
 	[HideInInspector] public Node[,] fullMapGraph;
 
@@ -57,6 +60,42 @@ public class TileMap : MonoBehaviour {
 
 	// Allocate our map tiles
 	// I combined GenerateMapVisual() into this function becuz it didnt need to be seperate
+	public void GenerateBiome(int[] frequencies, int shoreS, int shoreVar, int biomeS, float colorTemp, Material waterMat) {
+		// water tile
+		tileTypes[tileTypeIndexes["TileWater"]].frequency = frequencies[0];
+		// ice tile
+		tileTypes[tileTypeIndexes["TileIce"]].frequency = frequencies[1];
+		// swamp tile
+		tileTypes[tileTypeIndexes["TileSwamp"]].frequency = frequencies[2];
+		// grass tile
+		tileTypes[tileTypeIndexes["TileGrass"]].frequency = frequencies[3];
+		// desert tile
+		tileTypes[tileTypeIndexes["TileDesert"]].frequency = frequencies[4];
+		// hill tile
+		tileTypes[tileTypeIndexes["TileHill"]].frequency = frequencies[5];
+		// mountain tile
+		tileTypes[tileTypeIndexes["TileMountain"]].frequency = frequencies[6];
+		// hill Snowy tile
+		tileTypes[tileTypeIndexes["TileHillSnowy"]].frequency = frequencies[7];
+		// grassland Snowy tile
+		tileTypes[tileTypeIndexes["TileGrasslandSnowy"]].frequency = frequencies[8];
+		// grassland dry tile
+		tileTypes[tileTypeIndexes["TileGrasslandDry"]].frequency = frequencies[9];
+		// snow tile
+		tileTypes[tileTypeIndexes["TileSnow"]].frequency = frequencies[10];
+		GameObject.Find("SunLight").GetComponent<Light>().colorTemperature = colorTemp;
+		foreach (Transform child in GameObject.Find("Water Planes").transform) {
+			child.GetComponent<Renderer>().material = waterMat;
+        }
+		shoreSize = shoreS;
+		shoreVariation = shoreVar;
+		biomeSize = biomeS;
+	}
+
+	// generate the tile map and all tiles
+	// before you open this function, just beware that it is very messy and not optimized
+	// i don't care about the running time of this function. it is run once. i do not have
+	// time to care about this function.
 	public void GenerateMap() {
 		// quick reference
 		int mapSize = gameManager.mapSize;
@@ -78,152 +117,28 @@ public class TileMap : MonoBehaviour {
 			tileTypeIndexes.Add(tileTypes[i].name, i);
 		}
 
+		int[] frequencies;
 		// set tile frequencies
 		switch (gameManager.biomeSetting) {
 			case BiomeSetting.Tundra:
-				// water tile
-				tileTypes[tileTypeIndexes["TileWater"]].frequency = 5;
-				// ice tile
-				tileTypes[tileTypeIndexes["TileIce"]].frequency = 3;
-				// swamp tile
-				tileTypes[tileTypeIndexes["TileSwamp"]].frequency = 0;
-				// grass tile
-				tileTypes[tileTypeIndexes["TileGrass"]].frequency = 0;
-				// desert tile
-				tileTypes[tileTypeIndexes["TileDesert"]].frequency = 0;
-				// hill tile
-				tileTypes[tileTypeIndexes["TileHill"]].frequency = 10;
-				// mountain tile
-				tileTypes[tileTypeIndexes["TileMountain"]].frequency = 15;
-				// hill Snowy tile
-				tileTypes[tileTypeIndexes["TileHillSnowy"]].frequency = 15;
-				// grassland Snowy tile
-				tileTypes[tileTypeIndexes["TileGrasslandSnowy"]].frequency = 25;
-				// grassland dry tile
-				tileTypes[tileTypeIndexes["TileGrasslandDry"]].frequency = 10;
-				// snow tile
-				tileTypes[tileTypeIndexes["TileSnow"]].frequency = 17;
-				GameObject.Find("SunLight").GetComponent<Light>().colorTemperature = 7500f;
-				//GameObject.Find("Global Volume").GetComponent<LightProbeProxyVolume>() = assetHandler.clearSky;
-				shoreSize = 8;
-				shoreVariation = 5;
-				biomeSize = 7;
+				frequencies = new int[] {5, 3, 0, 0, 0, 10, 15, 15, 25, 10, 17 };
+				GenerateBiome(frequencies, 8, 5, 7, 7500f, assetHandler.darkWater);
 				break;
 			case BiomeSetting.Arctic:
-				// water tile
-				tileTypes[tileTypeIndexes["TileWater"]].frequency = 20;
-				// ice tile
-				tileTypes[tileTypeIndexes["TileIce"]].frequency = 0;
-				// swamp tile
-				tileTypes[tileTypeIndexes["TileSwamp"]].frequency = 0;
-				// grass tile
-				tileTypes[tileTypeIndexes["TileGrass"]].frequency = 0;
-				// desert tile
-				tileTypes[tileTypeIndexes["TileDesert"]].frequency = 0;
-				// hill tile
-				tileTypes[tileTypeIndexes["TileHill"]].frequency = 2;
-				// mountain tile
-				tileTypes[tileTypeIndexes["TileMountain"]].frequency = 15;
-				// hill Snowy tile
-				tileTypes[tileTypeIndexes["TileHillSnowy"]].frequency = 15;
-				// grassland Snowy tile
-				tileTypes[tileTypeIndexes["TileGrasslandSnowy"]].frequency = 5;
-				// grassland dry tile
-				tileTypes[tileTypeIndexes["TileGrasslandDry"]].frequency = 5;
-				// snow tile
-				tileTypes[tileTypeIndexes["TileSnow"]].frequency = 38;
-				RenderSettings.skybox = assetHandler.nightSky;
-				GameObject.Find("SunLight").GetComponent<Light>().colorTemperature = 7500f;
-				shoreSize = 10;
-				shoreVariation = 7;
-				biomeSize = 5;
+				frequencies = new int[] { 20, 0, 0, 0, 0, 2, 15, 15, 5, 5, 38 };
+				GenerateBiome(frequencies, 10, 7, 5, 7500f, assetHandler.darkWater);
 				break;
 			case BiomeSetting.Desert:
-				// water tile
-				tileTypes[tileTypeIndexes["TileWater"]].frequency = 15;
-				// ice tile
-				tileTypes[tileTypeIndexes["TileIce"]].frequency = 0;
-				// swamp tile
-				tileTypes[tileTypeIndexes["TileSwamp"]].frequency = 0;
-				// grass tile
-				tileTypes[tileTypeIndexes["TileGrass"]].frequency = 5;
-				// desert tile
-				tileTypes[tileTypeIndexes["TileDesert"]].frequency = 60;
-				// hill tile
-				tileTypes[tileTypeIndexes["TileHill"]].frequency = 5;
-				// mountain tile
-				tileTypes[tileTypeIndexes["TileMountain"]].frequency = 0;
-				// hill Snowy tile
-				tileTypes[tileTypeIndexes["TileHillSnowy"]].frequency = 0;
-				// grassland Snowy tile
-				tileTypes[tileTypeIndexes["TileGrasslandSnowy"]].frequency = 0;
-				// grassland dry tile
-				tileTypes[tileTypeIndexes["TileGrasslandDry"]].frequency = 15;
-				// snow tile
-				tileTypes[tileTypeIndexes["TileSnow"]].frequency = 0;
-				RenderSettings.skybox = assetHandler.redSky;
-				GameObject.Find("SunLight").GetComponent<Light>().colorTemperature = 5800f;
-				shoreSize = 6;
-				shoreVariation = 2;
-				biomeSize = 7;
+				frequencies = new int[] { 15, 0, 0, 5, 60, 5, 0, 0, 0, 15, 0 };
+				GenerateBiome(frequencies, 6, 2, 7, 5800f, assetHandler.clearWater);
 				break;
 			case BiomeSetting.Mountain:
-				// water tile
-				tileTypes[tileTypeIndexes["TileWater"]].frequency = 5;
-				// ice tile
-				tileTypes[tileTypeIndexes["TileIce"]].frequency = 2;
-				// swamp tile
-				tileTypes[tileTypeIndexes["TileSwamp"]].frequency = 0;
-				// grass tile
-				tileTypes[tileTypeIndexes["TileGrass"]].frequency = 0;
-				// desert tile
-				tileTypes[tileTypeIndexes["TileDesert"]].frequency = 0;
-				// hill tile
-				tileTypes[tileTypeIndexes["TileHill"]].frequency = 0;
-				// mountain tile
-				tileTypes[tileTypeIndexes["TileMountain"]].frequency = 43;
-				// hill Snowy tile
-				tileTypes[tileTypeIndexes["TileHillSnowy"]].frequency = 20;
-				// grassland Snowy tile
-				tileTypes[tileTypeIndexes["TileGrasslandSnowy"]].frequency = 15;
-				// grassland dry tile
-				tileTypes[tileTypeIndexes["TileGrasslandDry"]].frequency = 5;
-				// snow tile
-				tileTypes[tileTypeIndexes["TileSnow"]].frequency = 10;
-				RenderSettings.skybox = assetHandler.nightSky;
-				GameObject.Find("SunLight").GetComponent<Light>().colorTemperature = 6900f;
-				shoreSize = 5;
-				shoreVariation = 3;
-				biomeSize = 4;
+				frequencies = new int[] { 5, 2, 0, 0, 0, 0, 43, 20, 15, 5, 10 };
+				GenerateBiome(frequencies, 5, 3, 4, 6900f, assetHandler.darkWater);
 				break;
 			case BiomeSetting.Marshland:
-				// water tile
-				tileTypes[tileTypeIndexes["TileWater"]].frequency = 10;
-				// ice tile
-				tileTypes[tileTypeIndexes["TileIce"]].frequency = 0;
-				// swamp tile
-				tileTypes[tileTypeIndexes["TileSwamp"]].frequency = 40;
-				// grass tile
-				tileTypes[tileTypeIndexes["TileGrass"]].frequency = 25;
-				// desert tile
-				tileTypes[tileTypeIndexes["TileDesert"]].frequency = 0;
-				// hill tile
-				tileTypes[tileTypeIndexes["TileHill"]].frequency = 15;
-				// mountain tile
-				tileTypes[tileTypeIndexes["TileMountain"]].frequency = 10;
-				// hill Snowy tile
-				tileTypes[tileTypeIndexes["TileHillSnowy"]].frequency = 0;
-				// grassland Snowy tile
-				tileTypes[tileTypeIndexes["TileGrasslandSnowy"]].frequency = 0;
-				// grassland dry tile
-				tileTypes[tileTypeIndexes["TileGrasslandDry"]].frequency = 0;
-				// snow tile
-				tileTypes[tileTypeIndexes["TileSnow"]].frequency = 0;
-				RenderSettings.skybox = assetHandler.clearSky;
-				GameObject.Find("SunLight").GetComponent<Light>().colorTemperature = 6900f;
-				shoreSize = 5;
-				shoreVariation = 2;
-				biomeSize = 6;
+				frequencies = new int[] { 10, 0, 40, 25, 0, 15, 10, 0, 0, 0, 0 };
+				GenerateBiome(frequencies, 5, 2, 6, 6900f, assetHandler.clearWater);
 				break;
 		}
 
@@ -337,6 +252,16 @@ public class TileMap : MonoBehaviour {
 		for (int x = 0; x < mapSize; x++) {
 			for (int y = 0; y < mapSize; y++) {
 				TileType tt = tileTypes[tiles[x, y]];
+
+				// add default outline overtop
+				if (tiles[x, y] != tileTypeIndexes["TileWater"]) {
+					Instantiate(assetHandler.tileOutline,
+								new Vector3(x, 0.005f, y),
+								Quaternion.identity,
+								GameObject.Find("TileContainer").transform)
+						.name = "outline (" + x + ", " + y + ")";
+				}
+
 				GameObject currentTile = Instantiate(tileTypes[tiles[x, y]].tilePrefab,
 													 new Vector3(x, 0f, y),
 													 Quaternion.identity,
@@ -345,21 +270,18 @@ public class TileMap : MonoBehaviour {
 				currentTile.name = tt.name + " (" + x + ", " + y + ")";
 
 				// Randomly rotate tile a little so there's not as much reptition
-				if (currentTile.name != "water_tile") {
-					// but don't rotate water because that looks weird
-					int phase = Mathf.RoundToInt(Random.Range(1, 3));
-					currentTile.transform.Rotate(0f, 90f * phase, 0f, Space.World);
-				}
+				int phase = Mathf.RoundToInt(Random.Range(1, 3));
+				currentTile.transform.Rotate(0f, 90f * phase, 0f, Space.World);
 
 				// add some random variation to object heights
-				if (currentTile.transform.childCount > 0 && 
-					currentTile.transform.GetChild(0).name != "Cube" &&
-					currentTile.transform.GetChild(0).name != "water") {
+				if (currentTile.transform.childCount > 0) {
 					foreach (Transform child in currentTile.transform) {
-						float ranYScaleVariation = Random.Range(0.7f, 1.2f);
-						child.transform.localScale = new Vector3(child.transform.localScale.x,
-																 child.transform.localScale.y * ranYScaleVariation,
-																 child.transform.localScale.z);
+						if (child.name != "Cube") {
+							float ranYScaleVariation = Random.Range(0.7f, 1.2f);
+							child.transform.localScale = new Vector3(child.transform.localScale.x,
+																	 child.transform.localScale.y * ranYScaleVariation,
+																	 child.transform.localScale.z);
+						}
 					}
 				}
 				
@@ -370,6 +292,7 @@ public class TileMap : MonoBehaviour {
 				ct.x = x;
 				ct.y = y;
 
+				
 				ChangeTileToFog(x, y);
 			}
 		}
@@ -419,16 +342,16 @@ public class TileMap : MonoBehaviour {
 					// instantiate road outline a little bit overtop the current tile,
 					// so that you can see the old tile underneath a lil bit
 					GameObject currentTile = Instantiate(assetHandler.straightRoadPrefab,
-														 new Vector3(x, 0.009f, y),
+														 new Vector3(x, 0.006f, y),
 														 Quaternion.identity,
 														 GameObject.Find("TileContainer").transform);
 					currentTile.name = "Road (" + x + ", " + y + ")";
 					currentTile.transform.Rotate(0f, 90f, 0f, Space.World);
-					if (tilesObjects[x, y].transform.childCount > 0 &&
-						currentTile.transform.GetChild(0).name != "Cube" &&
-						currentTile.transform.GetChild(0).name != "water") {
+					if (tilesObjects[x, y].transform.childCount > 0) {
 						foreach (Transform child in tilesObjects[x, y].transform) {
-							Destroy(child.gameObject);
+							if (child.name != "Cube") {
+								Destroy(child.gameObject);
+							}	
 						}
 					}
 					roadObjects[x, y] = currentTile;
@@ -460,27 +383,57 @@ public class TileMap : MonoBehaviour {
 			}
 
 			GameObject currentTile = Instantiate(tileTypes[tileTypeIndexes["TileShop"]].tilePrefab,
-												 new Vector3(ranX, 0.00925f, ranY),
+												 new Vector3(ranX, 0.007f, ranY),
 											     Quaternion.identity,
 												 GameObject.Find("TileContainer").transform);
 			currentTile.name = "Shop (" + ranX + ", " + ranY + ")";
 
 			// put shop in list of shops
-			int[] temp = new int[2];
-			temp[0] = ranX;
-			temp[1] = ranY;
-
-			gameManager.shopManager.InitializeShop(temp, currentTile);
+			gameManager.shopManager.InitializeShop(new int[] { ranX, ranY }, currentTile);
 
 			// remove all children of original tile
 			if (tilesObjects[ranX, ranY].transform.childCount > 0) {
 				foreach (Transform child in tilesObjects[ranX, ranY].transform) {
-					Destroy(child.gameObject);
+					if (child.name != "Cube") {
+						Destroy(child.gameObject);
+					}	
 				}
 			}
 
 			// make tile initially foggy
 			ChangeTileToFog(ranX, ranY);
+		}
+
+		// generate extraction tile
+		while (true) {
+			ranY = Random.Range(oceanSize + shoreSize + shoreVariation, mapSize - oceanSize - shoreSize - shoreVariation);
+			ranX = Random.Range(oceanSize + shoreSize + shoreVariation, mapSize - oceanSize - shoreSize - shoreVariation);
+			if (tileTypes[tiles[ranY, ranX]].isWalkable &&
+			   (tiles[ranY, ranX] != tileTypeIndexes["TileRoad"]) &&
+			   (tiles[ranY, ranX] != tileTypeIndexes["TileShop"]) &&
+			   (tiles[ranY, ranX] != tileTypeIndexes["TileWater"]) &&
+			   (tiles[ranY, ranX] != tileTypeIndexes["TileMountain"])) {
+				// set to extraction tile
+				tiles[ranX, ranY] = tileTypeIndexes["TileExtraction"];
+
+				GameObject currentTile = Instantiate(tileTypes[tileTypeIndexes["TileExtraction"]].tilePrefab,
+													new Vector3(ranX, 0.008f, ranY),
+													Quaternion.identity,
+													GameObject.Find("TileContainer").transform);
+				currentTile.name = "Extraction (" + ranX + ", " + ranY + ")";
+
+				extractionTile = currentTile;
+				// remove all children of original tile
+				if (tilesObjects[ranX, ranY].transform.childCount > 0) {
+					foreach (Transform child in tilesObjects[ranX, ranY].transform) {
+						if (child.name != "Cube") {
+							Destroy(child.gameObject);
+						}
+					}
+				}
+				ChangeTileToFog(ranX, ranY);
+				break;
+			}
 		}
 	}
 
@@ -496,6 +449,9 @@ public class TileMap : MonoBehaviour {
 	}
 
 	public void ChangeTileToFog(int x, int y) {
+		// update tile underneath
+		tilesObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = assetHandler.fogOfWarOutlineMaterial;
+
 		// change material to fog
 		// update overlay tiles
 		if (tiles[x,y] == tileTypeIndexes["TileRoad"]) {
@@ -508,9 +464,13 @@ public class TileMap : MonoBehaviour {
 			gameManager.shopManager.FindShopAtPosition(x, y).shopTileObject.GetComponent<MeshRenderer>().sharedMaterial =
 				assetHandler.fogOfWarOutlineMaterial;
 
+		} else if (tiles[x,y] == tileTypeIndexes["TileExtraction"]) {
+			// extraction tile
+			extractionTile.GetComponent<MeshRenderer>().sharedMaterial =
+				assetHandler.fogOfWarOutlineMaterial;
 		}
-		// update tile underneath
-		tilesObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = assetHandler.fogOfWarOutlineMaterial;
+
+		
 
 		// disable all children
 		foreach (Transform child in tilesObjects[x, y].transform) {
@@ -519,6 +479,9 @@ public class TileMap : MonoBehaviour {
 	}
 
 	public void RevertTileToDefault(int x, int y) {
+		// update tile underneath
+		tilesObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = tileTypes[originalTiles[x, y]].tilePrefab.GetComponent<MeshRenderer>().sharedMaterial;
+
 		// revert material
 		// update overlay tiles
 		if (tiles[x, y] == tileTypeIndexes["TileRoad"]) {
@@ -530,9 +493,12 @@ public class TileMap : MonoBehaviour {
 			// find the shop tile at current position and change its material
 			gameManager.shopManager.FindShopAtPosition(x, y).shopTileObject.GetComponent<MeshRenderer>().sharedMaterial = 
 				tileTypes[tileTypeIndexes["TileShop"]].tilePrefab.GetComponent<MeshRenderer>().sharedMaterial;
+		} else if (tiles[x, y] == tileTypeIndexes["TileExtraction"]) {
+			// extraction tile
+			extractionTile.GetComponent<MeshRenderer>().sharedMaterial =
+				tileTypes[tileTypeIndexes["TileExtraction"]].tilePrefab.GetComponent<MeshRenderer>().sharedMaterial;
 		}
-		// update tile underneath
-		tilesObjects[x, y].GetComponent<MeshRenderer>().sharedMaterial = tileTypes[originalTiles[x, y]].tilePrefab.GetComponent<MeshRenderer>().sharedMaterial;
+		
 
 		// enable all children
 		foreach (Transform child in tilesObjects[x, y].transform) {
@@ -772,10 +738,7 @@ public class TileMap : MonoBehaviour {
 					(tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile == null ||
 					tilesObjects[x, y].GetComponent<ClickableTile>().currentCharacterOnTile == gameManager.GetCharacterObject())) {
 					// Put the current tile position in list
-					int[] temp = new int[2];
-					temp[0] = x;
-					temp[1] = y;
-					returnValues.Add(temp);
+					returnValues.Add(new int[] { x, y });
 				}
 			}
 		}
@@ -801,8 +764,7 @@ public class TileMap : MonoBehaviour {
 		}
 		int numerator = longest >> 1;
 		for (int i = 0; i <= longest; i++) {
-			int[] temp = { x, y };
-			result.Add(temp);
+			result.Add(new int [] { x, y });
 			numerator += shortest;
 			if (!(numerator < longest)) {
 				numerator -= longest;

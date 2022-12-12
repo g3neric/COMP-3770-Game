@@ -16,6 +16,7 @@ public class AssetHandler : MonoBehaviour {
     public GameObject tileHoverOutlinePrefab;
     public GameObject[] tilePossibleMovementOutlinePrefabs;
     public GameObject[] rangeOutlinePrefabs;
+    public GameObject tileOutline;
 
     [Space]
     [Header("Road prefabs")]
@@ -26,6 +27,8 @@ public class AssetHandler : MonoBehaviour {
     [Header("Materials")]
     // fog of war material
     public Material fogOfWarOutlineMaterial;
+
+
 
     [Space]
     [Header("Cursors")]
@@ -42,4 +45,9 @@ public class AssetHandler : MonoBehaviour {
     public Material redSky;
     public Material nightSky;
     public Material clearSky;
+
+    [Space]
+    [Header("Water")]
+    public Material darkWater;
+    public Material clearWater;
 }

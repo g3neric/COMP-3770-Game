@@ -60,6 +60,10 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector] public bool shopMenuEnabled = false;
 	[HideInInspector] public bool gameOverMenuEnabled = false;
 
+	// extraction
+	[HideInInspector] public bool extractionCalled;
+	[HideInInspector] public int extractionRoundTimer;
+	[HideInInspector] public const int extractionLength = 10; // rounds until extraction
 
 	void Awake() {
 		cs = ControlState.Deselected;
@@ -114,8 +118,9 @@ public class GameManager : MonoBehaviour {
 		// Create and spawn the player's character
 		CreatePlayerCharacter();
 
-		// check if player spawned on shop tile
+		// check if player spawned on a special tile
 		uiManager.SetShopMenuButtonActive();
+		uiManager.SetExtractionButtonActive();
 
 		// initiate enemy manager
 		enemyManager = GameObject.Find("EnemyManager").GetComponent<EnemyManager>();
@@ -156,9 +161,10 @@ public class GameManager : MonoBehaviour {
 		}
 		enemyManager.UpdateEnemiesVisibility();
 
-		// reset pause bools
+		// reset bools
 		pauseMenuEnabled = false;
 		shopMenuEnabled = false;
+		extractionCalled = false;
 
 		// create camera controller
 		camController = GameObject.Find("Main Camera").AddComponent<CameraController>();
@@ -168,6 +174,7 @@ public class GameManager : MonoBehaviour {
 
 		// snap to unit
 		camController.ToggleSnapToUnit();
+
 	}
 
 	public void SetControlState(ControlState newCS) {
@@ -303,6 +310,18 @@ public class GameManager : MonoBehaviour {
 		// enemy turns
 		enemyManager.ResolveAllEnemyTurns();
 		enemyManager.UpdateEnemiesVisibility();
+
+		// decrease extraction timer
+		if (extractionCalled) {
+			if (extractionRoundTimer > 1) {
+				extractionRoundTimer--;
+				SendMessageToLog("<color=#4255ff>" + extractionRoundTimer + "<color=#ffffff> rounds until extraction");
+            } else {
+				uiManager.ExtractionMenu();
+				return;
+            }
+        }
+
 
 		// determine chance of enemy spawning each turn based on difficulty
 		int spawnChance;
@@ -520,7 +539,7 @@ public class GameManager : MonoBehaviour {
 				if (characterClass.dead) {
 					SendMessageToLog("You have died");
 					GetCharacterObject().GetComponent<Animator>().SetBool("isMoving", false);
-					uiManager.GameOverMenu(damageAmount, enemyCharacter);
+					uiManager.DeathMenu(damageAmount, enemyCharacter);
 					return;
 				}		
 			} else {
@@ -530,7 +549,18 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
-	void LateUpdate() {
+	public void CallForExtraction() {
+		extractionCalled = true;
+		extractionRoundTimer = extractionLength;
+		// remove "call for extraction" button
+		uiManager.SetExtractionButtonActive();
+
+		SendMessageToLog("Extraction requested");
+		SendMessageToLog("<color=#4255ff>" + extractionRoundTimer + "<color=#ffffff> rounds until extraction");
+		SendMessageToLog("The island grows restless...");
+    }
+
+    void LateUpdate() {
 		// update cursor based on game state
 		if (cs == ControlState.Move) {
 			

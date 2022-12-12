@@ -243,67 +243,72 @@ public class EnemyManager : MonoBehaviour {
         return null;
     }
 
+    private void EngagePlayer(Character curEnemy) {
+        // calculate distance between enemy and player
+        float dist = TileMap.DistanceBetweenTiles(curEnemy.currentX, 
+                                                  curEnemy.currentY,
+                                                  gameManager.GetCharacterClass().currentX,
+                                                  gameManager.GetCharacterClass().currentY);
+
+        // select appropriate weapon
+        /*
+        if (dist >= Mathf.Min(curEnemy.currentItems[0].range, curEnemy.currentItems[1].range) {
+
+        }
+        */
+
+        // switch to primary weapon
+        curEnemy.selectedItemIndex = 0;
+
+        // check if enemy can attack player with primary
+        if (IsPlayerInRange(curEnemy, curEnemy.currentItems[0].range) != null) {
+            // player is in attack range, so lets check if we can attack them
+            while (curEnemy.AP - curEnemy.currentItems[0].APcost >= 0) {
+                gameManager.AttackPlayer(curEnemy);
+            }
+        }
+
+        // check if enemy has a secondary
+        if (curEnemy.currentItems.Count > 1) {
+            // check if player is in range of their secondary
+            if (IsPlayerInRange(curEnemy, curEnemy.currentItems[1].range) != null) {
+                curEnemy.selectedItemIndex = 1; // switch to secondary
+                                                // attack until out of AP
+                while (curEnemy.AP - curEnemy.currentItems[1].APcost >= 0) {
+                    gameManager.AttackPlayer(curEnemy);
+                }
+            }
+        }
+
+        // return a vector2 that is (attackRange - 1) units away from the player in the direction of the player
+        Vector2 start = new Vector2(curEnemy.currentX, curEnemy.currentY);
+        Vector2 end = new Vector2(gameManager.GetCharacterClass().currentX,
+                                  gameManager.GetCharacterClass().currentY);
+        Vector2 directionVector = start - end;
+        int attackRange = curEnemy.currentItems[curEnemy.selectedItemIndex].range;
+        Vector2 result = ((attackRange - 2) * (Vector2)Vector3.Normalize(directionVector)) + end; // have to cast to vector2
+
+        // generate end path destinations until one is valid
+        // destination cannot be current tile
+        int x = Mathf.Clamp(Mathf.RoundToInt(result.x),
+                            map.oceanSize + map.shoreVariation,
+                            gameManager.mapSize - map.oceanSize - map.shoreVariation);
+        int y = Mathf.Clamp(Mathf.RoundToInt(result.y),
+                            map.oceanSize + map.shoreVariation,
+                            gameManager.mapSize - map.oceanSize - map.shoreVariation);
+        PathEnemyToLocation(x, y, curEnemy, curEnemy.characterObject);
+    }
+
     // calculate enemy's movement for one turn
     private void ResolveEnemyTurn(int enemyIndex) {
         Character curEnemy = enemyList[enemyIndex];
         GameObject curEnemyObject = enemyGameObjects[enemyIndex];
 
-        // check if player is in view range, if so move towards them. if not, move randomly
+        // check if extraction has been called or player is in range
+        // if so move towards them. if not, move randomly
         int[] playerCoordIfInRange = IsPlayerInRange(curEnemy, curEnemy.viewRange);
-        if (playerCoordIfInRange != null) {
-            // player is in view range
-
-            // calculate distance between enemy and player
-            float dist = TileMap.DistanceBetweenTiles(curEnemy.currentX, curEnemy.currentY, playerCoordIfInRange[0], playerCoordIfInRange[1]);
-
-            // select appropriate weapon
-            /*
-            if (dist >= Mathf.Min(curEnemy.currentItems[0].range, curEnemy.currentItems[1].range) {
-
-            }
-            */
-
-            // switch to primary weapon
-            curEnemy.selectedItemIndex = 0;
-
-            // check if enemy can attack player with primary
-            if (IsPlayerInRange(curEnemy, curEnemy.currentItems[0].range) != null) {
-                // player is in attack range, so lets check if we can attack them
-                while (curEnemy.AP - curEnemy.currentItems[0].APcost >= 0) {
-                    gameManager.AttackPlayer(curEnemy);
-                }
-            }
-
-            // check if enemy has a secondary
-            if (curEnemy.currentItems.Count > 1) {
-                // check if player is in range of their secondary
-                if (IsPlayerInRange(curEnemy, curEnemy.currentItems[1].range) != null) {
-                    curEnemy.selectedItemIndex = 1; // switch to secondary
-                    // attack until out of AP
-                    while (curEnemy.AP - curEnemy.currentItems[1].APcost >= 0) {
-                        gameManager.AttackPlayer(curEnemy);
-                    }
-                }
-            }
-
-            // return a vector2 that is (attackRange - 1) units away from the player in the direction of the player
-            Vector2 start = new Vector2(curEnemy.currentX, curEnemy.currentY);
-            Vector2 end = new Vector2(playerCoordIfInRange[0], playerCoordIfInRange[1]);
-            Vector2 directionVector = start - end;
-            int attackRange = curEnemy.currentItems[curEnemy.selectedItemIndex].range;
-            Vector2 result = ((attackRange - 2) * (Vector2)Vector3.Normalize(directionVector)) + end; // have to cast to vector2
-
-            // generate end path destinations until one is valid
-            // destination cannot be current tile
-            int x = Mathf.Clamp(Mathf.RoundToInt(result.x), 
-                                map.oceanSize + map.shoreVariation, 
-                                gameManager.mapSize - map.oceanSize - map.shoreVariation);
-            int y = Mathf.Clamp(Mathf.RoundToInt(result.y), 
-                                map.oceanSize + map.shoreVariation, 
-                                gameManager.mapSize - map.oceanSize - map.shoreVariation);
-
-            // path to chosen location
-            PathEnemyToLocation(x, y, curEnemy, curEnemyObject);
+        if (gameManager.extractionCalled || playerCoordIfInRange != null) {
+            EngagePlayer(curEnemy);
         } else {
             // wander; player not in view range
 

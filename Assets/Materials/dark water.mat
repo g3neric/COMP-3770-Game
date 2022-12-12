@@ -7,20 +7,20 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Water_mat_04
+  m_Name: dark water
   m_Shader: {fileID: -6465566751694194690, guid: f3ff61003df241e4a84f6c4962ed1e66, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _DISABLE_DECALS
   - _DISABLE_SSR_TRANSPARENT
+  - _DOUBLESIDED_ON
   - _ENABLE_FOG_ON_TRANSPARENT
   - _SURFACE_TYPE_TRANSPARENT
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
+  m_DoubleSidedGI: 1
+  m_CustomRenderQueue: 2999
   stringTagMap:
     MotionVector: User
     RenderType: Transparent
@@ -122,6 +122,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Texture2DAsset_a566c552b5fd4365be59105c031c75d5_Out_0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _ThicknessMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -144,15 +148,15 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - Boolean_ebdbf4f311404f5fb2cd2b6927a304c1: 1
-    - Vector1_07c93c7e34df4237b5dd57255d7f857a: 0.25
-    - Vector1_3849afd7c2eb484893a68ec694cc75b3: -0.55
-    - Vector1_4fa7de5de5304ba799341f5b9bbbf2c0: 0.4
-    - Vector1_6f56a0970372485390c6587863c2374e: -2.5
-    - Vector1_7ab1e13367ff4c17b0a4403edd3d9450: 0.3
+    - Boolean_ebdbf4f311404f5fb2cd2b6927a304c1: 0
+    - Vector1_07c93c7e34df4237b5dd57255d7f857a: 2
+    - Vector1_3849afd7c2eb484893a68ec694cc75b3: 0.33
+    - Vector1_4fa7de5de5304ba799341f5b9bbbf2c0: 0.5
+    - Vector1_6f56a0970372485390c6587863c2374e: 0.2
+    - Vector1_7ab1e13367ff4c17b0a4403edd3d9450: 0.278
     - Vector1_a3027f23b37c4da89592d406468d7aa8: 1
-    - Vector1_c0da6a80189144e5a45df6c62b281d57: 0.863
-    - Vector1_d70d07d7ef17405a961168abe8e24a3a: 37
+    - Vector1_c0da6a80189144e5a45df6c62b281d57: 0.734
+    - Vector1_d70d07d7ef17405a961168abe8e24a3a: 20
     - _AORemapMax: 1
     - _AORemapMin: 0
     - _ATDistance: 1
@@ -171,8 +175,8 @@ Material:
     - _BlendMode: 0
     - _CoatMask: 0
     - _ConservativeDepthOffsetEnable: 0
-    - _CullMode: 2
-    - _CullModeForward: 2
+    - _CullMode: 0
+    - _CullModeForward: 0
     - _Cutoff: 0.5
     - _DepthOffsetEnable: 0
     - _DetailAlbedoScale: 1
@@ -183,7 +187,7 @@ Material:
     - _DisplacementLockObjectScale: 1
     - _DisplacementLockTilingScale: 1
     - _DisplacementMode: 0
-    - _DoubleSidedEnable: 0
+    - _DoubleSidedEnable: 1
     - _DoubleSidedGIMode: 0
     - _DoubleSidedNormalMode: 1
     - _DstBlend: 10
@@ -245,7 +249,7 @@ Material:
     - _StencilWriteMaskGBuffer: 14
     - _StencilWriteMaskMV: 40
     - _SubsurfaceMask: 1
-    - _SupportDecals: 0
+    - _SupportDecals: 1
     - _SurfaceType: 1
     - _TexWorldScale: 1
     - _TexWorldScaleEmissive: 1
@@ -255,7 +259,7 @@ Material:
     - _TransparentCullMode: 2
     - _TransparentDepthPostpassEnable: 0
     - _TransparentDepthPrepassEnable: 0
-    - _TransparentSortPriority: 0
+    - _TransparentSortPriority: -1
     - _TransparentWritingMotionVec: 0
     - _TransparentZWrite: 0
     - _UVBase: 0
@@ -268,9 +272,9 @@ Material:
     - _ZTestTransparent: 4
     - _ZWrite: 0
     m_Colors:
-    - Color_6a9a916e2c84442984edc20c082efe79: {r: 0.89056605, g: 0.96206176, b: 1, a: 0.972549}
-    - Color_c9a840f2115c4802ba54d713194f761d: {r: 0.18736205, g: 0.23816584, b: 0.3584906, a: 0.9882353}
-    - Vector2_130994fa54a3486dacf33287c0070f7f: {r: 9, g: 9, b: 0, a: 0}
+    - Color_6a9a916e2c84442984edc20c082efe79: {r: 0.16112494, g: 0.17863537, b: 0.2924528, a: 0.1764706}
+    - Color_c9a840f2115c4802ba54d713194f761d: {r: 0.07319331, g: 0.07498067, b: 0.1509434, a: 1}
+    - Vector2_130994fa54a3486dacf33287c0070f7f: {r: 50, g: 50, b: 0, a: 0}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseColorMap_MipInfo: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}

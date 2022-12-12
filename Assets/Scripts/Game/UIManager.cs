@@ -53,7 +53,7 @@ public class UIManager : MonoBehaviour {
     // shop menu
     public Button shopMenuReturnButton;
     public Button shopMenuOpenButton;
-
+    public Button extractionButton;
     public Button gameOverMenuButton;
 
     // menus
@@ -70,7 +70,8 @@ public class UIManager : MonoBehaviour {
     public const int messageLife = 30; // in seconds
 
     public Button buttonNextTurn;
-    public GameObject shopButton;
+
+    
 
     // settings
     public Toggle showMovementCostOnTilesToggle;
@@ -92,6 +93,8 @@ public class UIManager : MonoBehaviour {
         settingsMenu.SetActive(false);
         controlsMenu.SetActive(false);
         shopMenu.SetActive(false);
+        shopMenuOpenButton.gameObject.SetActive(false);
+        extractionButton.gameObject.SetActive(false);
 
         // Initiate next turn button
         buttonNextTurn.GetComponent<Button>().onClick.AddListener(delegate { gameManager.FinishTurn(); });
@@ -123,6 +126,10 @@ public class UIManager : MonoBehaviour {
         shopMenuOpenButton.GetComponent<Button>().onClick.AddListener(delegate { ToggleShopMenu(); });
         shopMenuOpenButton.GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
 
+        // extraction button
+        extractionButton.GetComponent<Button>().onClick.AddListener(delegate { gameManager.CallForExtraction(); });
+        extractionButton.GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
+
         // Initiate control menu button
         controlMenuReturnButton.GetComponent<Button>().onClick.AddListener(delegate { SwitchPauseMenuPanel(PauseMenuState.Default); });
         controlMenuReturnButton.GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
@@ -146,7 +153,7 @@ public class UIManager : MonoBehaviour {
             TogglePauseMenu();
         }
 
-        if (gameManager != null && !gameManager.pauseMenuEnabled && !gameManager.gameOverMenuEnabled) {
+        if (gameManager != null) {
             // update text on the screen
             // HP bar
             HPBar.maxValue = gameManager.GetCharacterClass().maxHP;
@@ -318,7 +325,6 @@ public class UIManager : MonoBehaviour {
             settingsMenu.SetActive(false);
             gameManager.pauseMenuEnabled = false;
             gameManager.SetControlState(previousCS);
-            SetShopMenuButtonActive();
         } else if (!gameManager.pauseMenuEnabled) {
             // open pause menu
             pauseMenu.SetActive(true);
@@ -328,11 +334,12 @@ public class UIManager : MonoBehaviour {
             if (gameManager.shopMenuEnabled) {
                 ToggleShopMenu();
             }
-            SetShopMenuButtonActive();
 
             previousCS = gameManager.cs;
             gameManager.SetControlState(ControlState.Deselected);
         }
+        SetShopMenuButtonActive();
+        SetExtractionButtonActive();
     }
 
     // switch to different panel in the pause menu
@@ -367,9 +374,21 @@ public class UIManager : MonoBehaviour {
             !gameManager.shopMenuEnabled &&
             !gameManager.pauseMenuEnabled) {
             // set button to active if shop menu isn't open and player is on shop tile
-            shopButton.SetActive(true);
+            shopMenuOpenButton.gameObject.SetActive(true);
         } else {
-            shopButton.SetActive(false);
+            shopMenuOpenButton.gameObject.SetActive(false);
+        }
+    }
+
+    public void SetExtractionButtonActive() {
+        if (map.tiles[gameManager.GetCharacterClass().currentX, gameManager.GetCharacterClass().currentY] == map.tileTypeIndexes["TileExtraction"] &&
+            !gameManager.shopMenuEnabled &&
+            !gameManager.pauseMenuEnabled &&
+            !gameManager.extractionCalled) {
+            // set button to active if shop menu isn't open and player is on shop tile
+            extractionButton.gameObject.SetActive(true);
+        } else {
+            extractionButton.gameObject.SetActive(false);
         }
     }
 
@@ -377,7 +396,7 @@ public class UIManager : MonoBehaviour {
         if (gameManager.shopMenuEnabled) {
             // close shop menu
             shopMenu.SetActive(false);
-            shopButton.SetActive(true);
+            shopMenuOpenButton.gameObject.SetActive(true);
             gameManager.shopMenuEnabled = false;
             gameManager.SetControlState(previousCS);
 
@@ -390,7 +409,7 @@ public class UIManager : MonoBehaviour {
         } else if (!gameManager.pauseMenuEnabled) {
             // open shop menu
             shopMenu.SetActive(true);
-            shopButton.SetActive(false);
+            shopMenuOpenButton.gameObject.SetActive(false);
             gameManager.shopMenuEnabled = true;
 
             // toggle correct shop 
@@ -458,7 +477,8 @@ public class UIManager : MonoBehaviour {
         }
     }
 
-    public void GameOverMenu(float damageAmount, Character enemyCharacter) {
+    // game over menus
+    public void DeathMenu(float damageAmount, Character enemyCharacter) {
         gameOverMenu.SetActive(true);
         gameManager.gameOverMenuEnabled = true;
         gameManager.pauseMenuEnabled = true;
@@ -471,7 +491,24 @@ public class UIManager : MonoBehaviour {
         } else {
             text = text + "\nYou killed " + gameManager.GetCharacterClass().killCount + " enemies.";
         }
-                      
+
+        // title text
+        gameOverMenu.transform.GetChild(1).GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text = "Wasted";
+        // body text
+        gameOverMenu.transform.GetChild(1).GetChild(1).gameObject.GetComponent<TextMeshProUGUI>().text = text;
+    }
+
+    public void ExtractionMenu() {
+        gameOverMenu.SetActive(true);
+        gameManager.gameOverMenuEnabled = true;
+        gameManager.pauseMenuEnabled = true;
+        gameManager.SetControlState(ControlState.Deselected);
+        string text = "Turn: " + gameManager.turnCount + "\n" +
+                      "Kill count: " + gameManager.GetCharacterClass().killCount;
+
+        // title text
+        gameOverMenu.transform.GetChild(1).GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text = "Extracted";
+        // body text
         gameOverMenu.transform.GetChild(1).GetChild(1).gameObject.GetComponent<TextMeshProUGUI>().text = text;
     }
 

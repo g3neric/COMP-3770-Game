@@ -5,7 +5,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Rendering.PostProcessing;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
 using TMPro;
 
@@ -78,11 +79,6 @@ public class UIManager : MonoBehaviour {
 
     [HideInInspector] public bool movementCostOnCursor = false;
 
-    // hp vignette
-    PostProcessVolume m_Volume;
-    Vignette m_Vignette;
-
-
     // misc
     private ControlState previousCS;
 
@@ -96,17 +92,6 @@ public class UIManager : MonoBehaviour {
         settingsMenu.SetActive(false);
         controlsMenu.SetActive(false);
         shopMenu.SetActive(false);
-
-        // setup vignette
-        m_Vignette = ScriptableObject.CreateInstance<Vignette>();
-        m_Vignette.enabled.Override(true);
-        m_Vignette.intensity.Override(1f);
-        m_Volume = PostProcessManager.instance.QuickVolume(gameObject.layer, 100f, m_Vignette);
-        var colorParameter = new ColorParameter();
-        colorParameter.value = Color.red;
-        m_Vignette.color.Override(colorParameter);
-        m_Vignette.smoothness.Override(0.3f);
-        m_Vignette.intensity.Override(0f);
 
         // Initiate next turn button
         buttonNextTurn.GetComponent<Button>().onClick.AddListener(delegate { gameManager.FinishTurn(); });
@@ -153,10 +138,6 @@ public class UIManager : MonoBehaviour {
         muteSoundFXToggle.onValueChanged.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
         muteMusicToggle.onValueChanged.AddListener(delegate { { gameManager.soundManager.ToggleMuteMusic(); }; });
         muteMusicToggle.onValueChanged.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
-    }
-
-    void OnDestroy() {
-        RuntimeUtilities.DestroyVolume(m_Volume, true, true);
     }
 
     void LateUpdate() {
@@ -259,9 +240,14 @@ public class UIManager : MonoBehaviour {
             }
 
             // update vignette
-            var n = Mathf.Clamp(1 - ((gameManager.GetCharacterClass().HP * 1.3f) / gameManager.GetCharacterClass().maxHP), 0f, .6f);
-            m_Vignette.intensity.Override(Mathf.Lerp(m_Vignette.intensity.value, n, Time.deltaTime / 2));
-            
+            Volume volume = GameObject.Find("Global Volume").GetComponent<Volume>();
+            Vignette vignette;
+
+            if (volume.profile.TryGet(out vignette)) {
+                float n = Mathf.Clamp(1 - ((gameManager.GetCharacterClass().HP * 1.25f) / gameManager.GetCharacterClass().maxHP), 0f, .75f);
+
+                vignette.intensity.value = n;
+            }
         }
     }
 

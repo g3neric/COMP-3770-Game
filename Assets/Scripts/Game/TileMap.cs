@@ -103,8 +103,8 @@ public class TileMap : MonoBehaviour {
 				tileTypes[tileTypeIndexes["TileGrasslandDry"]].frequency = 10;
 				// snow tile
 				tileTypes[tileTypeIndexes["TileSnow"]].frequency = 17;
-				RenderSettings.skybox = assetHandler.clearSky;
-				GameObject.Find("SunLight").GetComponent<Light>().color = new Color32(25, 56, 160, 255);
+				GameObject.Find("SunLight").GetComponent<Light>().colorTemperature = 7500f;
+				//GameObject.Find("Global Volume").GetComponent<LightProbeProxyVolume>() = assetHandler.clearSky;
 				shoreSize = 8;
 				shoreVariation = 5;
 				biomeSize = 7;
@@ -133,7 +133,7 @@ public class TileMap : MonoBehaviour {
 				// snow tile
 				tileTypes[tileTypeIndexes["TileSnow"]].frequency = 38;
 				RenderSettings.skybox = assetHandler.nightSky;
-				GameObject.Find("SunLight").GetComponent<Light>().color = new Color32(25, 56, 190, 255);
+				GameObject.Find("SunLight").GetComponent<Light>().colorTemperature = 7500f;
 				shoreSize = 10;
 				shoreVariation = 7;
 				biomeSize = 5;
@@ -162,7 +162,7 @@ public class TileMap : MonoBehaviour {
 				// snow tile
 				tileTypes[tileTypeIndexes["TileSnow"]].frequency = 0;
 				RenderSettings.skybox = assetHandler.redSky;
-				GameObject.Find("SunLight").GetComponent<Light>().color = new Color32(191, 139, 143, 255);
+				GameObject.Find("SunLight").GetComponent<Light>().colorTemperature = 5800f;
 				shoreSize = 6;
 				shoreVariation = 2;
 				biomeSize = 7;
@@ -191,7 +191,7 @@ public class TileMap : MonoBehaviour {
 				// snow tile
 				tileTypes[tileTypeIndexes["TileSnow"]].frequency = 10;
 				RenderSettings.skybox = assetHandler.nightSky;
-				GameObject.Find("SunLight").GetComponent<Light>().color = new Color32(25, 56, 160, 255);
+				GameObject.Find("SunLight").GetComponent<Light>().colorTemperature = 6900f;
 				shoreSize = 5;
 				shoreVariation = 3;
 				biomeSize = 4;
@@ -220,7 +220,7 @@ public class TileMap : MonoBehaviour {
 				// snow tile
 				tileTypes[tileTypeIndexes["TileSnow"]].frequency = 0;
 				RenderSettings.skybox = assetHandler.clearSky;
-				GameObject.Find("SunLight").GetComponent<Light>().color = new Color32(108, 163, 119, 255);
+				GameObject.Find("SunLight").GetComponent<Light>().colorTemperature = 6900f;
 				shoreSize = 5;
 				shoreVariation = 2;
 				biomeSize = 6;
@@ -352,7 +352,9 @@ public class TileMap : MonoBehaviour {
 				}
 
 				// add some random variation to object heights
-				if (currentTile.transform.childCount > 0) {
+				if (currentTile.transform.childCount > 0 && 
+					currentTile.transform.GetChild(0).name != "Cube" &&
+					currentTile.transform.GetChild(0).name != "water") {
 					foreach (Transform child in currentTile.transform) {
 						float ranYScaleVariation = Random.Range(0.7f, 1.2f);
 						child.transform.localScale = new Vector3(child.transform.localScale.x,
@@ -422,7 +424,9 @@ public class TileMap : MonoBehaviour {
 														 GameObject.Find("TileContainer").transform);
 					currentTile.name = "Road (" + x + ", " + y + ")";
 					currentTile.transform.Rotate(0f, 90f, 0f, Space.World);
-					if (tilesObjects[x, y].transform.childCount > 0) {
+					if (tilesObjects[x, y].transform.childCount > 0 &&
+						currentTile.transform.GetChild(0).name != "Cube" &&
+						currentTile.transform.GetChild(0).name != "water") {
 						foreach (Transform child in tilesObjects[x, y].transform) {
 							Destroy(child.gameObject);
 						}
@@ -441,9 +445,9 @@ public class TileMap : MonoBehaviour {
 		// generate shop tiles
 		for (int i = 0; i < Mathf.RoundToInt(mapSize / 10); i++) {
 			while (true) {
-				// generate random point on the land; not on the sand
-				ranY = Random.Range(oceanSize + shoreSize, mapSize - oceanSize - shoreSize);
-				ranX = Random.Range(oceanSize + shoreSize, mapSize - oceanSize - shoreSize);
+				// generate random point on the land; not on the shore
+				ranY = Random.Range(oceanSize + shoreSize + shoreVariation, mapSize - oceanSize - shoreSize - shoreVariation);
+				ranX = Random.Range(oceanSize + shoreSize + shoreVariation, mapSize - oceanSize - shoreSize - shoreVariation);
 				if (tileTypes[tiles[ranY, ranX]].isWalkable &&
 				   (tiles[ranY, ranX] != tileTypeIndexes["TileRoad"]) &&
 				   (tiles[ranY, ranX] != tileTypeIndexes["TileShop"]) &&

@@ -29,6 +29,7 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector] public EnemyManager enemyManager;
 	[HideInInspector] public ShopManager shopManager;
 	[HideInInspector] public CameraController camController;
+	[HideInInspector] public DataSerializer dataSerializer;
 
 	[HideInInspector] public int turnCount = 1;
 
@@ -65,7 +66,11 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector] public int extractionRoundTimer;
 	[HideInInspector] public const int extractionLength = 10; // rounds until extraction
 
-	void Awake() {
+	// run timer
+	[HideInInspector] public float runTimer; // seconds
+	[HideInInspector] public bool runInProgress; // seconds
+
+	void Start () {
 		cs = ControlState.Deselected;
 
 		// Make this game object persistant throughout scenes
@@ -80,10 +85,16 @@ public class GameManager : MonoBehaviour {
 		DontDestroyOnLoad(soundManager.gameObject);
 		soundManager.Initialize();
 
+		// initialize data manager
+		dataSerializer = GameObject.Find("DataSerializer").GetComponent<DataSerializer>();
+		DontDestroyOnLoad(dataSerializer.gameObject);
+
+		// check if there's already a data file created
+		// if not, then make a new one
+		dataSerializer.CheckIfFileCreated();
+
 		soundManager.PlayMainMenuMusic();
 		SceneManager.LoadScene("MainMenu");
-
-		
 	}
 
     public void StartNewGame() {
@@ -95,6 +106,12 @@ public class GameManager : MonoBehaviour {
 	// This function is called when a new game is created
 	public void InitiateGameSession() {
 		soundManager.PlayGameMusic();
+
+		runTimer = 0;
+		runInProgress = true;
+
+		// update session count
+		dataSerializer.ModifySavedDataValue("TotalKills", 1, true);
 
 		// initiate ui manager
 		uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
@@ -177,7 +194,16 @@ public class GameManager : MonoBehaviour {
 
 	}
 
-	public void SetControlState(ControlState newCS) {
+    public void FixedUpdate() {
+		// increase run timer
+        if (runInProgress &&
+			!pauseMenuEnabled && 
+			!gameOverMenuEnabled) {
+			runTimer += Time.fixedDeltaTime;
+        }
+    }
+
+    public void SetControlState(ControlState newCS) {
 		TileMap.DestroyOutlines(playerManager.createdRangeOutlines);
 		TileMap.DestroyOutlines(playerManager.createdMovementOutlines);
 		// check which state was clicked
@@ -315,7 +341,7 @@ public class GameManager : MonoBehaviour {
 		if (extractionCalled) {
 			if (extractionRoundTimer > 1) {
 				extractionRoundTimer--;
-				SendMessageToLog("<color=#4255ff>" + extractionRoundTimer + "<color=#ffffff> rounds until extraction");
+				SendMessageToLog("<color=#9ca5ff>" + extractionRoundTimer + "<color=#ffffff> turns until extraction");
             } else {
 				uiManager.ExtractionMenu();
 				return;
@@ -477,6 +503,7 @@ public class GameManager : MonoBehaviour {
 				}
 				SendMessageToLog("Gained <color=#fffb9c>" + goldAmount + " gold");
 				characterClass.gold += goldAmount;
+				dataSerializer.ModifySavedDataValue("TotalGoldAcquired", goldAmount, true);
 			}
 		} else {
 			// miss
@@ -556,7 +583,7 @@ public class GameManager : MonoBehaviour {
 		uiManager.SetExtractionButtonActive();
 
 		SendMessageToLog("Extraction requested");
-		SendMessageToLog("<color=#4255ff>" + extractionRoundTimer + "<color=#ffffff> rounds until extraction");
+		SendMessageToLog("<color=#9ca5ff>" + extractionRoundTimer + "<color=#ffffff> turns until extraction");
 		SendMessageToLog("The island grows restless...");
     }
 

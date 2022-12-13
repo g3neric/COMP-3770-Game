@@ -28,6 +28,12 @@ public class AssetHandler : MonoBehaviour {
     // fog of war material
     public Material fogOfWarOutlineMaterial;
 
+    [Space]
+    [Header("Weapon Icons")]
+    // fog of war material
+    public Sprite pistolIcon;
+    public Sprite rifleIcon;
+    public Sprite sniperIcon;
 
 
     [Space]

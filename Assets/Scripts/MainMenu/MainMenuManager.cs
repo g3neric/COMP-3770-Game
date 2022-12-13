@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 using TMPro;
 
 
-public enum MainMenuState { Default, NewGame, Controls, Stats };
+public enum MainMenuState { Default, NewGame, Controls, Stats, Credits };
 
 public class MainMenuManager : MonoBehaviour {
     public GameManager gameManager;
@@ -28,6 +28,7 @@ public class MainMenuManager : MonoBehaviour {
     public GameObject newGameMenu;
     public GameObject controlsMenu;
     public GameObject statsMenu;
+    public GameObject creditsMenu;
 
     // dropDowns[0] = class dropdown
     // dropDowns[1] = difficulty dropdown
@@ -46,6 +47,7 @@ public class MainMenuManager : MonoBehaviour {
         newGameMenu.SetActive(false);
         controlsMenu.SetActive(false);
         statsMenu.SetActive(false);
+        creditsMenu.SetActive(false);
 
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
 
@@ -56,15 +58,29 @@ public class MainMenuManager : MonoBehaviour {
         mainMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
         mainMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Stats); });
         mainMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
+        mainMenuButtons[3].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Credits); });
+        mainMenuButtons[3].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
 
-        returnToMainMenuButtons[0].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Default); });
-        returnToMainMenuButtons[0].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
-        returnToMainMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Default); });
-        returnToMainMenuButtons[1].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
-        returnToMainMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Default); });
-        returnToMainMenuButtons[2].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
+        // initiate return to main menu buttons
+        foreach (Button but in returnToMainMenuButtons) {
+            but.GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Default); });
+            but.GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
+        }
     }
 
+    public void FixedUpdate() {
+        GameObject creditsText = creditsMenu.transform.Find("CreditsText").gameObject;
+        if (creditsMenu.activeSelf) {
+            if (creditsText.GetComponent<RectTransform>().anchoredPosition.y > 600) {
+                creditsText.GetComponent<RectTransform>().anchoredPosition = new Vector3(0, -650, 0); 
+            }
+            creditsText.GetComponent<RectTransform>().anchoredPosition = new Vector3(0,
+                creditsText.GetComponent<RectTransform>().anchoredPosition.y + Time.fixedDeltaTime * 50,
+                0);
+        } else {
+            creditsText.GetComponent<RectTransform>().anchoredPosition = new Vector3(0, -650, 0);
+        }
+    }
 
     public void SwitchMainMenuPanel(MainMenuState newState) {
         // make sure pause menu is enabled before doing anything
@@ -81,6 +97,12 @@ public class MainMenuManager : MonoBehaviour {
                 break;
             case MainMenuState.Stats:
                 statsMenu.SetActive(true);
+                // update stats text
+                //string text = 
+                //blank.GetComponent<TextMeshProUGUI>().Text = text;
+                break;
+            case MainMenuState.Credits:
+                creditsMenu.SetActive(true);
                 break;
             default:
                 mainMenu.SetActive(true);

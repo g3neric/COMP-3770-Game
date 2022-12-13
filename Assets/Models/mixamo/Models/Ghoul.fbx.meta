@@ -2,7 +2,10 @@ fileFormatVersion: 2
 guid: 3e5024d072df79e46864803293545ab1
 ModelImporter:
   serializedVersion: 22103
-  internalIDToNameTable: []
+  internalIDToNameTable:
+  - first:
+      74: -203655887218126122
+    second: mixamo.com
   externalObjects:
   - first:
       type: UnityEngine:Material

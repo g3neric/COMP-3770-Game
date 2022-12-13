@@ -15,6 +15,7 @@ public enum PauseMenuState { Default, Controls, Settings };
 public class UIManager : MonoBehaviour {
     [HideInInspector] public GameManager gameManager;
     [HideInInspector] public TileMap map;
+    [HideInInspector] public AssetHandler assetHandler;
 
     [HideInInspector] public PauseMenuState currentPMState = PauseMenuState.Default;
 
@@ -71,8 +72,6 @@ public class UIManager : MonoBehaviour {
 
     public Button buttonNextTurn;
 
-    
-
     // settings
     public Toggle showMovementCostOnTilesToggle;
     public Toggle muteSoundFXToggle;
@@ -86,6 +85,7 @@ public class UIManager : MonoBehaviour {
     private void Start() {
         // initiate references
         map = GameObject.Find("TileMapController").GetComponent<TileMap>();
+        assetHandler = GameObject.Find("AssetHandler").GetComponent<AssetHandler>();
 
         // default all menus to inactive
         gameOverMenu.SetActive(false);
@@ -147,6 +147,19 @@ public class UIManager : MonoBehaviour {
         muteMusicToggle.onValueChanged.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
     }
 
+    // helper function to convert item name into icon
+    public Sprite ItemIcon(string name) {
+        switch(name) {
+            case "Assault Rifle":
+                return assetHandler.rifleIcon;
+            case "Pistol":
+                return assetHandler.pistolIcon;
+            case "Sniper Rifle":
+                return assetHandler.sniperIcon;
+            default:
+                return null;
+        }
+    }
     void LateUpdate() {
         // pause game
         if (Input.GetKeyDown("escape") && !gameManager.gameOverMenuEnabled) {
@@ -181,13 +194,14 @@ public class UIManager : MonoBehaviour {
 
             // update toolbar item names for now
             if (gameManager.GetCharacterClass().currentItems.Count == 1) {
-                toolbarButtons[1].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = gameManager.GetCharacterClass().currentItems[0].name;
-                toolbarButtons[2].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = "";
+                toolbarButtons[1].transform.GetChild(1).GetComponent<Image>().sprite = ItemIcon(gameManager.GetCharacterClass().currentItems[0].name);
+                toolbarButtons[2].transform.GetChild(1).GetComponent<Image>().color = new Color32(255, 255, 255, 0);
             }
 
             if (gameManager.GetCharacterClass().currentItems.Count == 2) {
-                toolbarButtons[1].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = gameManager.GetCharacterClass().currentItems[0].name;
-                toolbarButtons[2].transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = gameManager.GetCharacterClass().currentItems[1].name;
+                toolbarButtons[2].transform.GetChild(1).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+                toolbarButtons[1].transform.GetChild(1).GetComponent<Image>().sprite = ItemIcon(gameManager.GetCharacterClass().currentItems[0].name);
+                toolbarButtons[2].transform.GetChild(1).GetComponent<Image>().sprite = ItemIcon(gameManager.GetCharacterClass().currentItems[1].name);
             }
 
             // button controls for the toolbar
@@ -477,14 +491,20 @@ public class UIManager : MonoBehaviour {
         }
     }
 
+    /*
+    public string FormatSeconds(float seconds) {
+        //return TimeSpan.FromSeconds(seconds).ToString(@"hh\:mm\:ss\:fff");
+    }*/
+
     // game over menus
     public void DeathMenu(float damageAmount, Character enemyCharacter) {
         gameOverMenu.SetActive(true);
+        gameManager.runInProgress = false;
         gameManager.gameOverMenuEnabled = true;
         gameManager.pauseMenuEnabled = true;
         gameManager.SetControlState(ControlState.Deselected);
-        string text = "Enemy <color=#ff928a><b>" + enemyCharacter.className + "</b><color=#ffffff> killed you with a <color=#85f1ff>" 
-                      + damageAmount + " damage<color=#ffffff> shot.\n\nGG.\n";
+        string text = "Enemy <color=#ff928a><b>" + enemyCharacter.className + "</b><color=#ffffff> killed you with a <color=#85f1ff>"
+                      + damageAmount + " damage<color=#ffffff> shot.\n\nGG.\n"; //+ "Run time: " + FormatSeconds(gameManager.runTimer);
 
         if (gameManager.GetCharacterClass().killCount == 1) {
             text = text + "\nYou killed 1 enemy.";
@@ -496,27 +516,47 @@ public class UIManager : MonoBehaviour {
         gameOverMenu.transform.GetChild(1).GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text = "Wasted";
         // body text
         gameOverMenu.transform.GetChild(1).GetChild(1).gameObject.GetComponent<TextMeshProUGUI>().text = text;
+
+        // write death to file
+        gameManager.dataSerializer.ModifySavedDataValue("TotalDeaths", 1, true);
+
     }
 
     public void ExtractionMenu() {
         gameOverMenu.SetActive(true);
+        gameManager.runInProgress = false;
         gameManager.gameOverMenuEnabled = true;
         gameManager.pauseMenuEnabled = true;
         gameManager.SetControlState(ControlState.Deselected);
         string text = "Turn: " + gameManager.turnCount + "\n" +
-                      "Kill count: " + gameManager.GetCharacterClass().killCount;
+                      "Kill count: " + gameManager.GetCharacterClass().killCount + "\n";// +
+                      //"Run time: " + FormatSeconds(gameManager.runTimer);
 
         // title text
         gameOverMenu.transform.GetChild(1).GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text = "Extracted";
         // body text
         gameOverMenu.transform.GetChild(1).GetChild(1).gameObject.GetComponent<TextMeshProUGUI>().text = text;
+
+        // write extraction to file
+        gameManager.dataSerializer.ModifySavedDataValue("TotalExtractions", 1, true);
     }
 
     public void ReturnToMainMenu() {
         gameManager.gameOverMenuEnabled = false;
         gameManager.SetControlState(ControlState.Deselected);
         gameManager.soundManager.PlayMainMenuMusic();
+
+        // write kills to file
+        gameManager.dataSerializer.ModifySavedDataValue("TotalKills", gameManager.GetCharacterClass().killCount, true);
+
+        // write seconds to file
+        gameManager.dataSerializer.ModifySavedDataValue("TotalSecondsPlayed", Mathf.RoundToInt(gameManager.runTimer), true);
         SceneManager.LoadScene("MainMenu");
+
+        if (gameManager.dataSerializer.LoadFile()["FastestRunInSeconds"] < Mathf.RoundToInt(gameManager.runTimer) ||
+            gameManager.dataSerializer.LoadFile()["FastestRunInSeconds"] == 0) {
+            gameManager.dataSerializer.ModifySavedDataValue("FastestRunInSeconds", Mathf.RoundToInt(gameManager.runTimer), false);
+        }
     }
 
     // update movement cost on cursor

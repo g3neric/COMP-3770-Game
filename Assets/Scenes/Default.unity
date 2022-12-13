@@ -169,6 +169,8 @@ MonoBehaviour:
   pauseMenuEnabled: 0
   shopMenuEnabled: 0
   gameOverMenuEnabled: 0
+  extractionCalled: 0
+  extractionRoundTimer: 0
 --- !u!4 &207354068
 Transform:
   m_ObjectHideFlags: 0
@@ -440,6 +442,9 @@ MonoBehaviour:
   straightRoadPrefab: {fileID: 1561500678141819050, guid: 5aa1447f5c7a7a441998da091c1fce15, type: 3}
   crossroadPrefab: {fileID: 1561500678141819050, guid: fdaba329f4ffb1949915f6e974a72a84, type: 3}
   fogOfWarOutlineMaterial: {fileID: 2100000, guid: 3c85945dd0ac93049b6498eee7c3dd44, type: 2}
+  pistolIcon: {fileID: 21300000, guid: b13b90c74135e884eb5ef20e7d47d1f6, type: 3}
+  rifleIcon: {fileID: 21300000, guid: 4920599282160994dbfb4e45e040e243, type: 3}
+  sniperIcon: {fileID: 21300000, guid: bdbe547d9e7ef2d45b1b5975b6730cc5, type: 3}
   defaultCursorTexture: {fileID: 2800000, guid: 03cd504518f312845a177cf586f998c2, type: 3}
   moveCursorTexture: {fileID: 2800000, guid: 28de5d62b468c454c8c3e02b626bccf0, type: 3}
   attackCursorTexture: {fileID: 2800000, guid: f4087249bf49eaa4fbf029f83db98148, type: 3}

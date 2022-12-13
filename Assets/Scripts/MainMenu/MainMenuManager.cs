@@ -61,6 +61,10 @@ public class MainMenuManager : MonoBehaviour {
         mainMenuButtons[3].GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Credits); });
         mainMenuButtons[3].GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
 
+        // stats menu reset button
+        statsMenu.transform.Find("center background").Find("Reset Data").GetComponent<Button>().onClick.AddListener(delegate { ResetData(); });
+        statsMenu.transform.Find("center background").Find("Reset Data").GetComponent<Button>().onClick.AddListener(delegate { gameManager.soundManager.PlayButtonClick(); });
+
         // initiate return to main menu buttons
         foreach (Button but in returnToMainMenuButtons) {
             but.GetComponent<Button>().onClick.AddListener(delegate { SwitchMainMenuPanel(MainMenuState.Default); });
@@ -82,6 +86,15 @@ public class MainMenuManager : MonoBehaviour {
         }
     }
 
+    public string FormatSeconds(float seconds) {
+        return string.Format("{0:00}:{1:00}:{2:00}", seconds / 3600, (seconds / 60) % 60, seconds % 60);
+    }
+
+    public void ResetData() {
+        gameManager.dataSerializer.ResetData();
+        SwitchMainMenuPanel(MainMenuState.Stats);
+    }
+
     public void SwitchMainMenuPanel(MainMenuState newState) {
         // make sure pause menu is enabled before doing anything
         mainMenu.SetActive(false);
@@ -97,9 +110,36 @@ public class MainMenuManager : MonoBehaviour {
                 break;
             case MainMenuState.Stats:
                 statsMenu.SetActive(true);
+                Dictionary<string, int> data = gameManager.dataSerializer.LoadFile();
                 // update stats text
-                //string text = 
-                //blank.GetComponent<TextMeshProUGUI>().Text = text;
+                string text = data["TotalDeaths"] +
+                              "\n" + data["TotalKills"] +
+                              "\n" + data["TotalExtractions"] +
+                              "\n" + data["TotalSessions"] +
+                              "\n" + FormatSeconds(data["FastestRunInSeconds"]) +
+                              "\n" + FormatSeconds(data["TotalSecondsPlayed"]) +
+                              "\n" + data["TotalGoldAcquired"] + "\n";
+
+                if (data["EzDifficultyCount"] == 0 &&
+                    data["MidDifficultyCount"] == 0 &&
+                    data["ImpossibleDifficultyCount"] == 0) {
+                    text = text + "N/A";
+                } else {
+                    if (data["ImpossibleDifficultyCount"] > data["MidDifficultyCount"] &&
+                        data["ImpossibleDifficultyCount"] > data["EzDifficultyCount"]) {
+                        text = text + "Impossible";
+                    } else if (data["MidDifficultyCount"] > data["EzDifficultyCount"] &&
+                        data["MidDifficultyCount"] > data["ImpossibleDifficultyCount"]) {
+                        text = text + "Mid";
+                    } else if (data["EzDifficultyCount"] > data["MidDifficultyCount"] &&
+                        data["EzDifficultyCount"] > data["ImpossibleDifficultyCount"]) {
+                        text = text + "Ez";
+                    } else {
+                        text = text + "N/A";
+                    }
+                }
+                
+                 statsMenu.transform.Find("center background").Find("text").GetComponent<TextMeshProUGUI>().text = text;
                 break;
             case MainMenuState.Credits:
                 creditsMenu.SetActive(true);

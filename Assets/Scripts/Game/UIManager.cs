@@ -491,10 +491,10 @@ public class UIManager : MonoBehaviour {
         }
     }
 
-    /*
+    
     public string FormatSeconds(float seconds) {
-        //return TimeSpan.FromSeconds(seconds).ToString(@"hh\:mm\:ss\:fff");
-    }*/
+        return string.Format("{0:00}:{1:00}:{2:00}", seconds / 3600, (seconds / 60) % 60, seconds % 60);
+    }
 
     // game over menus
     public void DeathMenu(float damageAmount, Character enemyCharacter) {
@@ -504,7 +504,7 @@ public class UIManager : MonoBehaviour {
         gameManager.pauseMenuEnabled = true;
         gameManager.SetControlState(ControlState.Deselected);
         string text = "Enemy <color=#ff928a><b>" + enemyCharacter.className + "</b><color=#ffffff> killed you with a <color=#85f1ff>"
-                      + damageAmount + " damage<color=#ffffff> shot.\n\nGG.\n"; //+ "Run time: " + FormatSeconds(gameManager.runTimer);
+                      + damageAmount + " damage<color=#ffffff> shot.\n\nGG.\n\n" + "Run time: " + FormatSeconds(gameManager.runTimer);
 
         if (gameManager.GetCharacterClass().killCount == 1) {
             text = text + "\nYou killed 1 enemy.";
@@ -522,6 +522,7 @@ public class UIManager : MonoBehaviour {
 
     }
 
+
     public void ExtractionMenu() {
         gameOverMenu.SetActive(true);
         gameManager.runInProgress = false;
@@ -529,34 +530,53 @@ public class UIManager : MonoBehaviour {
         gameManager.pauseMenuEnabled = true;
         gameManager.SetControlState(ControlState.Deselected);
         string text = "Turn: " + gameManager.turnCount + "\n" +
-                      "Kill count: " + gameManager.GetCharacterClass().killCount + "\n";// +
-                      //"Run time: " + FormatSeconds(gameManager.runTimer);
+                      "Kill count: " + gameManager.GetCharacterClass().killCount + "\n" +
+                      "Run time: " + FormatSeconds(gameManager.runTimer);
 
         // title text
         gameOverMenu.transform.GetChild(1).GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text = "Extracted";
+
         // body text
         gameOverMenu.transform.GetChild(1).GetChild(1).gameObject.GetComponent<TextMeshProUGUI>().text = text;
 
         // write extraction to file
         gameManager.dataSerializer.ModifySavedDataValue("TotalExtractions", 1, true);
+
+        // record time
+        Dictionary<string, int> data = gameManager.dataSerializer.LoadFile();
+        if (data["FastestRunInSeconds"] > Mathf.RoundToInt(gameManager.runTimer) ||
+            data["FastestRunInSeconds"] == 0) {
+            gameManager.dataSerializer.ModifySavedDataValue("FastestRunInSeconds", Mathf.RoundToInt(gameManager.runTimer), false);
+        }
     }
 
     public void ReturnToMainMenu() {
+        // write kills to file
+        gameManager.dataSerializer.ModifySavedDataValue("TotalKills", gameManager.GetCharacterClass().killCount, true);
+
+        // update sessions
+        gameManager.dataSerializer.ModifySavedDataValue("TotalSessions", 1, true);
+
+        // write seconds to file
+        gameManager.dataSerializer.ModifySavedDataValue("TotalSecondsPlayed", Mathf.RoundToInt(gameManager.runTimer), true);
+
+        switch (gameManager.difficulty) {
+            case DifficultyState.Ez:
+                gameManager.dataSerializer.ModifySavedDataValue("EzDifficultyCount", 1, true);
+                break;
+            case DifficultyState.Mid:
+                gameManager.dataSerializer.ModifySavedDataValue("MidDifficultyCount", 1, true);
+                break;
+            case DifficultyState.Impossible:
+                gameManager.dataSerializer.ModifySavedDataValue("ImpossibleDifficultyCount", 1, true);
+                break;
+        }
+
         gameManager.gameOverMenuEnabled = false;
         gameManager.SetControlState(ControlState.Deselected);
         gameManager.soundManager.PlayMainMenuMusic();
 
-        // write kills to file
-        gameManager.dataSerializer.ModifySavedDataValue("TotalKills", gameManager.GetCharacterClass().killCount, true);
-
-        // write seconds to file
-        gameManager.dataSerializer.ModifySavedDataValue("TotalSecondsPlayed", Mathf.RoundToInt(gameManager.runTimer), true);
         SceneManager.LoadScene("MainMenu");
-
-        if (gameManager.dataSerializer.LoadFile()["FastestRunInSeconds"] < Mathf.RoundToInt(gameManager.runTimer) ||
-            gameManager.dataSerializer.LoadFile()["FastestRunInSeconds"] == 0) {
-            gameManager.dataSerializer.ModifySavedDataValue("FastestRunInSeconds", Mathf.RoundToInt(gameManager.runTimer), false);
-        }
     }
 
     // update movement cost on cursor

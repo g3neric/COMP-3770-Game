@@ -91,6 +91,7 @@ public class GameManager : MonoBehaviour {
 
 		// check if there's already a data file created
 		// if not, then make a new one
+		dataSerializer.ResetData();
 		dataSerializer.CheckIfFileCreated();
 
 		soundManager.PlayMainMenuMusic();
@@ -109,9 +110,6 @@ public class GameManager : MonoBehaviour {
 
 		runTimer = 0;
 		runInProgress = true;
-
-		// update session count
-		dataSerializer.ModifySavedDataValue("TotalKills", 1, true);
 
 		// initiate ui manager
 		uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
@@ -147,13 +145,13 @@ public class GameManager : MonoBehaviour {
 		int enemyCount; // amount of enemies at start of game
 		switch(difficulty) {
 			case DifficultyState.Ez:
-				enemyCount = 10;
+				enemyCount = 20;
 				break;
 			case DifficultyState.Mid:
-				enemyCount = 18;
+				enemyCount = 25;
 				break;
 			case DifficultyState.Impossible:
-				enemyCount = 25;
+				enemyCount = 30;
 				break;
 			default:
 				// this section should never be reached
@@ -584,7 +582,6 @@ public class GameManager : MonoBehaviour {
 
 		SendMessageToLog("Extraction requested");
 		SendMessageToLog("<color=#9ca5ff>" + extractionRoundTimer + "<color=#ffffff> turns until extraction");
-		SendMessageToLog("The island grows restless...");
     }
 
     void LateUpdate() {

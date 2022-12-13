@@ -11,13 +11,20 @@ public class DataSerializer : MonoBehaviour {
         data.Add("TotalKills", 0); //
         data.Add("TotalExtractions", 0); //
         data.Add("TotalSessions", 0); //
-        data.Add("FastestRunInSeconds", 0); 
+        data.Add("FastestRunInSeconds", 0); //
         data.Add("TotalSecondsPlayed", 0); //
         data.Add("TotalGoldAcquired", 0); //
+        data.Add("EzDifficultyCount", 0);
+        data.Add("MidDifficultyCount", 0);
+        data.Add("ImpossibleDifficultyCount", 0);
         return data;
     }
 
-   
+    public void ResetData() {
+        string destination = Application.persistentDataPath + "/save.dat";
+        File.Delete(destination);
+        CheckIfFileCreated();
+    }
 
     public void CheckIfFileCreated() {
         string destination = Application.persistentDataPath + "/save.dat";
